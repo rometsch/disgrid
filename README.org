@@ -1,0 +1,38 @@
+#+title: simdata
+
+An API for loading hydro code simulation data. 
+
+* Structures of simulation data
+
+** representation of data
+
++ grid
+  - type of grid
+    + static
+    + moving
+  - dimension
+  - interfaces and cell centers
+  
++ field
+  - associated data
+    - simulation time
+    - grid
+
++ nbody systems
+  - time
+
++ parameter
+  - per output step
+
++ meta data
+  - simulation time
+  - 
+
+** files
+
++ grid.py
++ field.py
++ nbody.py
++ parameter.py
++ meta.py
++ simdata.py
