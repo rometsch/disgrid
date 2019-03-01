@@ -26,13 +26,27 @@ An API for loading hydro code simulation data.
 
 + meta data
   - simulation time
-  - 
+
+* Code Structure
 
 ** files
+| filename                 | description                                                    |
+|--------------------------+----------------------------------------------------------------|
+| grid.py                  | code to handle grids                                           |
+| field.py                 | fields hold all the information of quantities defined on grids |
+| nbody.py                 | nbody system structure                                         |
+| parameter.py             | simulation parameters                                          |
+| meta.py                  | meta data such as execution times, number of cores, ...        |
+| simdata.py               | main code providing the interface class Simdata                |
+| loader/__init__.py       | handles automatic import of modules                            |
+| loader/example_loader.py | implements an actual loader which parses code specific data    |
 
-+ grid.py
-+ field.py
-+ nbody.py
-+ parameter.py
-+ meta.py
-+ simdata.py
+** modular
+
+For every supported code, a loader module needs to be written.
+Changes to the code base are not necessary.
+Every module in the =loader= directory is automatically imported and the code information is read from a module variable =code_info= which is a tuple containing three strings:
+
+#+begin_example
+code_info = ('code_name', 'version_str', 'further_name')
+#+end_example
