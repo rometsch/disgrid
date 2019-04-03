@@ -17,7 +17,7 @@ for name in os.listdir("loader"):
             module = importlib.import_module("loader." + module_name)
             missing_functions = [ fname for fname in required_functions if fname not in dir(module) ]
             if len(missing_functions) > 0:
-                    print("Warning: module '{}' doesn't supply some require function ({}), its ignored".format(module_name, missing_functions), file = sys.stderr)
+                    print("Warning: module '{}' doesn't supply some require function ({}), ignoring this module".format(module_name, missing_functions), file = sys.stderr)
             else:
                 available[module.code_info] = module
         except ImportError:
