@@ -13,8 +13,8 @@ import loader
 
 def identify_code(path):
     code_list = []
-    for key, mod in loader.available.values():
-        if mod.identify_code(path):
+    for key, mod in loader.available.items():
+        if mod.identify(path):
             code_list.append(code)
     if len(code_list) == 0:
         raise UnknownCodeError("No known code matches data in '{}'".format(path))
