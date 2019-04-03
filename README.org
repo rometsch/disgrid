@@ -2,6 +2,119 @@
 
 An API for loading hydro code simulation data. 
 
+* TODO
+
++ variable names
++ vector handling (components)
++ nbody
++ meta
++ parameter namespaces
++ grid interfaces, cell centeres, ...
++ exceptions
+
+* API definition
+
++ force all physical variables to be an astropy.units.Quantity object i.e. to have a unit
+
+** conventions
+
++ all physical quantities have units
++ coordinate systems
+  - cartesian: x,y,z
+  - spherical: r, theta [0,pi], phi [0, 2pi]
+  - cylindrical: r, phi [0, 2pi], z
+  - polar: r, phi [0,2pi]
+  - irregular spaced meshes have a suffix indicating them (extenbsibility)
+
+** get function
+
++ specify type of variable
+  - reduced (e.g. total disk mass)
+    + one quantity for the whole disk
+  - field (e.g. density in each cell)
+    + defined at each cell in the grid
+  - parameter
++ get field by variable name
+  - define an alias for common used variables
++ index variable to pick data which can be
+  - point in time (astropy units timelike quantity)
+  - a list of points in time (astropy units timelike quantity)
+  - two points in time (astropy units timelike quantity) to specify a range
+  - an integer variable to select a frame
+  - two integer variables to select a range
+  - a list of integers to select a number of frames
+  - a slice object (a:b) to select a range
+  - a range iterator (range(a,b)) to select a range
+
+#+begin_src ipython :session :exports both :results raw drawer
+  def get(var_type, var_name, index1, index2=None ):
+      if index is timelike quantity:
+        pass # get stuff by time or by time range
+      else:
+        pass # get stuff by frame number or by frame range or by slice
+
+  def get_time(n_frame, 
+
+  def get_field(var_type, var_name, n_frame, )
+  def get_scalar(var_type, var_name, n_frame, )
+  def get_planet_scalar(var_type, var_name, n_frame, )
+  def get_vector(var_type, var_name, n_frame, )
+
+get(..., 2:20:5)
+
+#+end_src
+
+[2,7,12,20]
+[2,20]
+2 , 20
+2:20
+range(2,20)
+
+** fields
+
++ contains data -> data() or get('data')
++ contains grid -> grid() or get('grid')
++ has info on the dimension of data
+  - dim(), get('dim') (1,2,3)
++ get one single component of the vector field
+  - component(dim), dim = 1,2,3,'r','phi','theta','x','y','z',...
+? + has unit function -> unit() or get('unit'), equivalent to data().unit
+
+e.g.
+
+get('field', 'mass').get('data') gives the velocity data array
+get('field', 'mass').data()
+
+** grids
+
+* API documentation
+
+some resources on API documentation
++ [[https://bradfults.com/the-best-api-documentation-b9e46400379a][blog post on good API docus]]
++ [[https://www.programmableweb.com/news/web-api-documentation-best-practices/2010/08/12][Web API Docu best practice]]
+
+Some basic blocks for API documentation
+
++ Overview
+  - why to use
+  - architecture
+  - conventions
++ Getting Started
+  - tutorials
+  - walk through
++ Sample Code
+  - clarity
+  - simplicity
++ References
+  - description
+  - parameters
+  - remarks
+
+* Variable names
+
+
+
+
 * Structures of simulation data
 
 ** representation of data
@@ -20,6 +133,7 @@ An API for loading hydro code simulation data.
 
 + nbody systems
   - time
+  - initial conditions
 
 + parameter
   - per output step
