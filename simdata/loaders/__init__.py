@@ -8,10 +8,9 @@ required_functions = ["identify"]
 # store all available loader modules
 available = {}
 
-
 for name in os.listdir(os.path.dirname(os.path.abspath(__file__))):
     if name.endswith(".py"):
-        if name == "__init__.py":
+        if name in ["__init__.py", "interface.py"]:
             continue
         module_name = name[:-3]
         try:
@@ -24,4 +23,30 @@ for name in os.listdir(os.path.dirname(os.path.abspath(__file__))):
         except ImportError:
             print("Warning: module '{}' couldn't be imported".format(module_name), file = sys.stderr)
         
+def identify_code(path):
+    code_list = []
+    for key, mod in available.items():
+        if mod.identify(path):
+            code_list.append(key)
+    if len(code_list) == 0:
+        raise UnknownCodeError("No known code matches data in '{}'".format(path))
+    elif len(code_list) > 1:
+        raise MultipleCodeError("Multiple codes identified the data in '{}' which where '{}'".format(path, code_list))
+    return code_list[0]
+
+def get_loader(path, loader, **kwargs):
+    if loader:
+        if "Loader" in dir(loader):
+            # assume its a module
+            code = loader.code_info
+            loader = loader.Loader(path, **kwargs)
+        else:
+            # assume its a loader object
+            loader = loader
+            code = type(loader).code_info
+    else:
+        code = identify_code(path)
+        loader = available[code].Loader(path, **kwargs)
+    return code, loader
+
 
