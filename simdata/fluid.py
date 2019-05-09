@@ -18,10 +18,10 @@ class Fluid:
         self.variable_loaders[variable_type][name] = loader_function
 
     def get(self, variable_type, name, *args, **kwargs):
-        return self.variable_loaders[name](*arg, **kwargs)
+        return self.variable_loaders[varialbe_type][name](*arg, **kwargs)
 
     def get_time(self, variable_type, name):
-        return self.variable_loader[name](*args, **kwargs, return_times=True)
+        return self.variable_loader[variable_type][name](*args, **kwargs, return_times=True)
 
 
 
