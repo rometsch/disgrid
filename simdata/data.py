@@ -22,24 +22,36 @@ def identify_code(path):
         raise MultipleCodeError("Multiple codes identified the data in '{}' which where '{}'".format(path, code_list))
     return code_list[0]
 
+def get_loader(path, loader, **kwargs):
+    if loader:
+        if "Loader" in dir(loader):
+            # assume its a module
+            code = loader.code_info
+            loader = loader.Loader(path, **kwargs)
+        else:
+            # assume its a loader object
+            loader = loader
+            code = type(loader).code_info
+    else:
+        code = identify_code(path)
+        loader = loaders.available[code].Loader(path, **kwargs)
+    return code, loader
+
+
+
 class Data:
     def __init__(self, path, loader=None, **kwargs):
         self.path = path
-        if loader:
-            if "Loader" in dir(loader):
-                # assume its a module
-                self.code = loader.code_info
-                self.loader = loader.Loader(path, **kwargs)
-            else:
-                # assume its a loader object
-                self.loader = loader
-                self.code = type(loader).code_info
-        else:
-            self.code = identify_code(self.path)
-            self.loader = loaders.available[self.code].Loader(path, **kwargs)
-        self.fields = {}
-        self.nbodysystems = {}
+        self.code, self.loader = get_loader(path, loader, **kwargs)
+        self.fluids = {}
+        self.particlegroups = {}
+        self.planets = {}
         self.parameters = {}
         self.meta = {}
+        self.grids = {}
+
+    def get_fluid(name):
+        return self.fluids[name]
+
 
     
