@@ -9,20 +9,20 @@ class MultipleCodeError(Exception):
     pass
 
 # import all loaders
-import loader
+from . import loaders
 
 def identify_code(path):
     code_list = []
-    for key, mod in loader.available.items():
+    for key, mod in loaders.available.items():
         if mod.identify(path):
-            code_list.append(code)
+            code_list.append(key)
     if len(code_list) == 0:
         raise UnknownCodeError("No known code matches data in '{}'".format(path))
     elif len(code_list) > 1:
         raise MultipleCodeError("Multiple codes identified the data in '{}' which where '{}'".format(path, code_list))
     return code_list[0]
 
-class Simdata:
+class Data:
     def __init__(self, path, loader=None, **kwargs):
         self.path = path
         if loader:
@@ -35,8 +35,8 @@ class Simdata:
                 self.loader = loader
                 self.code = type(loader).code_info
         else:
-            self.code = self.identify_code()
-            self.loader = loader.available[code].Loader(path, **kwargs)
+            self.code = identify_code(self.path)
+            self.loader = loaders.available[self.code].Loader(path, **kwargs)
         self.fields = {}
         self.nbodysystems = {}
         self.parameters = {}
