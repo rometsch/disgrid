@@ -2,13 +2,42 @@ import numpy as np
 import astropy.units as u
 
 class Grid:
-    pass
+    def __init__(self, active_interfaces = [], names = []):
+        self.active_interfaces = active_interfaces
+        self.names = names
+        for key in active_interfaces:
+            if key not in names:
+                raise ValueError("Can't declare active interface for dim '{}' which is not in '{}'".format(key, names))
+
+    def get_coordinates(self, key):
+        if not key in self.names:
+            raise KeyError("Dimension '{}' not defined for this grid.".format(key))
+        if key in self.active_interfaces:
+            return self.__dict__[key+"_i"]
+        else:
+            return self.__dict__[key+"_c"]
+
+    def get(self, key, coordinate_type):
+        if not key in self.names:
+            raise KeyError("Dimension '{}' not defined for this grid.".format(key))
+        return self.__dict__[key+"_{}".format(coordinate_type)]
+
+    def get_centers(self, key):
+        return self.get(key, "c")
+
+    def get_interfaces(self, key):
+        return self.get(key, "i")
+
+    def get_sizes(self, key):
+        return self.get(key, "d")
+
 
 class RegularGrid(Grid):
     def __init__(self, x1_c=None, x2_c=None, x3_c=None,
                 x1_d=None, x2_d=None, x3_d=None,
                  x1_i=None, x2_i=None, x3_i=None,
-                 names = ["x1", "x2", "x3"]):
+                 names = ["x1", "x2", "x3"], **kwargs):
+        super().__init__(**kwargs, names=names)
         # ensure units
         for n in range(1,4):
             for v in ["c", "i", "d"]:
@@ -49,13 +78,41 @@ class RegularGrid(Grid):
 
         self.dim = count_dim
 
+def coordinate_args(loc, names):
+    types = ["c", "i", "d"]
+    old = ["{}_{}".format(a,b) for a in names for b in types]
+    new = ["{}_{}".format(a,b) for a in ["x1", "x2", "x3"] for b in types]
+    rv = {}
+    for o, n in zip(old, new):
+        rv[n] = loc[o]
+    return rv
+
+
 class CartesianGrid(RegularGrid):
     def __init__(self, x_c=None, y_c=None, z_c=None,
                  x_i=None, y_i=None, z_i=None,
                  x_d = None, y_d=None, z_d=None, **kwargs):
-        old = ["{}_{}".format(a,b) for a in ["x", "y", "z"] for b in ["c", "i", "d"]]
-        new = ["{}_{}".format(a,b) for a in ["x1", "x2", "x3"] for b in ["c", "i", "d"]]
-        coordinate_args = {}
-        for o, n in zip(old, new):
-            coordinate_args[n] = locals()[o]
-        super().__init__(**coordinate_args, **kwargs, names = ["x", "y", "z"])
+        names = ["x", "y", "z"]
+        super().__init__(**coordinate_args(locals(), names), **kwargs, names = names)
+
+class CylindricalGrid(RegularGrid):
+    def __init__(self, r_c=None, phi_c=None, z_c=None,
+                 r_i=None, phi_i=None, z_i=None,
+                 r_d = None, phi_d=None, z_d=None, **kwargs):
+        names = ["r", "phi", "z"]
+        super().__init__(**coordinate_args(locals(), names), **kwargs, names = names)
+
+class SphericalGrid(RegularGrid):
+    def __init__(self, r_c=None, phi_c=None, theta_c=None,
+                 r_i=None, phi_i=None, theta_i=None,
+                 r_d = None, phi_d=None, theta_d=None, **kwargs):
+        names = ["r", "phi", "theta"]
+        super().__init__(**coordinate_args(locals(), names), **kwargs, names = names)
+
+class PolarGrid(RegularGrid):
+    def __init__(self, r_c=None, phi_c=None,
+                 r_i=None, phi_i=None,
+                 r_d = None, phi_d=None, **kwargs):
+        names = ["r", "phi"]
+        super().__init__(**coordinate_args(locals(), names), **kwargs, names = names)
+
