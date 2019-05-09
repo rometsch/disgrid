@@ -55,7 +55,7 @@ An API for loading hydro code simulation data.
 
 #+begin_src ipython :session :exports both :results raw drawer
   def get(var_type, species, var_name, index1, index2=None ):
-      if index is timelike quantity:
+      if is_timelike_quantity(index):
         pass # get stuff by time or by time range
       else:
         pass # get stuff by frame number or by frame range or by slice
@@ -156,7 +156,7 @@ gasdens = get_fluid('gas').get('field', 'MassDensity').data()
 #+begin_src ipython :session :exports both :results raw drawer
 dens = d.get("fluid", "gas").get("field", "MassDensity").get_plottable()
 val = dens.data()
-X, Y = val.grid().get_meshgrid("cartesian")
+X, Y = dens.grid().get_meshgrid("cartesian")
 #+end_src
 
 ** grids
@@ -202,6 +202,8 @@ get_coordinates("r")
 
 ** Parameter
 
++ provide some common parameters via abstract names and structure
++ make params directly accesibly by 
 + load all parameters and store in dict
 
 o.__dict__
@@ -373,7 +375,6 @@ some resources on API documentation
 + [[ https://bradfults.com/the-best-api-documentation-b9e46400379a][blog post on good API docus]]
 + [[https://www.programmableweb.com/news/web-api-documentation-best-practices/2010/08/12][Web API Docu best practice]]
 
-
 ** Structures of simulation data
 
 *** representation of data
@@ -404,6 +405,7 @@ some resources on API documentation
 
 + meta data
   - simulation time
+
 
 * Code Structure
 
