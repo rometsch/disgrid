@@ -15,12 +15,13 @@ class Data:
     def __init__(self, path, loader=None, **kwargs):
         self.path = path
         self.code, self.loader = loaders.get_loader(path, loader, **kwargs)
-        self.fluids = {}
-        self.particlegroups = {}
-        self.planets = {}
-        self.parameters = {}
-        self.meta = {}
-        self.grids = {}
+        self.loader.scout()
+        self.fluids = self.loader.fluids
+        self.vectors = self.loader.vectors
+        self.particlegroups = self.loader.particlegroups
+        self.planets = self.loader.planets
+        self.parameters = self.loader.parameters
+        self.meta = self.loader.meta
 
     def get_fluid(name):
         return self.fluids[name]

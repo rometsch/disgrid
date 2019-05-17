@@ -22,6 +22,7 @@ for name in os.listdir(os.path.dirname(os.path.abspath(__file__))):
                 available[module.code_info] = module
         except ImportError:
             print("Warning: module '{}' couldn't be imported".format(module_name), file = sys.stderr)
+            raise
         
 def identify_code(path):
     code_list = []
