@@ -13,24 +13,5 @@ def identify(path):
     except FileNotFoundError:
         return False
 
-class Loader(interface.LoaderInterface):
-
-    def __init__(self, path):
-        self.grid = None
-
-    def load_field_rho_data(self, n):
-        return np.fromfile(os.path.join(self.dataDir, "gasdens{}.dat".format(n)))
-
-    def load_field_rho_time(self, n):
-        return self.times[n]
-
-    def load_field_rho_grid(self, n):
-        return self.grid
-
-    def load_grid(self):
-        pass
-
-class FieldRho(interface.FieldQuantity):
-
-    def load_data(self, n):
-        pass
+class Loader(interface.Interface):
+    pass
