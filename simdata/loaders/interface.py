@@ -6,7 +6,7 @@ class Interface:
         self.path = path
         self.fluids = {}
         self.vectors = {}
-        self.particlegroups = {}
+        self.particles = {}
         self.planets = {}
         self.parameters = {}
         self.meta = {}
