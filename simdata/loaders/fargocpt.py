@@ -9,6 +9,7 @@ from .. import fluid
 from .. import field
 from .. import grid
 from .. import vector
+from .. import particles
 
 def identify(path):
     identifiers = ["misc.dat", "fargo", "Quantities.dat"]
@@ -91,6 +92,7 @@ def load_text_data_file(filepath, varname):
     data = np.genfromtxt(filepath, usecols=int(col))*unit
     return data
 
+
 class Loader(interface.Interface):
 
     code_info = code_info
@@ -104,8 +106,38 @@ class Loader(interface.Interface):
         self.get_domain_size()
         self.get_units()
         self.get_fluids()
+        self.get_nbodysystems()
         self.get_fields()
         self.get_vectors()
+        self.get_nbodysystems()
+        self.get_nbody_planet_variables()
+
+    def get_nbodysystems(self):
+        planet_ids = []
+        p = re.compile("bigplanet(\d).dat")
+        for s in os.listdir(self.data_dir):
+            m = re.match(p, s)
+            if m:
+                planet_ids.append(m.groups()[0])
+        self.particlegroups["planets"] = particles.NbodySystem("planets")
+        planets = self.particlegroups["planets"]
+        planets.register_particles(sorted(planet_ids))
+        self.planets = planets
+
+    def get_nbody_planet_variables(self):
+        planet_variables = load_text_data_variables(os.path.join(self.data_dir,"bigplanet1.dat"))
+        for varname in planet_variables:
+            self.particlegroups["planets"].register_variable( varname, PlanetVectorLoader( varname, {"datafile_pattern" : os.path.join(self.data_dir, "bigplanet{}.dat")}, self) )
+        # register position
+        if all([s in planet_variables for s in ["x", "y"]]):
+            self.particlegroups["planets"].register_variable( "position", PlanetVectorLoader( "position",
+                                    {"datafile_pattern" : os.path.join(self.data_dir, "bigplanet{}.dat"),
+                                     "axes" : { "x" : "x", "y" : "y" }}, self) )
+        # register velocities
+        if all([s in planet_variables for s in ["vx", "vy"]]):
+            self.particlegroups["planets"].register_variable( "velocity", PlanetVectorLoader( "velocity",
+                                    {"datafile_pattern" : os.path.join(self.data_dir, "bigplanet{}.dat"),
+                                     "axes" : { "x" : "vx", "y" : "vy" }}, self) )
 
     def get_fluids(self):
         self.fluids["gas"] = fluid.Fluid("gas")
@@ -206,3 +238,29 @@ class VectorLoader:
     def load_time(self):
         rv = load_text_data_file(self.info["datafile"], "physical time")
         return rv
+
+class PlanetVectorLoader(VectorLoader):
+
+    def __call__(self, num_output, particle_ids):
+        axes = [] if not "axes" in self.info else [key for key in self.info["axes"]]
+        rv = particles.ParticleVector(self.load_time(particle_ids), self.load_data_multiple(particle_ids), name=self.name, axes=axes)
+        return rv
+
+    def load_time(self, particle_ids):
+        rv = load_text_data_file(self.info["datafile_pattern"].format(particle_ids[0]), "physical time")
+        return rv
+
+    def load_data_multiple(self, particle_ids):
+        data = []
+        unit = None
+        for pid in particle_ids:
+            self.info["datafile"] = self.info["datafile_pattern"].format(pid)
+            d = self.load_data()
+            if unit is None:
+                unit = d.unit
+            data.append(d.value)
+
+        data = np.array(data)
+        data = data*unit
+        data = np.moveaxis(data, 0, 1)
+        return data

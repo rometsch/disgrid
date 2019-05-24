@@ -1,38 +1,51 @@
 from collections import OrderedDict
+from . import vector
 
-required_data = ["time", "x", "y"]
+required_data = ["time", "position", "velocity"]
 
-def check_data(self):
+def check_data(data):
     # need at least time, position and velocities
     for varname in required_data:
-        if not varname in self.data:
+        if not varname in data:
             raise KeyError("nbody data must contain "+varname)
 
 class NbodySystem:
-    # class to hold data for an nbody system at one timestep
-    def __init__(self, dim):
-        self.dim = dim
-        self.data = OrderedDict() # array of dim x Nparticles
-
-class NbodySystemFull:
     # class to hold data for an nbody system for all timesteps
-    def __init__(self, dim):
-        self.dim = dim
-        self.data = OrderedDict() # array of dim x Nparticles x Ntimesteps
+    def __init__(self, name):
+        self.name = name
+        self.ids = []
+        self.variable_loaders = {}
 
-    def load(self, varname, n, tmax=None):
-        if tmax is not None:
-            tmin = n
-        elif n.size == 2:
-            tmin, tmax = n
+    def register_particles(self, ids):
+        for i in ids:
+            self.ids.append(i)
 
-        if tmax:
-            self.load_range(varname, tlim)
-        else:
-            self.load_single(varname, n)
+    def register_variable(self, name, loader_function):
+        if not callable(loader_function):
+            raise TypeError("Loader function '{}' for '{}' not callable".format(loader_function, name))
 
-    def load_range(self, varname, tlim):
-        raise NotImplementedError("load_range function must be implemented in code specific loader")
+        self.variable_loaders[name] = loader_function
 
-    def load_range(self, varname, n):
-        raise NotImplementedError("load_sing function must be implemented in code specific loader")
+    def get(self, name, num_particles=None, *args, num_output=None, **kwargs):
+        if num_particles is None:
+            num_particles = slice(len(self.ids))
+        return self.variable_loaders[name](num_output, self.ids[num_particles], *args, **kwargs)
+        
+class ParticleVector(vector.Vector):
+    pass
+    
+    # def get(self, ids=None, *args, **kwargs):
+    #     data = super().get(*args, **kwargs)
+    #     time = None
+    #     if isinstance(data, tuple):
+    #         time = data[0]
+    #         data = data[1]
+    #     # select particles
+    #     if len(data.shape) == 2:
+    #         rv = data[:,ids]
+    #     else:
+    #         rv = data[:,:,ids]
+    #     if time is not None:
+    #         return (time, rv)
+    #     else:
+    #         return rv
