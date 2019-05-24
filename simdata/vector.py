@@ -20,7 +20,8 @@ class Vector:
     def get(self, key=None, low=None, up=None, axis=None, return_time=False):
         # TODO: handle keys
         # handle
-        # 1) array of indices [1, 5, 7 ,8]
+        # 1) a single number
+        # 2) array of indices [1, 5, 7 ,8]
         # 3) range operator range(2,20)
         if key is None:
             if low is None and up is None:
@@ -31,7 +32,7 @@ class Vector:
                 inds = range(0, up)
             elif up is None:
                 inds = range(low, len(self.data))
-        elif type(key) in [range, slice]:
+        elif type(key) in [int, range, slice]:
             inds = key
         else:
             try:
@@ -39,11 +40,13 @@ class Vector:
                 inds = key
             except TypeError:
                 raise TypeError("Key is neither a range nor a list of indices")
-        rv = self.data[inds]
+        rv = None
         if axis is not None:
-            if axis in axes:
-                n_axis = axes[axis]
-                rv = rv[:, n_axis]
+            if axis in self.axes:
+                n_axis = (n for n,s in enumerate(self.axes) if s == axis).__next__()
+                rv = self.data[inds, n_axis]
+        else:
+            rv = self.data[inds]
         if return_time:
             rv = (self.time[inds], rv)
         return rv
