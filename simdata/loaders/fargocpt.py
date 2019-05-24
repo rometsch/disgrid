@@ -116,6 +116,9 @@ class Loader(interface.Interface):
         variables = load_text_data_variables(datafile)
         for varname, (column, unitstr) in variables.items():
             gas.register_variable(varname, "vector", VectorLoader(varname, {"datafile" : datafile }, self))
+        # add multi axis vectors
+        if all([v in variables for v in ["radial kinetic energy", "azimuthal kinetic energy"]]):
+            gas.register_variable("kinetic energy", "vector", VectorLoader(varname, {"datafile" : datafile, "axes" : { "r" : "radial kinetic energy", "phi" : "azimuthal kinetic energy" } }, self))
 
     def get_domain_size(self):
         self.Nr, self.Nphi = np.genfromtxt(os.path.join(self.data_dir, "dimensions.dat"), usecols=(4,5), dtype=int)
@@ -172,11 +175,25 @@ class VectorLoader:
         self.name = name
 
     def __call__(self):
-        f = vector.Vector(self.load_time(), self.load_data(), name=self.name)
+        axes = [] if not "axes" in self.info else [key for key in self.info["axes"]]
+        f = vector.Vector(self.load_time(), self.load_data(), name=self.name, axes=axes)
         return f
 
     def load_data(self):
-        rv = load_text_data_file(self.info["datafile"], self.name)
+        if "axes" in self.info:
+            rv = []
+            unit = None
+            for ax, varname in self.info["axes"].items():
+                d = load_text_data_file(self.info["datafile"], varname)
+                if unit is None:
+                    unit = d.unit
+                else:
+                    if unit != d.unit:
+                        raise ValueError("Units of multiaxis vector don't match")
+                rv.append(d)
+            rv = np.array(rv).transpose()*unit
+        else:
+            rv = load_text_data_file(self.info["datafile"], self.name)
         return rv
 
     def load_time(self):
