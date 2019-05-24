@@ -1,0 +1,4 @@
+# Mass flow 1d radial, first line radii, from second line on, values at time in Quantities.dat
+Nr = 31
+unit = g s^-1
+bigendian = 0

@@ -1,0 +1,6 @@
+# version 0.1
+# dens 1d radial, in first line alternating: radii | quantity | minimum quantity | maximum quantity
+# values at time in timestepCoarse.dat
+Nr = 30
+unit = g cm^-2
+bigendian = 0

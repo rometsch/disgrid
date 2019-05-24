@@ -1,0 +1,24 @@
+# units-file : 1.0
+# log output of units:
+#                    length:       l0 = 77790892764000 cm
+#                      mass:       m0 = 1.98892e+33 g
+#                      time:       t0 = 59551995.75241503 s		=     1.887127621 a
+#               temperature:       T0 = 20685.44554651166 K
+#                    energy:       E0 = 3.393768273238107e+45 erg
+#            energy density:       e0 = 5.608215249387247e+17 erg cm^-2
+#                   density:     rho0 = 4.225042168965546e-09 g cm^-3
+#           surface density:   Sigma0 = 328669.8022893768 g cm^-2
+#               energy flux:       S0 = 9417342237.702951 erg cm^-2 s^-1
+#                  velocity:       v0 = 1306268.442915204 cm s^-1
+#              acceleration:       a0 = 0.02193492302669353 cm s^-2
+#       kinematic viscosity:      nu0 = 1.016157883638139e+20 cm^2 s^-1
+#                    stress:          = 5.608215249387247e+17 g s^-2
+#                  pressure:       p0 = 5.608215249387247e+17 dyn cm^-1
+# Syntax: base unit <tab> value <tab> unit name
+length	7.7790892764000000e+13	cm
+mass	1.9889199999999999e+33	g
+time	5.9551995752415031e+07	s
+current	 	 
+temperature	2.0685445546511659e+04	K
+amount	 	 
+intensity	 	 
