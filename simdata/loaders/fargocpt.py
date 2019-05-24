@@ -11,7 +11,14 @@ from .. import grid
 from .. import vector
 
 def identify(path):
-    return "fargo" in os.listdir(path)
+    identifiers = ["misc.dat", "fargo", "Quantities.dat"]
+    Nid = len(identifiers)
+    seen_ids = 0
+    for root, dirs, files in os.walk(path):
+        seen_ids += len([ s in files for s in identifiers])
+        if Nid == seen_ids:
+            return True
+    return False
 
 vars2d = {
     "dens" : {
