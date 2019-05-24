@@ -39,7 +39,7 @@ class Vector:
                 len(key)
                 inds = key
             except TypeError:
-                raise TypeError("Key is neither a range nor a list of indices")
+                raise TypeError("Key '{}' is neither a range nor a list of indices".format(key))
         rv = None
         if axis is not None:
             if axis in self.axes:
