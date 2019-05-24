@@ -18,7 +18,7 @@ class Data:
         self.loader.scout()
         self.fluids = self.loader.fluids
         self.vectors = self.loader.vectors
-        self.particles = self.loader.particles
+        self.particlegroups = self.loader.particlegroups
         self.planets = self.loader.planets
         self.parameters = self.loader.parameters
         self.meta = self.loader.meta
