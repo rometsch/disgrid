@@ -1,8 +1,7 @@
-supported_variable_types = ["field", "reduced"]
-
+supported_variable_types = ["field", "vector"]
 
 class Fluid:
-    def __init__(self, name, variable_loaders={"field": {}, "reduced": {}}):
+    def __init__(self, name, variable_loaders={"field": {}, "vector": {}}):
         self.name = name
         if not all([key in supported_variable_types for key in variable_loaders]):
             raise ValueError("One of types '{}' not supported".format([key for key in variable_loaders]))
@@ -17,7 +16,15 @@ class Fluid:
 
         self.variable_loaders[variable_type][name] = loader_function
 
-    def get(self, variable_type, name, n, *args, **kwargs):
-        return self.variable_loaders[varialbe_type][name](n, *arg, **kwargs)
+    def get(self, variable_type, name, num_output=None, *args, **kwargs):
+        if variable_type == "field":
+            if num_output is None:
+                raise TypeError("get() missing 1 required optional argument: 'num_output' for variable_type=field")
+        if variable_type == "field":
+            return self.variable_loaders[variable_type][name](num_output, *args, **kwargs)
+        elif variable_type == "vector":
+            return self.variable_loaders[variable_type][name](*args, **kwargs)
+        else:
+            raise TypeError("Unknown variable_type '{}'".format(variable_type))
 
 
