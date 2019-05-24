@@ -5,7 +5,7 @@ import astropy.units as u
 
 code_sample_path = "samples/fargocpt"
 
-class TestDataMethods(unittest.TestCase):
+class TestFargocptLoader(unittest.TestCase):
 
     def setUp(self):
         self.d = data.Data(code_sample_path)
