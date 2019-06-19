@@ -4,7 +4,10 @@ An API for loading hydro code simulation data.
 
 * TODO
 
-+ grid interfaces, cell centers, ...
++ proper calulation of cell centers in non-cartesian geometries
++ alias names for Fargo reader
++ chain alias systems
+  - arrange in a list and call subsequently (alias call is idempotent and does not change unknown argument)
 
 * API definition
 
@@ -414,6 +417,7 @@ some resources on API documentation
 |--------------------------+----------------------------------------------------------------|
 | grid.py                  | code to handle grids                                           |
 | field.py                 | fields hold all the information of quantities defined on grids |
+| aliases.py               | manage alias for variable name management                      |
 | nbody.py                 | nbody system structure                                         |
 | parameter.py             | simulation parameters                                          |
 | meta.py                  | meta data such as execution times, number of cores, ...        |
