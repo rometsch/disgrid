@@ -140,6 +140,7 @@ class Loader(interface.Interface):
         self.get_nbodysystems()
         self.get_fields()
         self.get_vectors()
+        self.get_planets()
         self.get_nbodysystems()
         self.get_nbody_planet_variables()
         self.register_alias()
@@ -157,9 +158,35 @@ class Loader(interface.Interface):
             if m:
                 planet_ids.append(m.groups()[0])
         self.particlegroups["planets"] = particles.NbodySystem("planets")
-        planets = self.particlegroups["planets"]
-        planets.register_particles(sorted(planet_ids))
-        self.planets = planets
+        self.particlegroups["planets"].register_particles(sorted(planet_ids))
+
+    def get_planets(self):
+        planet_ids = []
+        p = re.compile("bigplanet(\d).dat")
+        for s in os.listdir(self.data_dir):
+            m = re.match(p, s)
+            if m:
+                planet_ids.append(m.groups()[0])
+        # create planets
+        self.planets = []
+        for pid in planet_ids:
+            self.planets.append(particles.Planet(str(pid), pid))
+        # add variables to planets
+        for pid, planet in zip(planet_ids, self.planets):
+            planet_variables = load_text_data_variables(os.path.join(self.data_dir,"bigplanet{}.dat".format(pid)))
+            for varname in planet_variables:
+                planet.register_variable( varname, VectorLoader( varname, {"datafile" : os.path.join(self.data_dir, "bigplanet{}.dat".format(pid))}, self) )
+                # register position
+                if all([s in planet_variables for s in ["x", "y"]]):
+                    planet.register_variable( "position", VectorLoader( "position",
+                                                                              {"datafile" : os.path.join(self.data_dir, "bigplanet{}.dat".format(pid)),
+                                                                               "axes" : { "x" : "x", "y" : "y" }}, self) )
+                # register velocities
+                if all([s in planet_variables for s in ["vx", "vy"]]):
+                    planet.register_variable( "velocity", VectorLoader( "velocity",
+                                                                              {"datafile" : os.path.join(self.data_dir, "bigplanet{}.dat".format(pid)),
+                                                                               "axes" : { "x" : "vx", "y" : "vy" }}, self) )
+
 
     def get_nbody_planet_variables(self):
         planet_variables = load_text_data_variables(os.path.join(self.data_dir,"bigplanet1.dat"))

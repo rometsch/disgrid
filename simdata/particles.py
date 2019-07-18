@@ -37,6 +37,16 @@ class NbodySystem:
         if num_particles is None:
             num_particles = slice(len(self.ids))
         return self.variable_loaders[name](num_output, self.ids[num_particles], *args, **kwargs)
+
+class Planet(NbodySystem):
+    def __init__(self, name, nid):
+        super().__init__(name)
+        self.nid = nid
+
+    def get(self, name):
+        name = self.alias(name)
+        return self.variable_loaders[name]()
+
         
 class ParticleVector(vector.Vector):
     pass
