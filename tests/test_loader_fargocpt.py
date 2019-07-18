@@ -70,18 +70,18 @@ class TestFargocptLoader(unittest.TestCase):
         self.assertTrue( "planets" in self.d.particlegroups )
         self.assertTrue( "omega frame" in self.d.particlegroups["planets"].variable_loaders )
 
-    def test_single_planets(self):
+    def test_single_planets_via_particlegroups(self):
         x = self.d.particlegroups["planets"].get("x", 0)
         #self.assertEqual( x , None)
         self.assertEqual( x[1].decompose(), 0.600009762159255167*7.7790892764000000e+13*u.cm)
 
-    def test_multiple_planets(self):
+    def test_multiple_planets_via_particlegroups(self):
         x = self.d.particlegroups["planets"].get("x")
         self.assertEqual( x.data.shape, (2,201))
         #self.assertEqual( x , None)
         self.assertTrue( all (x[1].decompose() == np.array([0.600009762159255167, 0.997363963701585199])*7.7790892764000000e+13*u.cm ))
 
-    def test_multiple_planets_multi_axes(self):
+    def test_multiple_planets_multi_axes_via_particlegroups(self):
         pos = self.d.particlegroups["planets"].get("position")
         self.assertEqual( pos.data.shape, (2,201,2))
         self.assertTrue( all (pos[:,1,0].decompose() == np.array([0.600009762159255167, 0.997363963701585199])*7.7790892764000000e+13*u.cm ))
@@ -89,7 +89,15 @@ class TestFargocptLoader(unittest.TestCase):
         self.assertEqual( vel.data.shape, (2,201,2))
         self.assertTrue( all (vel[:,1,0].decompose() == np.array([0.000306735295912537458, 0.0718294173695262217])*1.3062684429152035e+06*u.cm/u.s ))
 
+    def test_planet(self):
+        x = self.d.planets[0].get("x")
+        #self.assertEqual( x , None)
+        self.assertEqual( x[1].decompose(), 0.600009762159255167*7.7790892764000000e+13*u.cm)
 
+    def test_planet_multi_axes(self):
+        pos = self.d.planets[0].get("position")
+        self.assertEqual( pos.data.shape, (201,2) )
+        self.assertEqual( pos[1,0].decompose(), 0.600009762159255167*7.7790892764000000e+13*u.cm )
 
 
 if __name__ == '__main__':

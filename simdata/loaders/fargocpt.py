@@ -147,6 +147,8 @@ class Loader(interface.Interface):
 
     def register_alias(self):
         self.particlegroups["planets"].alias.register_dict(alias_particle)
+        for planet in self.planets:
+            planet.alias.register_dict(alias_particle)
         self.fluids["gas"].alias.register_dict(alias_fields)
         self.fluids["gas"].alias.register_dict(alias_reduced)
 
@@ -157,6 +159,7 @@ class Loader(interface.Interface):
             m = re.match(p, s)
             if m:
                 planet_ids.append(m.groups()[0])
+        planet_ids.sort()
         self.particlegroups["planets"] = particles.NbodySystem("planets")
         self.particlegroups["planets"].register_particles(sorted(planet_ids))
 
@@ -167,6 +170,7 @@ class Loader(interface.Interface):
             m = re.match(p, s)
             if m:
                 planet_ids.append(m.groups()[0])
+        planet_ids.sort()
         # create planets
         self.planets = []
         for pid in planet_ids:
