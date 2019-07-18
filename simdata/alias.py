@@ -31,3 +31,7 @@ class Alias:
         if not check_alias(alias):
             raise ValueError("Invalid alias '{}' for name '{}'".format(alias, name))
         self.ad[name] = alias
+
+    def register_dict(self, alias_dict):
+        for name, alias in alias_dict.items():
+            self.register(name, alias)

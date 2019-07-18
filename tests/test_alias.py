@@ -15,6 +15,10 @@ class TestAliasMethods(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.a.register("foo", { "a" : 1, "b" : "bar"})
 
+    def test_register_dict(self):
+        self.a.register_dict({"foo" : "bar", "batz" : "boo"})
+        self.assertEqual( self.a("batz"), "boo" )
+
     def test_match(self):
         self.a.register("foo", "bar")
         self.a.register("zoo", {"type a" : "animalpark", "type b" : "forest"})
