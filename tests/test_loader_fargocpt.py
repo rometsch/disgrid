@@ -77,17 +77,17 @@ class TestFargocptLoader(unittest.TestCase):
 
     def test_multiple_planets(self):
         x = self.d.planets.get("x")
-        self.assertEqual( x.data.shape, (201,2))
+        self.assertEqual( x.data.shape, (2,201))
         #self.assertEqual( x , None)
         self.assertTrue( all (x[1].decompose() == np.array([0.600009762159255167, 0.997363963701585199])*7.7790892764000000e+13*u.cm ))
 
     def test_multiple_planets_multi_axes(self):
         pos = self.d.planets.get("position")
-        self.assertEqual( pos.data.shape, (201,2,2))
-        self.assertTrue( all (pos[1,:,0].decompose() == np.array([0.600009762159255167, 0.997363963701585199])*7.7790892764000000e+13*u.cm ))
+        self.assertEqual( pos.data.shape, (2,201,2))
+        self.assertTrue( all (pos[:,1,0].decompose() == np.array([0.600009762159255167, 0.997363963701585199])*7.7790892764000000e+13*u.cm ))
         vel = self.d.planets.get("velocity")
-        self.assertEqual( vel.data.shape, (201,2,2))
-        self.assertTrue( all (vel[1,:,0].decompose() == np.array([0.000306735295912537458, 0.0718294173695262217])*1.3062684429152035e+06*u.cm/u.s ))
+        self.assertEqual( vel.data.shape, (2,201,2))
+        self.assertTrue( all (vel[:,1,0].decompose() == np.array([0.000306735295912537458, 0.0718294173695262217])*1.3062684429152035e+06*u.cm/u.s ))
 
 
 

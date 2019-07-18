@@ -5,11 +5,13 @@ import astropy.units as u
 
 class Vector:
 
-    def __init__(self, time, data, axes=[], name=""):
+    def __init__(self, time, data, axes=[], time_dim=0, axes_dim=None, name=""):
         self.time = time
         self.data = data
         self.name = name
         self.axes = axes
+        self.axes_dim = axes_dim
+        self.time_dim = time_dim
         for v in [time, data]:
             if not isinstance(v, u.Quantity):
                 raise TypeError("'{}' is a physical value but not an astropy quantity!".format(v))
@@ -23,30 +25,47 @@ class Vector:
         # 1) a single number
         # 2) array of indices [1, 5, 7 ,8]
         # 3) range operator range(2,20)
+        direct_key = False
         if key is None:
             if low is None and up is None:
-                raise ValueError("No key and neither upper nor lower bound given!")
-            if low is not None and up is not None:
-                inds = range(low,up)
+                inds = slice(0, self.data.shape[self.time_dim])
+            elif low is not None and up is not None:
+                inds = slice(low,up)
             elif low is None:
-                inds = range(0, up)
+                inds = slice(0, up)
             elif up is None:
-                inds = range(low, len(self.data))
+                inds = slice(low, self.data.shape[self.time_dim])
         elif type(key) in [int, range, slice]:
             inds = key
         else:
             try:
                 len(key)
                 inds = key
+                direct_key = True
             except TypeError:
                 raise TypeError("Key '{}' is neither a range nor a list of indices".format(key))
         rv = None
         if axis is not None:
+            # return a specific axis
             if axis in self.axes:
                 n_axis = (n for n,s in enumerate(self.axes) if s == axis).__next__()
-                rv = self.data[inds, n_axis]
+            else:
+                raise KeyError("Axis '{}' not in available axes '{}'".format(axis, self.axes))
         else:
-            rv = self.data[inds]
+            n_axis = slice(0, len(self.axes))
+        # select the correct values
+        if direct_key:
+            rv = self.data[key]
+        elif self.time_dim == 0:
+            if self.axes_dim is None:
+                rv = self.data[inds]
+            else:
+                rv = self.data[inds, n_axis]
+        elif self.time_dim == 1:
+            if self.axes_dim is None:
+                rv = self.data[:,inds]
+            else:
+                rv = self.data[:, inds, n_axis]
         if return_time:
             rv = (self.time[inds], rv)
         return rv

@@ -252,7 +252,15 @@ class VectorLoader:
 
     def __call__(self):
         axes = [] if not "axes" in self.info else [key for key in self.info["axes"]]
-        f = vector.Vector(self.load_time(), self.load_data(), name=self.name, axes=axes)
+        time = self.load_time()
+        data = self.load_data()
+        if len(data.shape) == 2:
+            time_dim = 0
+            axes_dim = 1
+        else:
+            time_dim = 0
+            axes_dim = None
+        f = vector.Vector(time, data, name=self.name, axes=axes, time_dim=time_dim, axes_dim=axes_dim )
         return f
 
     def load_data(self):
@@ -280,8 +288,24 @@ class PlanetVectorLoader(VectorLoader):
 
     def __call__(self, num_output, particle_ids):
         axes = [] if not "axes" in self.info else [key for key in self.info["axes"]]
-        rv = particles.ParticleVector(self.load_time(particle_ids), self.load_data_multiple(particle_ids), name=self.name, axes=axes)
-        return rv
+        time = self.load_time(particle_ids)
+        data = self.load_data_multiple(particle_ids)
+        if len(particle_ids) == 1:
+            time_dim = 0
+            data = data[0]
+            if data.ndim == 1:
+                axes_dim = None
+            else:
+                axes_dim = 1
+        else:
+            if data.ndim == 2:
+                time_dim = 1
+                axes_dim = None
+            else:
+                time_dim = 1
+                axes_dim = 2
+        f = particles.ParticleVector(time, data, name=self.name, axes=axes, time_dim=time_dim, axes_dim=axes_dim )
+        return f
 
     def load_time(self, particle_ids):
         rv = load_text_data_file(self.info["datafile_pattern"].format(particle_ids[0]), "physical time")
@@ -299,5 +323,4 @@ class PlanetVectorLoader(VectorLoader):
 
         data = np.array(data)
         data = data*unit
-        data = np.moveaxis(data, 0, 1)
         return data

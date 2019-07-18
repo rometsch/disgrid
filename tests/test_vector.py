@@ -20,12 +20,11 @@ class TestDataMethods(unittest.TestCase):
 
     def test_get_ind_list(self):
         self.assertTrue( all( self.v.get([2,4,7]) == self.d[[2,4,7]]))
+
     def test_get_low_up(self):
         self.assertTrue( all( self.v.get(low=2, up=7) == self.d[2:7]))
         self.assertTrue( all( self.v.get(up=7) == self.d[:7]))
         self.assertTrue( all( self.v.get(low=7) == self.d[7:]))
-        with self.assertRaises(ValueError):
-            self.v.get()
 
     def test_get_range(self):
         self.assertTrue( all( self.v.get(range(2,8)) == self.d[2:8]))
