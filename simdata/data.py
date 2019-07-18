@@ -1,6 +1,7 @@
 from collections import OrderedDict
 import importlib
 import sys
+import os
 
 class UnknownCodeError(Exception):
     pass
@@ -12,7 +13,7 @@ class MultipleCodeError(Exception):
 from . import loaders
 
 class Data:
-    def __init__(self, path, loader=None, **kwargs):
+    def __init__(self, path=os.getcwd(), loader=None, **kwargs):
         self.path = path
         self.code, self.loader = loaders.get_loader(path, loader, **kwargs)
         self.loader.scout()
