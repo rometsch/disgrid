@@ -16,9 +16,9 @@ def identify(path):
     Nid = len(identifiers)
     seen_ids = 0
     for root, dirs, files in os.walk(path):
-        seen_ids += len([ s in files for s in identifiers])
-        if Nid == seen_ids:
-            return True
+        seen_ids += len([ 1 for s in identifiers if s in files])
+    if seen_ids >=2:
+        return True
     return False
 
 vars2d = {
@@ -50,8 +50,7 @@ alias_fields = {
     ,"total energy density" : "energy"
 }
 
-
-alias_reduced ={
+alias_reduced = {
     "output time step"        : "analysis time step"
     ,"simulation time"        : "physical time"
     ,"mass"                   : "mass"
@@ -142,7 +141,6 @@ class Loader(interface.Interface):
         self.get_vectors()
         self.get_planets()
         self.get_nbodysystems()
-        self.get_nbody_planet_variables()
         self.register_alias()
 
     def register_alias(self):
@@ -162,6 +160,8 @@ class Loader(interface.Interface):
         planet_ids.sort()
         self.particlegroups["planets"] = particles.NbodySystem("planets")
         self.particlegroups["planets"].register_particles(sorted(planet_ids))
+
+        self.get_nbody_planet_variables()
 
     def get_planets(self):
         planet_ids = []
