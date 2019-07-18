@@ -1,13 +1,13 @@
-from .aliases import Aliases
+from .alias import Alias
 supported_variable_types = ["field", "vector"]
 
 class Fluid:
-    def __init__(self, name, variable_loaders={"field": {}, "vector": {}}, aliases = Aliases()):
+    def __init__(self, name, variable_loaders={"field": {}, "vector": {}}, alias = Alias()):
         self.name = name
         if not all([key in supported_variable_types for key in variable_loaders]):
             raise ValueError("One of types '{}' not supported".format([key for key in variable_loaders]))
         self.variable_loaders = variable_loaders
-        self.aliases = aliases
+        self.alias = alias
 
     def register_variable(self, name, variable_type, loader_function):
         if not variable_type in supported_variable_types:
@@ -18,12 +18,12 @@ class Fluid:
 
         self.variable_loaders[variable_type][name] = loader_function
 
-    def register_alias(self, new_aliases):
-        for key, item in new_aliases.items():
-            self.aliases.register(key, item)
+    def register_alias(self, new_alias):
+        for key, item in new_alias.items():
+            self.alias.register(key, item)
 
     def get(self, variable_type, name, num_output=None, *args, **kwargs):
-        name = self.aliases(name)
+        name = self.alias(name)
         if variable_type == "field":
             if num_output is None:
                 raise TypeError("get() missing 1 required optional argument: 'num_output' for variable_type=field")

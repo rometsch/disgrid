@@ -7,7 +7,7 @@ def check_alias(a):
             return True
     return False
 
-class Aliases:
+class Alias:
     def __init__(self, alias_dict = {}):
         self.ad = alias_dict
 

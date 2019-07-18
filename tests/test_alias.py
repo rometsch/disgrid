@@ -1,9 +1,9 @@
 import unittest
-from simdata import aliases
+from simdata import alias
 
-class TestAliasesMethods(unittest.TestCase):
+class TestAliasMethods(unittest.TestCase):
     def setUp(self):
-        self.a = aliases.Aliases()
+        self.a = alias.Alias()
 
     def test_register(self):
         self.a.register("foo", "bar")
