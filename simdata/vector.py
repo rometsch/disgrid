@@ -35,15 +35,21 @@ class Vector:
                 inds = slice(0, up)
             elif up is None:
                 inds = slice(low, self.data.shape[self.time_dim])
-        elif type(key) in [int, range, slice]:
+        elif type(key) in [range, slice]:
             inds = key
+        elif type(key) in [int, np.int64, np.int32, np.int16]:
+            inds = int(key)
         else:
             try:
                 len(key)
                 inds = key
                 direct_key = True
             except TypeError:
-                raise TypeError("Key '{}' is neither a range nor a list of indices".format(key))
+                try:
+                    inds = int(key)
+                    direct_key = True
+                except TypeError:
+                    raise TypeError("Key '{}' (type='{}') is neither a range nor a list of indices".format(key, type(key)))
         rv = None
         if axis is not None:
             # return a specific axis
@@ -77,3 +83,9 @@ class Vector:
         inds = np.logical_and( tmin <= self.time, tmax >= self.time)
         key = np.arange(len(inds))[inds]
         return self.get(key, **kwargs)
+
+    def get_time_closest(self, t, **kwargs):
+        if not isinstance(t, u.Quantity):
+            raise TypeError("'{}' does not have a unit!".format(t))
+        ind = np.argmin( np.abs(self.time-t))
+        return self.get(key=ind, **kwargs)
