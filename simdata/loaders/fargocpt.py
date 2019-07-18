@@ -43,9 +43,40 @@ vars2d = {
 
     }
 
-vars1d = {
-    "mass" : ""
-    }
+alias_fields = {
+    "mass density"          : "dens"
+    ,"velocity radial"      : "vrad"
+    ,"velocity azimuthal"   : "vazimuth"
+    ,"total energy density" : "energy"
+}
+
+
+alias_reduced ={
+    "output time step"        : "analysis time step"
+    ,"simulation time"        : "physical time"
+    ,"mass"                   : "mass"
+    ,"angular momentum"       : "angular momentum"
+    ,"total energy"           : "total energy"
+    ,"internal energy"        : "internal energy"
+    ,"kinetic energy"         : "kinetic energy"
+    ,"eccentricity"           : "eccentricity"
+    ,"periastron"             : "periastron"
+    ,"mass flow inner"        : ""
+    ,"mass flow outer"        : ""
+    ,"mass flow wavedamping"  : ""
+    ,"mass flow densityfloor" : ""
+}
+
+alias_particle = {
+    "output time step"  : "time step"
+    ,"simulation time"  : "physical time"
+    ,"position"         : "position"
+    ,"velocity"         : "velocity"
+    ,"mass"             : "mass"
+    ,"angular momentum" : "angular momentum"
+    ,"eccentricity"     : "eccentricity"
+    ,"semi-major axis"  : "semi-major axis"
+}
 
 def var_in_files(varpattern, files):
     p = re.compile(varpattern.replace(".", "\.").format("\d+"))
@@ -111,6 +142,12 @@ class Loader(interface.Interface):
         self.get_vectors()
         self.get_nbodysystems()
         self.get_nbody_planet_variables()
+        self.register_alias()
+
+    def register_alias(self):
+        self.particlegroups["planets"].alias.register_dict(alias_particle)
+        self.fluids["gas"].alias.register_dict(alias_fields)
+        self.fluids["gas"].alias.register_dict(alias_reduced)
 
     def get_nbodysystems(self):
         planet_ids = []
