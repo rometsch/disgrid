@@ -27,6 +27,9 @@ class TestFargocptLoader(unittest.TestCase):
     def test_has_gasdens(self):
         self.d.fluids["gas"].get("field", "dens", 0)
 
+    def test_get_fluid(self):
+        self.d.get_fluid("gas")
+
     def test_units(self):
         self.assertEqual( self.d.loader.units['length'] , 7.7790892764000000e+13*u.cm)
         self.assertEqual( self.d.loader.units['mass'] , 1.9889199999999999e+33*u.g)

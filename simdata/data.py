@@ -23,7 +23,7 @@ class Data:
         self.parameters = self.loader.parameters
         self.meta = self.loader.meta
 
-    def get_fluid(name):
+    def get_fluid(self, name):
         return self.fluids[name]
 
 
