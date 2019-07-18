@@ -2,6 +2,12 @@ import os
 import sys
 import importlib
 
+class UnknownCodeError(Exception):
+    pass
+
+class MultipleCodeError(Exception):
+    pass
+
 # functions required for a valid loader module
 required_functions = ["identify"]
 
@@ -23,7 +29,7 @@ for name in os.listdir(os.path.dirname(os.path.abspath(__file__))):
         except ImportError:
             print("Warning: module '{}' couldn't be imported".format(module_name), file = sys.stderr)
             raise
-        
+
 def identify_code(path):
     code_list = []
     for key, mod in available.items():
@@ -49,5 +55,3 @@ def get_loader(path, loader, **kwargs):
         code = identify_code(path)
         loader = available[code].Loader(path, **kwargs)
     return code, loader
-
-

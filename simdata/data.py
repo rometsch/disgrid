@@ -3,12 +3,6 @@ import importlib
 import sys
 import os
 
-class UnknownCodeError(Exception):
-    pass
-
-class MultipleCodeError(Exception):
-    pass
-
 # import all loaders
 from . import loaders
 
@@ -26,6 +20,3 @@ class Data:
 
     def get_fluid(self, name):
         return self.fluids[name]
-
-
-    
