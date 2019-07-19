@@ -13,6 +13,7 @@ from .. import particles
 
 def identify(path):
     try:
+        get_data_dir(path)
         return True
     except FileNotFoundError:
         return False
