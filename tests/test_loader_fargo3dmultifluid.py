@@ -2,6 +2,7 @@ import unittest
 from simdata import data
 from simdata.loaders import fargo3dmultifluid
 import astropy.units as u
+import astropy.constants as const
 import numpy as np
 
 code_sample_path = "samples/fargo3dmultifluid"
@@ -18,13 +19,13 @@ class TestFargo3DMultifluidLoader(unittest.TestCase):
         self.assertTrue( fargo3dmultifluid.identify(code_sample_path) )
 
     def test_units(self):
-        self.assertEqual( self.d.loader.units['length'] , 5.2*u.au)
-        self.assertEqual( self.d.loader.units['mass'] , 1.0*u.solMass)
-        self.assertEqual( self.d.loader.units['time'] ,  5.2**1.5*u.yr/(2*np.pi))
+        self.assertEqual( self.d.loader.units['length'], 5.2 * 1.49597871e13 * u.cm)
+        self.assertEqual( self.d.loader.units['mass'] , 1.9891e+33 * u.g)
+        self.assertEqual( self.d.loader.units['time'],  np.sqrt((5.2 * 1.49597871e13)**3 * u.cm**3 / (const.G.cgs * 1.9891e+33 * u.g)).to(u.s))
 
     def test_data_dir(self):
         self.assertEqual( self.d.loader.data_dir, code_sample_path + "/outputs" )
-        
+
     def test_has_gas(self):
         self.assertTrue("gas" in self.d.fluids)
 

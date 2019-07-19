@@ -4,6 +4,7 @@ import os
 import re
 import numpy as np
 import astropy.units as u
+import astropy.constants as const
 from . import interface
 from .. import fluid
 from .. import field
@@ -171,7 +172,7 @@ class Loader(interface.Interface):
         for vardict in [self.planet_vars_scalar, self.field_vars_2d]:
             for var, info in vardict.items():
                 info["unit"] = get_unit_from_powers(info["unitpowers"], self.units)
-        
+
     def register_alias(self):
         for particlegroup in self.particlegroups:
             particlegroup.alias.register_dict(alias_particle)
@@ -468,19 +469,54 @@ def loadUnits(dataDir):
                           "length" : u.cm,
                           "temperature" : u.K }
                 return units
+
+        # Try to extract unit normalisation from summary
+        units = {}
+        units["mass"] = 1.0
+        units["time"] = 1.0
+        units["length"] = 1.0
+
+        with open(first_summary, 'r') as infile:
+            ptrn = "(?<=R0 = \()\d+.\d+"
+            m = re.search( ptrn, infile.read() )
+            if m:
+                units["length"] *= float(m.group()[0])
+
+        with open(first_summary, 'r') as infile:
+            ptrn = "(?<=MSTAR = \()\d+.\d+"
+            m = re.search( ptrn, infile.read() )
+            if m:
+                units["mass"] *= float(m.group()[0])
+
+        with open(first_summary, 'r') as infile:
+            ptrn = r"STEFANK =.*\*pow\(\(\d+\.\d+\)\/\((\d+\.\d*\*\d+\.\d*\w+\d*)\),-0\.5"
+            m = re.search( ptrn, infile.read() )
+            if m:
+                components = m.group(1).split('*')
+                units["length"] *= float(components[0]) * float(components[1]) * u.cm
+
+        with open(first_summary, 'r') as infile:
+            ptrn = r"STEFANK =.*\*pow\(\(\d+\.\d*\)\/(\d+\.\d*\w+\d*),-1\.5\)\*"
+            m = re.search( ptrn, infile.read() )
+            if m:
+                components = m.group(1).split('*')
+                units["mass"] *= float(m.group(1)) * u.g
+
+        units["time"] = (np.sqrt(units["length"]**3 / (const.G.cgs * units["mass"]))).to(u.s)
+
+    return units
     # now try units file
-    try:
-        units = {l[0] : float(l[1])*u.Unit(l[2]) for l in
-                 [l.split() for l in open(os.path.join(dataDir,'units.dat'),'r')
-                  if l.split()[0] != '#' and len(l.split())==3]}
-        ### fix temperature unit
-        units['temperature'] = 1*u.K
-    except FileNotFoundError:
+    # try:
+    #     units = {l[0] : float(l[1])*u.Unit(l[2]) for l in
+    #              [l.split() for l in open(os.path.join(dataDir,'units.dat'),'r')
+    #               if l.split()[0] != '#' and len(l.split())==3]}
+    #     ### fix temperature unit
+    #     units['temperature'] = 1*u.K
+    # except FileNotFoundError:
         # Fall back to default units
-        units = { 'mass' : u.solMass, 'time' : 5.2**1.5*u.yr/(2*np.pi), 'length' : 5.2*u.au }
+        # units = { 'mass' : u.solMass, 'time' : 5.2**1.5*u.yr/(2*np.pi), 'length' : 5.2*u.au }
         # Fall back to dimensionless units
         #units = { bu : 1 for bu in ['mass', 'time', 'length'] }
-    return units
 
 def loadNcells(dataDir):
     # Nphi, Nr = np.genfromtxt(os.path.join(dataDir, 'dimensions.dat'), usecols=(6,7), dtype=int)
