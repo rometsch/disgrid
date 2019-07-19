@@ -1,0 +1,228 @@
+==============================
+SUMMARY:
+==============================
+SETUP 'hd163296' of FARGO3D Public version 1.3
+Cylindrical mesh of size 32 x 64 x 1 (2048 cells in total)
+2 outputs scheduled
+LONGSUMMARY sticky flag not activated: no source file archive
+2 planets
+
+==============================
+COMPILATION OPTION SECTION:
+==============================
+-DBIGMEM -DGPU -DNFLUIDS=4 -DX -DY -DISOTHERMAL -DCYLINDRICAL -DPOTENTIAL -DALPHAVISCOSITY -DDUSTDIFFUSION -DDRAGFORCE -DCONSTANTPARTICLESIZE -DSTOCKHOLM -DBLOCK_X=16 -DBLOCK_Y=16 -DBLOCK_Z=1
+Ghost layer sizes: NGHX=0	NGHY=3	NGHZ=0
+
+==============================
+RUNTIME GENERAL SECTION:
+==============================
+Current Working Directory is 
+Command line: ./fargo3d setups/hd163296/hd163296.par 
+Parameter file: setups/hd163296/hd163296.par
+Run on 1 process
+Hosts:
+   Rank 0 on cpt-endor (device 0)
+
+==============================
+OUTPUT SPECIFIC SECTION:
+==============================
+OUTPUT 1 at simulation time 6.28319 (2019-7-18 21:39:47)
+
+==============================
+PREPROCESSOR MACROS SECTION:
+==============================
+R0 = (1.0) = 1
+R_MU = (1.0) = 1
+MU0 = (1.0) = 1
+MSTAR = (1.0) = 1
+G = (1.0) = 1
+STEFANK = (5.6705e-5*pow((1.0)/36149835.0,4.0)*pow((1.0)/6.674e-8,-2.5)*pow((1.0)/1.9891e33,-1.5)*pow((1.0)/(5.2*1.49597871e13),-0.5)) = 29895.8
+C0 = (2.99792458e10*sqrt((1.0)/6.674e-8*(1.0)/1.9891e33/(1.0)*(5.2*1.49597871e13))) = 22949
+TCMB = (2.73*((1.0)*(1.0)/(1.0)/(1.0))/(6.674e-8*1.9891e33/(5.2*1.49597871e13)/36149835.0)) = 5.78302e-05
+THRESHOLD_STELLAR_MASS = 0.05*(1.0) = 0.05
+
+==============================
+PARAMETERS SECTION:
+==============================
+   ALPHA	0.0005
+   AMAX	0.1
+   AMIN	0.001
+   ASPECT	auto
+   ASPECTRATIO	0.05
+   AUTOCOLOR	1
+   BETA	0
+   CFL	0.44
+   CMAP	magma
+   COLORBAR	1
+   COORDINATES	cylindrical
+   CS	1
+   DAMPINGZONE	1.15
+   DT	0.62831853072
+   DUSTFEEDBACK	1
+   ECCENTRICITY	0
+   EPSILON	0.01
+   ETA	0
+   EXCLUDEHILL	0
+   FIELD	gasdens
+   FLARINGINDEX	0
+   FRAME	G
+   FUNCARCHFILE	std/func_arch.cfg
+   GAMMA	1.66666667
+   INCLINATION	0
+   INDIRECTTERM	1
+   KILLINGBCCOLATITUDE	-0.2
+   MASSTAPER	0
+   NINTERM	10
+   NOISE	0
+   NSNAP	0
+   NTOT	20
+   NU	0
+   NX	32
+   NY	64
+   NZ	1
+   OMEGAFRAME	0.0356638027646634
+   OORTA	-0.75
+   ORBITALRADIUS	0
+   OUTPUTDIR	./outputs/hd163296/
+   PERIODICY	0
+   PERIODICZ	0
+   PLANETCONFIG	setups/hd163296/hd163296.cfg
+   PLANETHEATING	0
+   PLANETMASS	0
+   PLOTLINE	field[:,:,0]
+   PLOTLOG	0
+   REALTYPE	float64
+   RELEASEDATE	0
+   RELEASERADIUS	0
+   RESONANCE	0.5
+   RHO_SOLID	3
+   ROCHESMOOTHING	0
+   SEMIMAJORAXIS	0
+   SETUP	hd163296
+   SIGMA0	2.13625829091095e-05
+   SIGMASLOPE	0.5
+   SPACING	Log
+   STOCKHOLMDAMPE	1
+   STOCKHOLMDAMPRHO	1
+   STOCKHOLMDAMPVX	1
+   STOCKHOLMDAMPVY	1
+   STOCKHOLMDAMPVZ	1
+   STOCKHOLMYMAX	0.1
+   STOCKHOLMYMIN	0.02
+   STOCKHOLMZMAX	0.1
+   STOCKHOLMZMIN	0.1
+   TAUDAMP	0.4
+   THICKNESSSMOOTHING	0.6
+   VERTICALDAMPING	0
+   VMAX	1
+   VMIN	0
+   VTK	0
+   WRITEBX	0
+   WRITEBY	0
+   WRITEBZ	0
+   WRITEDENSITY	0
+   WRITEDIVERGENCE	0
+   WRITEENERGY	0
+   WRITEENERGYRAD	1
+   WRITETAU	1
+   WRITEVX	0
+   WRITEVY	0
+   WRITEVZ	0
+   XMAX	3.14159265358979
+   XMIN	-3.14159265358979
+   YMAX	50
+   YMIN	2.5
+   ZMAX	1
+   ZMIN	0
+*** Input file: setups/hd163296/hd163296.par
+#-----------
+Setup           hd163296
+
+### Disk parameters
+
+AspectRatio     0.050000                        Thickness over Radius in the disc
+Sigma0          2.136258290910947e-05       Surface Density at r=1
+SigmaSlope      0.5                         Slope of the surface density
+FlaringIndex    0.0                         Flare of the disk
+Alpha           5.0e-04                        Alpha Viscosity
+
+### Dust parameters
+
+#Invstokes1     10.0    Inverse of the Stokes number for dust1
+amin            0.001
+amax            0.1
+rho_solid       3
+
+Epsilon         0.01    Dust-to-gas mass ratio
+
+DustFeedback    1
+
+### Planet parameters
+
+PlanetConfig        setups/hd163296/hd163296.cfg
+ThicknessSmoothing  0.6
+Eccentricity        0.0
+IndirectTerm        Yes
+
+### Wave Damping
+
+TauDamp          0.4
+StockholmYmin    0.02    
+StockholmYmax    0.1
+StockholmZmin    0.1     # define for consitency with code
+StockholmZmax    0.1     # has no effect but is needed
+
+# toogle which quantities to damp (-1 : off, 1 on)
+StockholmDampRho 1
+StockholmDampE   1
+StockholmDampVx  1
+StockholmDampVy  1
+StockholmDampVz  1
+
+### Mesh parameters
+
+Nx          32        Number of azimuthal zones
+Ny          64         Number of Radial zones
+
+Xmin            -3.14159265358979323844
+Xmax            3.14159265358979323844
+
+Ymin            2.5     Inner radius
+Ymax            50.0    Outer radius
+
+Spacing         Log
+
+### Frame of reference
+
+OmegaFrame      1.0005
+Frame           G
+
+### Output control parameters
+
+DT              0.62831853072  1/100 of orbit at 54 AU
+Ninterm         10             Time steps between outputs
+Ntot            20            Total number of time steps
+
+OutputDir       @outputs/hd163296
+
+#-----------
+
+==============================
+PLANETARY SYSTEM SECTION:
+==============================
+#### (X,Y,Z,VX,VY,VZ,mass)
+#### Planet 0 out of 2
+9.2299955285679	-7.89783403894462e-05	0	1.4084499475606e-06	0.329164669367415	0	6.32313547126483e-05
+#### Planet 1 out of 2
+16.4768277303589	-2.17670875751934	0	0.0321221985622964	0.2431879862976	0	6.32313547126483e-05
+*** Planetary system config file: setups/hd163296/hd163296.cfg
+#-----------
+###########################################################
+#   Planetary system initial configuration
+###########################################################
+
+# Planet Name 	Distance	Mass	        Accretion	Feels Disk	Feels Others
+hd163296b		9.23		6.32313547126483e-05   0.0	  	    NO		    NO
+hd163296c		16.62		6.32313547126483e-05   0.0	  	    NO		    NO
+
+#-----------

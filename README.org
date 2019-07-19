@@ -264,7 +264,7 @@ types of variables
 | timelike    | s    | Time                  | time in simulation                      |       |                    |         |
 |             | s    | RealTime              | time in real world                      |       |                    |         |
 |             | s    | OutputNumber          | number of the full output               |       |                    |         |
-|             | s    | HydroStep             | number of the hydro step                |       |                    |         |
+|             | s    | HydroStepNumber       | number of the hydro step                |       |                    |         |
 |-------------+------+-----------------------+-----------------------------------------+-------+--------------------+---------|
 |-------------+------+-----------------------+-----------------------------------------+-------+--------------------+---------|
 | fluid       | s    | MassDensity           |                                         |       | gasdens            |         |
