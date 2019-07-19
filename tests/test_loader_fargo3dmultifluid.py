@@ -6,7 +6,7 @@ import numpy as np
 
 code_sample_path = "samples/fargo3dmultifluid"
 
-class TestFargocptLoader(unittest.TestCase):
+class TestFargo3DMultifluidLoader(unittest.TestCase):
 
     def setUp(self):
         self.d = data.Data(code_sample_path)
