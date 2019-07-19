@@ -7,7 +7,7 @@ class Field:
         for x, name in zip((data, time), ["data", "time"]):
             if not (isinstance(x, u.Quantity) or isinstance(x, u.Unit)):
                 raise TypeError("{} (type={}) doesn't have a unit".format(name, type(x)))
-        
+
         if not isinstance(grid, Grid):
             raise TypeError("grid is not a valid Grid class (type={})".format(type(grid)))
 

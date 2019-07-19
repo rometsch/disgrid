@@ -2,6 +2,7 @@ code_info = ( "fargo3d", "2.0", "multifluid")
 
 import os
 import re
+import copy
 import numpy as np
 import astropy.units as u
 import astropy.constants as const
@@ -152,7 +153,7 @@ class Loader(interface.Interface):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.data_dir = get_data_dir(self.path)
-        self.output_times = []
+        self.output_times = np.array([])
 
     def scout(self):
         self.get_domain_size()
@@ -168,7 +169,7 @@ class Loader(interface.Interface):
 
     def apply_units(self):
         self.planet_vars_scalar = planet_vars_scalar
-        self.field_vars_2d = field_vars_2d
+        self.field_vars_2d = copy.deepcopy(field_vars_2d)
         for vardict in [self.planet_vars_scalar, self.field_vars_2d]:
             for var, info in vardict.items():
                 info["unit"] = get_unit_from_powers(info["unitpowers"], self.units)
@@ -250,9 +251,10 @@ class Loader(interface.Interface):
         files = os.listdir(self.data_dir)
         for fluidname, fluid in self.fluids.items():
             for varname, info in self.field_vars_2d.items():
-                if var_in_files(info["pattern"].format(fluidname, "{}"), files):
-                    info["pattern"] = info["pattern"].format(fluidname, "{}")
-                    fluid.register_variable(varname, "field", FieldLoader(varname, info, self))
+                info_formatted = copy.deepcopy(info)
+                info_formatted["pattern"] = info_formatted["pattern"].format(fluidname, "{}")
+                if var_in_files(info_formatted["pattern"], files):
+                    fluid.register_variable(varname, "field", FieldLoader(varname, info_formatted, self))
 
     def get_vectors(self):
         gas = self.fluids["gas"]
@@ -268,7 +270,7 @@ class Loader(interface.Interface):
         self.Nphi, self.Nr = loadNcells(self.data_dir)
 
     def get_output_time(self, n):
-        if self.output_times == []:
+        if self.output_times.size == 0:
             self.output_times = loadCoarseOutputTimes(self.data_dir, self.units["time"])
         return self.output_times[n]
 

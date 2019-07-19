@@ -12,34 +12,43 @@ class TestFargo3DMultifluidLoader(unittest.TestCase):
     def setUp(self):
         self.d = data.Data(code_sample_path)
 
-    def test_identify_code_via_data(self):
-        self.assertEqual( self.d.loader.code_info, ( "fargo3d", "2.0", "multifluid") )
+    # def test_identify_code_via_data(self):
+    #     self.assertEqual( self.d.loader.code_info, ( "fargo3d", "2.0", "multifluid") )
 
-    def test_identify_code_directly(self):
-        self.assertTrue( fargo3dmultifluid.identify(code_sample_path) )
+    # def test_identify_code_directly(self):
+    #     self.assertTrue( fargo3dmultifluid.identify(code_sample_path) )
 
-    def test_units(self):
-        self.assertEqual( self.d.loader.units['length'], 5.2 * 1.49597871e13 * u.cm)
-        self.assertEqual( self.d.loader.units['mass'] , 1.9891e+33 * u.g)
-        self.assertEqual( self.d.loader.units['time'],  np.sqrt((5.2 * 1.49597871e13)**3 * u.cm**3 / (const.G.cgs * 1.9891e+33 * u.g)).to(u.s))
+    # def test_units(self):
+    #     self.assertEqual( self.d.loader.units['length'], 5.2 * 1.49597871e13 * u.cm)
+    #     self.assertEqual( self.d.loader.units['mass'] , 1.9891e+33 * u.g)
+    #     self.assertEqual( self.d.loader.units['time'],  np.sqrt((5.2 * 1.49597871e13)**3 * u.cm**3 / (const.G.cgs * 1.9891e+33 * u.g)).to(u.s))
 
-    def test_data_dir(self):
-        self.assertEqual( self.d.loader.data_dir, code_sample_path + "/outputs" )
+    # def test_data_dir(self):
+    #     self.assertEqual( self.d.loader.data_dir, code_sample_path + "/outputs" )
 
-    def test_has_gas(self):
-        self.assertTrue("gas" in self.d.fluids)
+    # def test_has_gas(self):
+    #     self.assertTrue("gas" in self.d.fluids)
 
-    def test_has_gasdens(self):
-        self.d.fluids["gas"].get("field", "mass density", 0)
+    # def test_has_gasdens(self):
+    #     self.d.fluids["gas"].get("field", "mass density", 0)
 
-    # def test_get_fluid(self):
+    # def test_get_fluid_gas(self):
     #     self.d.get_fluid("gas")
 
-    # def test_gasdens(self):
-    #     rho = self.d.fluids["gas"].get("field", "dens", 4)
-    #     self.assertEqual( rho.data.shape , (30,82) )
-    #     self.assertEqual( rho.data[1,1] , 91.20931257059104*u.g/u.cm**2 )
+    # def test_get_fluid_dust(self):
+    #     self.d.get_fluid("dust1")
+    #     self.d.get_fluid("dust2")
+    #     self.d.get_fluid("dust3")
 
+    # def test_gasdens(self):
+    #     rho = self.d.fluids["gas"].get("field", "mass density", 2)
+    #     self.assertEqual( rho.data.shape , (64, 32) )
+    #     self.assertEqual( rho.data[1,1] , 4.285694082764542 * u.g / u.cm**2 )
+
+    def test_dustdens(self):
+        rho = self.d.fluids["dust1"].get("field", "mass density", 2)
+        self.assertEqual( rho.data.shape , (64, 32) )
+        self.assertAlmostEqual( rho.data[1,1].value , 9.190435006078763e-07 )
     # def test_gasvrad(self):
     #     vrad = self.d.fluids["gas"].get("field", "vrad", 3)
     #     self.assertEqual( vrad.data.shape , (31,82) )
