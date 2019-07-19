@@ -1,5 +1,5 @@
 # a loader object orchestrates the loading of data from files
-# it 
+# it
 # it provides a framework for caching data and provides function which return field objects
 class Interface:
     def __init__(self, path):

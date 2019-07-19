@@ -2,6 +2,7 @@ from collections import OrderedDict
 import importlib
 import sys
 import os
+import copy
 
 # import all loaders
 from . import loaders

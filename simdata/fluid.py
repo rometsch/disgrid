@@ -2,11 +2,9 @@ from .alias import Alias
 supported_variable_types = ["field", "vector"]
 
 class Fluid:
-    def __init__(self, name, variable_loaders={"field": {}, "vector": {}}, alias = Alias()):
+    def __init__(self, name, alias = Alias()):
         self.name = name
-        if not all([key in supported_variable_types for key in variable_loaders]):
-            raise ValueError("One of types '{}' not supported".format([key for key in variable_loaders]))
-        self.variable_loaders = variable_loaders
+        self.variable_loaders = {"field": {}, "vector": {}}
         self.alias = alias
 
     def register_variable(self, name, variable_type, loader_function):

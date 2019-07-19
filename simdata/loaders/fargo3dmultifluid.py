@@ -249,12 +249,13 @@ class Loader(interface.Interface):
 
     def get_fields(self):
         files = os.listdir(self.data_dir)
-        for fluidname, fluid in self.fluids.items():
+        for fluidname in self.fluids.keys():
             for varname, info in self.field_vars_2d.items():
                 info_formatted = copy.deepcopy(info)
                 info_formatted["pattern"] = info_formatted["pattern"].format(fluidname, "{}")
                 if var_in_files(info_formatted["pattern"], files):
-                    fluid.register_variable(varname, "field", FieldLoader(varname, info_formatted, self))
+                    fieldLoader = FieldLoader(varname, info_formatted, self)
+                    self.fluids[fluidname].register_variable(varname, "field", fieldLoader)
 
     def get_vectors(self):
         gas = self.fluids["gas"]
@@ -284,7 +285,6 @@ class FieldLoader:
         self.info = info
         self.name = name
 
-
     def __call__(self, n):
         t = self.loader.get_output_time(n)
         f = field.Field(self.load_grid(n), self.load_data(n), t, self.name)
@@ -294,7 +294,6 @@ class FieldLoader:
         unit = self.info["unit"]
         Nr = self.loader.Nr + (1 if "interfaces" in self.info and "r" in self.info["interfaces"] else 0)
         Nphi = self.loader.Nphi + (1 if "interfaces" in self.info and "phi" in self.info["interfaces"] else 0)
-
         rv = np.fromfile(self.loader.data_dir + "/" + self.info["pattern"].format(n)).reshape(Nr, Nphi)*unit
         return rv
 

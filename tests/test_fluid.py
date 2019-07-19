@@ -16,13 +16,13 @@ class TestFluidMethods(unittest.TestCase):
     def test_register_non_callable(self):
         with self.assertRaises(TypeError):
             self.fluid.register_variable("foo", "field", "baz")
-    
+
     def test_register_callable(self):
         self.fluid.register_variable("foo", "field", lambda:"baz")
-    
-    def test_pass_wrong_varialbe_loaders_dict(self):
-        with self.assertRaises(ValueError):
-            fluid.Fluid("test", {"field": {}, "WRONG": {}})
+
+    # def test_pass_wrong_varialbe_loaders_dict(self):
+    #     with self.assertRaises(ValueError):
+    #         fluid.Fluid("test", {"field": {}, "WRONG": {}})
 
 
 
