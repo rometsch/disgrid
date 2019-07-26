@@ -37,6 +37,10 @@ field_vars_2d = {
         "pattern" : "{}vx{}.dat",
         "unitpowers" : {"length" : 1, "time" : -1},
         }
+    ,"grainsize" : {
+        "pattern" : "{}grainsize{}.dat",
+        "unitpowers" : {"length" : 1},
+        }
 
     }
 
