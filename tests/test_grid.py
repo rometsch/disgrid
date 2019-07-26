@@ -48,7 +48,7 @@ class TestCartesianGrid(unittest.TestCase):
         g = grid.CartesianGrid( z_c = xc3, z_d = dx3)
         self.assertTrue( all( g.z_i == [ 0, 2, 5, 10 ]*u.m) )
 
-        
+
 class TestCylindricalGrid(unittest.TestCase):
 
     def test_passing_interfaces_only(self):

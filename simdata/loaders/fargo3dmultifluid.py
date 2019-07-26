@@ -32,12 +32,10 @@ field_vars_2d = {
     ,"vrad" : {
         "pattern" : "{}vy{}.dat",
         "unitpowers" : {"length" : 1, "time" : -1},
-        "interfaces" : ["r"]
         }
     ,"vazimuth" : {
         "pattern" : "{}vx{}.dat",
         "unitpowers" : {"length" : 1, "time" : -1},
-        "interfaces" : ["phi"]
         }
 
     }

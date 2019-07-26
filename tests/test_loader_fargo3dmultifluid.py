@@ -49,15 +49,16 @@ class TestFargo3DMultifluidLoader(unittest.TestCase):
         rho = self.d.fluids["dust1"].get("field", "mass density", 2)
         self.assertEqual( rho.data.shape , (64, 32) )
         self.assertAlmostEqual( rho.data[1,1].value , 9.190435006078763e-07 )
-    # def test_gasvrad(self):
-    #     vrad = self.d.fluids["gas"].get("field", "vrad", 3)
-    #     self.assertEqual( vrad.data.shape , (31,82) )
-    #     self.assertEqual( len(vrad.grid.get_coordinates("r")) , 31 )
-    #     self.assertEqual( vrad.data.shape, (len(vrad.grid.get_coordinates("r")), len(vrad.grid.get_coordinates("phi")) ) )
 
-    # def test_output_time(self):
-    #     energy = self.d.fluids["gas"].get("field", "energy", 5)
-    #     self.assertEqual(energy.time.decompose(), 12.5663706200000007*5.9551995752415031e+07*u.s)
+    def test_gasvrad(self):
+        vrad = self.d.fluids["gas"].get("field", "vrad", 2)
+        self.assertEqual( vrad.data.shape , (64, 32) )
+        self.assertEqual( len(vrad.grid.get_coordinates("r")) , 64 )
+        self.assertEqual( vrad.data.shape, (len(vrad.grid.get_coordinates("r")), len(vrad.grid.get_coordinates("phi")) ) )
+
+    def test_output_time(self):
+        energy = self.d.fluids["gas"].get("field", "energy density", 2)
+        self.assertEqual(energy.time.decompose(), 12.5663706200000007*5.9551995752415031e+07*u.s)
 
     # def test_vector_mass(self):
     #     mass = self.d.fluids["gas"].get("vector", "mass")
