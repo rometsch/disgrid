@@ -41,6 +41,22 @@ field_vars_2d = {
         "pattern" : "{}grainsize{}.dat",
         "unitpowers" : {"length" : 1},
         }
+    ,"grainsize drift" : {
+        "pattern" : "{}grainsize_drift{}.dat",
+        "unitpowers" : {"length" : 1},
+        }
+    ,"grainsize frag" : {
+        "pattern" : "{}grainsize_frag{}.dat",
+        "unitpowers" : {"length" : 1},
+        }
+    ,"grainsize driftfrag" : {
+        "pattern" : "{}grainsize_driftfrag{}.dat",
+        "unitpowers" : {"length" : 1},
+        }
+    ,"grainsize coag" : {
+        "pattern" : "{}grainsize_coag{}.dat",
+        "unitpowers" : {"length" : 1},
+        }
 
     }
 
