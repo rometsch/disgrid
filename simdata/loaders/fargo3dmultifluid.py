@@ -173,6 +173,9 @@ class Loader(interface.Interface):
         self.data_dir = get_data_dir(self.path)
         self.output_times = np.array([])
 
+    def set_data_dir(self, data_dir):
+        self.data_dir = data_dir
+
     def scout(self):
         self.get_domain_size()
         self.get_units()
