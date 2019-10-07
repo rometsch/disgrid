@@ -1,9 +1,9 @@
-# vector quantities and time series
+# scalar quantities and time series
 # data is stored as Ntimes x Ndata
 import numpy as np
 import astropy.units as u
 
-class Vector:
+class Scalar:
 
     def __init__(self, time, data, axes=[], time_dim=0, axes_dim=None, name=""):
         self.time = time

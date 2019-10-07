@@ -1,7 +1,7 @@
 import unittest
 import astropy.units as u
 import numpy as np
-from simdata import vector
+from simdata import scalar
 
 class TestDataMethods(unittest.TestCase):
     def setUp(self):
@@ -10,13 +10,13 @@ class TestDataMethods(unittest.TestCase):
         self.d = np.random.rand(10)*u.cm
         name = 'distance'
         axes = ['x']
-        self.v = vector.Vector(self.t, self.d, name=name, axes=axes)
+        self.v = scalar.Scalar(self.t, self.d, name=name, axes=axes)
 
     def test_no_unit(self):
         with self.assertRaises(TypeError):
-            vector.Vector([0,1], [1,2]*u.s)
+            scalar.Scalar([0,1], [1,2]*u.s)
         with self.assertRaises(TypeError):
-            vector.Vector([0,1]*u.s, [1,2])
+            scalar.Scalar([0,1]*u.s, [1,2])
 
     def test_get_ind_list(self):
         self.assertTrue( all( self.v.get([2,4,7]) == self.d[[2,4,7]]))

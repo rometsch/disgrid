@@ -60,19 +60,19 @@ class TestFargo3DMultifluidLoader(unittest.TestCase):
         energy = self.d.fluids["gas"].get("2d", "energy density", 2)
         self.assertTrue( np.abs(energy.time.decompose() - 12.5663706200000007*5.9551995752415031e+07*u.s) < 1e-3*energy.time.decompose())
 
-    # def test_vector_mass(self):
-    #     mass = self.d.fluids["gas"].get("vector", "mass")
+    # def test_scalar_mass(self):
+    #     mass = self.d.fluids["gas"].get("scalar", "mass")
     #     self.assertEqual(mass.data[2].decompose(), 7.8098717547161137e-03*1.9889199999999999e+33*u.g)
     #     self.assertEqual(mass.time[2].decompose(), 1.2566370620000000e-01*5.9551995752415031e+07*u.s)
 
-    # def test_multidim_vector(self):
-    #     ekin = self.d.fluids["gas"].get("vector", "kinetic energy")
+    # def test_multidim_scalar(self):
+    #     ekin = self.d.fluids["gas"].get("scalar", "kinetic energy")
     #     self.assertEqual( ekin.get(5).shape, (2,))
     #     self.assertEqual( ekin.get(5)[0],  ekin.get(5, axis="r") )
     #     self.assertEqual( ekin.get(5)[1],  ekin.get(5, axis="phi") )
 
-    # def test_vector_time(self):
-    #     ekin = self.d.fluids["gas"].get("vector", "kinetic energy")
+    # def test_scalar_time(self):
+    #     ekin = self.d.fluids["gas"].get("scalary", "kinetic energy")
     #     t, v = ekin.get(slice(2,4), return_time=True)
     #     self.assertTrue( all(t.decompose() == [1.2566370620000000e-01*5.9551995752415031e+07, 1.8849555930000000e-01*5.9551995752415031e+07]*u.s) )
 

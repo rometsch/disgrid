@@ -10,7 +10,7 @@ class TestFluidMethods(unittest.TestCase):
             self.fluid.register_variable("foo", "bar_type", lambda:"baz")
 
     def test_register_correct_type(self):
-        self.fluid.register_variable("foo", "vector", lambda:"baz")
+        self.fluid.register_variable("foo", "scalar", lambda:"baz")
         self.fluid.register_variable("foo", "2d", lambda:"baz")
 
     def test_register_non_callable(self):

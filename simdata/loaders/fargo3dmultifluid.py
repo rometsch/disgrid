@@ -10,7 +10,7 @@ from . import interface
 from .. import fluid
 from .. import field
 from .. import grid
-from .. import vector
+from .. import scalar
 from .. import particles
 
 def identify(path):
@@ -254,7 +254,7 @@ class Loader(interface.Interface):
         self.apply_units()
         self.get_fluids()
         self.get_fields()
-        #self.get_vectors()
+        #self.get_scalars()
         self.get_planets()
         self.get_nbodysystems()
         self.register_alias()
@@ -293,7 +293,7 @@ class Loader(interface.Interface):
         # add variables to planets
         for pid, planet in zip(planet_ids, self.planets):
             for varname in planet_vars_scalar:
-                planet.register_variable( varname, VectorLoader( varname, {"datafile" : os.path.join(self.data_dir, "bigplanet{}.dat".format(pid))}, self) )
+                planet.register_variable( varname, ScalarLoader( varname, {"datafile" : os.path.join(self.data_dir, "bigplanet{}.dat".format(pid))}, self) )
 
     def get_fluids(self):
         ptrn = re.compile("output(.*)\.dat")
@@ -315,15 +315,15 @@ class Loader(interface.Interface):
                     fieldLoader = FieldLoader(varname, info_formatted, self)
                     self.fluids[fluidname].register_variable(varname, "2d", fieldLoader)
 
-    def get_vectors(self):
+    def get_scalars(self):
         gas = self.fluids["gas"]
         datafile = os.path.join(self.data_dir, "Quantities.dat")
         variables = load_text_data_variables(datafile)
         for varname, (column, unitstr) in variables.items():
-            gas.register_variable(varname, "vector", VectorLoader(varname, {"datafile" : datafile }, self))
-        # add multi axis vectors
+            gas.register_variable(varname, "scalar", ScalarLoader(varname, {"datafile" : datafile }, self))
+        # add multi axis scalars
         if all([v in variables for v in ["radial kinetic energy", "azimuthal kinetic energy"]]):
-            gas.register_variable("kinetic energy", "vector", VectorLoader(varname, {"datafile" : datafile, "axes" : { "r" : "radial kinetic energy", "phi" : "azimuthal kinetic energy" } }, self))
+            gas.register_variable("kinetic energy", "scalar", ScalarLoader(varname, {"datafile" : datafile, "axes" : { "r" : "radial kinetic energy", "phi" : "azimuthal kinetic energy" } }, self))
 
     def get_domain_size(self):
         self.Nphi, self.Nr = loadNcells(self.data_dir)
@@ -362,7 +362,7 @@ class FieldLoader:
         g = grid.PolarGrid(r_i = r_i, phi_i = phi_i, active_interfaces=active_interfaces)
         return g
 
-class VectorLoader:
+class ScalarLoader:
 
     def __init__(self, name, info, loader, *args, **kwargs):
         self.loader = loader
@@ -379,7 +379,7 @@ class VectorLoader:
         else:
             time_dim = 0
             axes_dim = None
-        f = vector.Vector(time, data, name=self.name, axes=axes, time_dim=time_dim, axes_dim=axes_dim )
+        f = scalar.Scalar(time, data, name=self.name, axes=axes, time_dim=time_dim, axes_dim=axes_dim )
         return f
 
     def load_data(self):
@@ -392,7 +392,7 @@ class VectorLoader:
                     unit = d.unit
                 else:
                     if unit != d.unit:
-                        raise ValueError("Units of multiaxis vector don't match")
+                        raise ValueError("Units of multiaxis scalar don't match")
                 rv.append(d)
             rv = np.array(rv).transpose()*unit
         else:

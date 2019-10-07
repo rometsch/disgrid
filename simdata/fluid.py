@@ -1,5 +1,5 @@
 from .alias import Alias
-supported_geometries= ["3d", "2d", "1d", "vector"]
+supported_geometries= ["3d", "2d", "1d", "scalar"]
 
 class Fluid:
     def __init__(self, name, alias = Alias()):
@@ -20,7 +20,7 @@ class Fluid:
 
     def get(self, geometry, name, num_output=None, *args, **kwargs):
         name = self.alias(name)
-        if geometry == "vector":
+        if geometry == "scalar":
             return self.variable_loaders[geometry][name](*args, **kwargs)
         elif geometry in supported_geometries:
             if num_output is None:

@@ -5,7 +5,7 @@ class Interface:
     def __init__(self, path):
         self.path = path
         self.fluids = {}
-        self.vectors = {}
+        self.scalar = {}
         self.particlegroups = {}
         self.planets = {}
         self.parameters = {}

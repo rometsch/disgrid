@@ -8,7 +8,7 @@ from . import interface
 from .. import fluid
 from .. import field
 from .. import grid
-from .. import vector
+from .. import scalar
 from .. import particles
 
 def identify(path):
@@ -138,7 +138,7 @@ class Loader(interface.Interface):
         self.get_fluids()
         self.get_nbodysystems()
         self.get_fields()
-        self.get_vectors()
+        self.get_scalars()
         self.get_planets()
         self.get_nbodysystems()
         self.register_alias()
@@ -179,15 +179,15 @@ class Loader(interface.Interface):
         for pid, planet in zip(planet_ids, self.planets):
             planet_variables = load_text_data_variables(os.path.join(self.data_dir,"bigplanet{}.dat".format(pid)))
             for varname in planet_variables:
-                planet.register_variable( varname, VectorLoader( varname, {"datafile" : os.path.join(self.data_dir, "bigplanet{}.dat".format(pid))}, self) )
+                planet.register_variable( varname, ScalarLoader( varname, {"datafile" : os.path.join(self.data_dir, "bigplanet{}.dat".format(pid))}, self) )
                 # register position
             if all([s in planet_variables for s in ["x", "y"]]):
-                planet.register_variable( "position", VectorLoader( "position",
+                planet.register_variable( "position", ScalarLoader( "position",
                                                                     {"datafile" : os.path.join(self.data_dir, "bigplanet{}.dat".format(pid)),
                                                                      "axes" : { "x" : "x", "y" : "y" }}, self) )
             # register velocities
             if all([s in planet_variables for s in ["vx", "vy"]]):
-                planet.register_variable( "velocity", VectorLoader( "velocity",
+                planet.register_variable( "velocity", ScalarLoader( "velocity",
                                                                     {"datafile" : os.path.join(self.data_dir, "bigplanet{}.dat".format(pid)),
                                                                      "axes" : { "x" : "vx", "y" : "vy" }}, self) )
 
@@ -196,15 +196,15 @@ class Loader(interface.Interface):
         # add all variables defined above in this file to each planet
         planet_variables = load_text_data_variables(os.path.join(self.data_dir,"bigplanet1.dat"))
         for varname in planet_variables:
-            self.particlegroups["planets"].register_variable( varname, PlanetVectorLoader( varname, {"datafile_pattern" : os.path.join(self.data_dir, "bigplanet{}.dat")}, self) )
+            self.particlegroups["planets"].register_variable( varname, PlanetScalarLoader( varname, {"datafile_pattern" : os.path.join(self.data_dir, "bigplanet{}.dat")}, self) )
         # register position
         if all([s in planet_variables for s in ["x", "y"]]):
-            self.particlegroups["planets"].register_variable( "position", PlanetVectorLoader( "position",
+            self.particlegroups["planets"].register_variable( "position", PlanetScalarLoader( "position",
                                     {"datafile_pattern" : os.path.join(self.data_dir, "bigplanet{}.dat"),
                                      "axes" : { "x" : "x", "y" : "y" }}, self) )
         # register velocities
         if all([s in planet_variables for s in ["vx", "vy"]]):
-            self.particlegroups["planets"].register_variable( "velocity", PlanetVectorLoader( "velocity",
+            self.particlegroups["planets"].register_variable( "velocity", PlanetScalarLoader( "velocity",
                                     {"datafile_pattern" : os.path.join(self.data_dir, "bigplanet{}.dat"),
                                      "axes" : { "x" : "vx", "y" : "vy" }}, self) )
 
@@ -221,15 +221,15 @@ class Loader(interface.Interface):
             if var_in_files(info["pattern"], files):
                 gas.register_variable(varname, "2d", FieldLoader(varname, info, self))
 
-    def get_vectors(self):
+    def get_scalars(self):
         gas = self.fluids["gas"]
         datafile = os.path.join(self.data_dir, "Quantities.dat")
         variables = load_text_data_variables(datafile)
         for varname, (column, unitstr) in variables.items():
-            gas.register_variable(varname, "vector", VectorLoader(varname, {"datafile" : datafile }, self))
-        # add multi axis vectors
+            gas.register_variable(varname, "scalar", ScalarLoader(varname, {"datafile" : datafile }, self))
+        # add multi axis scalars
         if all([v in variables for v in ["radial kinetic energy", "azimuthal kinetic energy"]]):
-            gas.register_variable("kinetic energy", "vector", VectorLoader(varname, {"datafile" : datafile, "axes" : { "r" : "radial kinetic energy", "phi" : "azimuthal kinetic energy" } }, self))
+            gas.register_variable("kinetic energy", "scalar", ScalarLoader(varname, {"datafile" : datafile, "axes" : { "r" : "radial kinetic energy", "phi" : "azimuthal kinetic energy" } }, self))
 
     def get_domain_size(self):
         self.Nr, self.Nphi = np.genfromtxt(os.path.join(self.data_dir, "dimensions.dat"), usecols=(4,5), dtype=int)
@@ -278,7 +278,7 @@ class FieldLoader:
         g = grid.PolarGrid(r_i = r_i, phi_i = phi_i, active_interfaces=active_interfaces)
         return g
 
-class VectorLoader:
+class ScalarLoader:
 
     def __init__(self, name, info, loader, *args, **kwargs):
         self.loader = loader
@@ -295,7 +295,7 @@ class VectorLoader:
         else:
             time_dim = 0
             axes_dim = None
-        f = vector.Vector(time, data, name=self.name, axes=axes, time_dim=time_dim, axes_dim=axes_dim )
+        f = scalar.Scalar(time, data, name=self.name, axes=axes, time_dim=time_dim, axes_dim=axes_dim )
         return f
 
     def load_data(self):
@@ -308,7 +308,7 @@ class VectorLoader:
                     unit = d.unit
                 else:
                     if unit != d.unit:
-                        raise ValueError("Units of multiaxis vector don't match")
+                        raise ValueError("Units of multiaxis scalar don't match")
                 rv.append(d)
             rv = np.array(rv).transpose()*unit
         else:
@@ -319,7 +319,7 @@ class VectorLoader:
         rv = load_text_data_file(self.info["datafile"], "physical time")
         return rv
 
-class PlanetVectorLoader(VectorLoader):
+class PlanetScalarLoader(ScalarLoader):
 
     def __call__(self, num_output, particle_ids):
         axes = [] if not "axes" in self.info else [key for key in self.info["axes"]]
@@ -339,7 +339,7 @@ class PlanetVectorLoader(VectorLoader):
             else:
                 time_dim = 1
                 axes_dim = 2
-        f = particles.ParticleVector(time, data, name=self.name, axes=axes, time_dim=time_dim, axes_dim=axes_dim )
+        f = particles.ParticleScalar(time, data, name=self.name, axes=axes, time_dim=time_dim, axes_dim=axes_dim )
         return f
 
     def load_time(self, particle_ids):

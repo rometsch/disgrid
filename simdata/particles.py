@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from . import vector
+from . import scalar
 from .alias import Alias
 
 required_data = ["time", "position", "velocity"]
@@ -48,7 +48,7 @@ class Planet(NbodySystem):
         return self.variable_loaders[name]()
 
         
-class ParticleVector(vector.Vector):
+class ParticleScalar(scalar.Scalar):
     pass
     
     # def get(self, ids=None, *args, **kwargs):
