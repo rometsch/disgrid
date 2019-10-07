@@ -59,7 +59,7 @@ alias_reduced = {
     ,"internal energy"        : "internal energy"
     ,"kinetic energy"         : "kinetic energy"
     ,"eccentricity"           : "eccentricity"
-    ,"periastron"             : "periastron"
+    ,"argument of periapsis"  : "periastron"
     ,"mass flow inner"        : ""
     ,"mass flow outer"        : ""
     ,"mass flow wavedamping"  : ""
@@ -181,18 +181,19 @@ class Loader(interface.Interface):
             for varname in planet_variables:
                 planet.register_variable( varname, VectorLoader( varname, {"datafile" : os.path.join(self.data_dir, "bigplanet{}.dat".format(pid))}, self) )
                 # register position
-                if all([s in planet_variables for s in ["x", "y"]]):
-                    planet.register_variable( "position", VectorLoader( "position",
-                                                                              {"datafile" : os.path.join(self.data_dir, "bigplanet{}.dat".format(pid)),
-                                                                               "axes" : { "x" : "x", "y" : "y" }}, self) )
-                # register velocities
-                if all([s in planet_variables for s in ["vx", "vy"]]):
-                    planet.register_variable( "velocity", VectorLoader( "velocity",
-                                                                              {"datafile" : os.path.join(self.data_dir, "bigplanet{}.dat".format(pid)),
-                                                                               "axes" : { "x" : "vx", "y" : "vy" }}, self) )
+            if all([s in planet_variables for s in ["x", "y"]]):
+                planet.register_variable( "position", VectorLoader( "position",
+                                                                    {"datafile" : os.path.join(self.data_dir, "bigplanet{}.dat".format(pid)),
+                                                                     "axes" : { "x" : "x", "y" : "y" }}, self) )
+            # register velocities
+            if all([s in planet_variables for s in ["vx", "vy"]]):
+                planet.register_variable( "velocity", VectorLoader( "velocity",
+                                                                    {"datafile" : os.path.join(self.data_dir, "bigplanet{}.dat".format(pid)),
+                                                                     "axes" : { "x" : "vx", "y" : "vy" }}, self) )
 
 
     def get_nbody_planet_variables(self):
+        # add all variables defined above in this file to each planet
         planet_variables = load_text_data_variables(os.path.join(self.data_dir,"bigplanet1.dat"))
         for varname in planet_variables:
             self.particlegroups["planets"].register_variable( varname, PlanetVectorLoader( varname, {"datafile_pattern" : os.path.join(self.data_dir, "bigplanet{}.dat")}, self) )
@@ -211,11 +212,14 @@ class Loader(interface.Interface):
         self.fluids["gas"] = fluid.Fluid("gas")
 
     def get_fields(self):
+        self.get_fields_2d()
+
+    def get_fields_2d(self):
         gas = self.fluids["gas"]
         files = os.listdir(self.data_dir)
         for varname, info in vars2d.items():
             if var_in_files(info["pattern"], files):
-                gas.register_variable(varname, "field", FieldLoader(varname, info, self))
+                gas.register_variable(varname, "2d", FieldLoader(varname, info, self))
 
     def get_vectors(self):
         gas = self.fluids["gas"]

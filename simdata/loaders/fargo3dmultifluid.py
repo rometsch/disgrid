@@ -61,36 +61,108 @@ field_vars_2d = {
     }
 
 planet_vars_scalar = {
-    'semi-major axis' : {
-        'file' : 'orbit{}.dat',
-        'offset' : -1,
-        'datacol' : 2,
-        'timecol' : 0,
-        'unitpowers' : {'length' : 1} },
-    'eccentricity' : {
-        'file' : 'orbit{}.dat',
-        'offset' : -1,
-        'datacol' : 1,
-        'timecol' : 0,
-        'unitpowers' : {} },
     'x' : {
         'file' : 'bigplanet{}.dat',
-        'offset' : -1,
         'datacol' : 1,
         'timecol' : 8,
         'unitpowers' : {'length' : 1} },
     'y' : {
         'file' : 'bigplanet{}.dat',
-        'offset' : -1,
         'datacol' : 2,
         'timecol' : 8,
         'unitpowers' : {'length' : 1} },
+    'z' : {
+        'file' : 'bigplanet{}.dat',
+        'datacol' : 3,
+        'timecol' : 8,
+        'unitpowers' : {'length' : 1} },
+    'vx' : {
+        'file' : 'bigplanet{}.dat',
+        'datacol' : 4,
+        'timecol' : 8,
+        'unitpowers' : {'length' : 1, "time" : -1 } },
+    'vy' : {
+        'file' : 'bigplanet{}.dat',
+        'datacol' : 5,
+        'timecol' : 8,
+        'unitpowers' : {'length' : 1, "time" : -1 } },
+    'vz' : {
+        'file' : 'bigplanet{}.dat',
+        'datacol' : 6,
+        'timecol' : 8,
+        'unitpowers' : {'length' : 1, "time" : -1 } },
     'mass' : {
         'file' : 'bigplanet{}.dat',
-        'offset' : -1,
         'datacol' : 7,
         'timecol' : 8,
-        'unitpowers' : {'mass' : 1} }
+        'unitpowers' : {'mass' : 1} },
+    'mass' : {
+        'file' : 'bigplanet{}.dat',
+        'datacol' : 9,
+        'timecol' : 8,
+        'unitpowers' : {'time' : -1} },
+    'time step' : {
+        'file' : 'bigplanet{}.dat',
+        'datacol' : 0,
+        'timecol' : 8,
+        'unitpowers' : {} },
+    'physical time' : {
+        'file' : 'bigplanet{}.dat',
+        'datacol' : 8,
+        'timecol' : 8,
+        'unitpowers' : {"time" : 1} },
+    ########################################
+    ### orbital elements
+    'physical time orbit' : {
+        'file' : 'orbit{}.dat',
+        'datacol' : 0,
+        'timecol' : 0,
+        'unitpowers' : {"time" : 1} },
+    'eccentricity' : {
+        'file' : 'orbit{}.dat',
+        'datacol' : 1,
+        'timecol' : 0,
+        'unitpowers' : {} },
+    'semi-major axis' : {
+        'file' : 'orbit{}.dat',
+        'datacol' : 2,
+        'timecol' : 0,
+        'unitpowers' : {"length" : 1} },
+    'mean anomaly' : {
+        'file' : 'orbit{}.dat',
+        'datacol' : 3,
+        'timecol' : 0,
+        'unitpowers' : {} },
+    'true anomaly' : {
+        'file' : 'orbit{}.dat',
+        'datacol' : 4,
+        'timecol' : 0,
+        'unitpowers' : {} },
+    'argument of periapsis' : {
+        'file' : 'orbit{}.dat',
+        'datacol' : 5,
+        'timecol' : 0,
+        'unitpowers' : {} },
+    'x-axis rotation angle' : {
+        'file' : 'orbit{}.dat',
+        'datacol' : 6,
+        'timecol' : 0,
+        'unitpowers' : {} },
+    'inclination' : {
+        'file' : 'orbit{}.dat',
+        'datacol' : 7,
+        'timecol' : 0,
+        'unitpowers' : {} },
+    'ascending node' : {
+        'file' : 'orbit{}.dat',
+        'datacol' : 8,
+        'timecol' : 0,
+        'unitpowers' : {} },
+    'longitude of periapsis' : {
+        'file' : 'orbit{}.dat',
+        'datacol' : 9,
+        'timecol' : 0,
+        'unitpowers' : {} },
 }
 
 alias_fields = {
@@ -116,14 +188,14 @@ alias_reduced = {
 }
 
 alias_particle = {
-    "output time step"  : "time step"
-    ,"simulation time"  : "physical time"
-    ,"position"         : "position"
-    ,"velocity"         : "velocity"
-    ,"mass"             : "mass"
-    ,"angular momentum" : "angular momentum"
-    ,"eccentricity"     : "eccentricity"
-    ,"semi-major axis"  : "semi-major axis"
+    "output time step"       : "time step"
+    ,"simulation time"       : "physical time"
+    ,"argument of periapsis" : "argument of periapsis"
+    ,"velocity"              : "velocity"
+    ,"mass"                  : "mass"
+    ,"angular momentum"      : "angular momentum"
+    ,"eccentricity"          : "eccentricity"
+    ,"semi-major axis"       : "semi-major axis"
 }
 
 def var_in_files(varpattern, files):
@@ -182,10 +254,9 @@ class Loader(interface.Interface):
         self.apply_units()
         self.get_fluids()
         self.get_fields()
-        #self.get_nbodysystems()
         #self.get_vectors()
-        #self.get_planets()
-        #self.get_nbodysystems()
+        self.get_planets()
+        self.get_nbodysystems()
         self.register_alias()
 
     def apply_units(self):
@@ -205,17 +276,7 @@ class Loader(interface.Interface):
             fluid.alias.register_dict(alias_reduced)
 
     def get_nbodysystems(self):
-        planet_ids = []
-        p = re.compile("bigplanet(\d).dat")
-        for s in os.listdir(self.data_dir):
-            m = re.match(p, s)
-            if m:
-                planet_ids.append(m.groups()[0])
-        planet_ids.sort()
-        self.particlegroups["planets"] = particles.NbodySystem("planets")
-        self.particlegroups["planets"].register_particles(sorted(planet_ids))
-
-        self.get_nbody_planet_variables()
+        pass
 
     def get_planets(self):
         planet_ids = []
@@ -231,35 +292,8 @@ class Loader(interface.Interface):
             self.planets.append(particles.Planet(str(pid), pid))
         # add variables to planets
         for pid, planet in zip(planet_ids, self.planets):
-            planet_variables = load_text_data_variables(os.path.join(self.data_dir,"bigplanet{}.dat".format(pid)))
-            for varname in planet_variables:
+            for varname in planet_vars_scalar:
                 planet.register_variable( varname, VectorLoader( varname, {"datafile" : os.path.join(self.data_dir, "bigplanet{}.dat".format(pid))}, self) )
-                # register position
-                if all([s in planet_variables for s in ["x", "y"]]):
-                    planet.register_variable( "position", VectorLoader( "position",
-                                                                              {"datafile" : os.path.join(self.data_dir, "bigplanet{}.dat".format(pid)),
-                                                                               "axes" : { "x" : "x", "y" : "y" }}, self) )
-                # register velocities
-                if all([s in planet_variables for s in ["vx", "vy"]]):
-                    planet.register_variable( "velocity", VectorLoader( "velocity",
-                                                                              {"datafile" : os.path.join(self.data_dir, "bigplanet{}.dat".format(pid)),
-                                                                               "axes" : { "x" : "vx", "y" : "vy" }}, self) )
-
-
-    def get_nbody_planet_variables(self):
-        planet_variables = load_text_data_variables(os.path.join(self.data_dir,"bigplanet1.dat"))
-        for varname in planet_variables:
-            self.particlegroups["planets"].register_variable( varname, PlanetVectorLoader( varname, {"datafile_pattern" : os.path.join(self.data_dir, "bigplanet{}.dat")}, self) )
-        # register position
-        if all([s in planet_variables for s in ["x", "y"]]):
-            self.particlegroups["planets"].register_variable( "position", PlanetVectorLoader( "position",
-                                    {"datafile_pattern" : os.path.join(self.data_dir, "bigplanet{}.dat"),
-                                     "axes" : { "x" : "x", "y" : "y" }}, self) )
-        # register velocities
-        if all([s in planet_variables for s in ["vx", "vy"]]):
-            self.particlegroups["planets"].register_variable( "velocity", PlanetVectorLoader( "velocity",
-                                    {"datafile_pattern" : os.path.join(self.data_dir, "bigplanet{}.dat"),
-                                     "axes" : { "x" : "vx", "y" : "vy" }}, self) )
 
     def get_fluids(self):
         ptrn = re.compile("output(.*)\.dat")
@@ -269,6 +303,9 @@ class Loader(interface.Interface):
             self.fluids[name] = fluid.Fluid(name)
 
     def get_fields(self):
+        self.get_fields_2d()
+
+    def get_fields_2d(self):
         files = os.listdir(self.data_dir)
         for fluidname in self.fluids.keys():
             for varname, info in self.field_vars_2d.items():
@@ -276,7 +313,7 @@ class Loader(interface.Interface):
                 info_formatted["pattern"] = info_formatted["pattern"].format(fluidname, "{}")
                 if var_in_files(info_formatted["pattern"], files):
                     fieldLoader = FieldLoader(varname, info_formatted, self)
-                    self.fluids[fluidname].register_variable(varname, "field", fieldLoader)
+                    self.fluids[fluidname].register_variable(varname, "2d", fieldLoader)
 
     def get_vectors(self):
         gas = self.fluids["gas"]
@@ -359,53 +396,17 @@ class VectorLoader:
                 rv.append(d)
             rv = np.array(rv).transpose()*unit
         else:
-            rv = load_text_data_file(self.info["datafile"], self.name)
+            rv = load_text_data_file(self.info["datafile"], self.name, self.loader.units)
         return rv
 
     def load_time(self):
-        rv = load_text_data_file(self.info["datafile"], "physical time")
-        return rv
-
-class PlanetVectorLoader(VectorLoader):
-
-    def __call__(self, num_output, particle_ids):
-        axes = [] if not "axes" in self.info else [key for key in self.info["axes"]]
-        time = self.load_time(particle_ids)
-        data = self.load_data_multiple(particle_ids)
-        if len(particle_ids) == 1:
-            time_dim = 0
-            data = data[0]
-            if data.ndim == 1:
-                axes_dim = None
-            else:
-                axes_dim = 1
+        # dirty hack to handle bigplanet{}.dat vs orbit{}.dat
+        if self.info["datafile"].split("/")[-1][:5] == "orbit":
+            time_name = "physical time orbit"
         else:
-            if data.ndim == 2:
-                time_dim = 1
-                axes_dim = None
-            else:
-                time_dim = 1
-                axes_dim = 2
-        f = particles.ParticleVector(time, data, name=self.name, axes=axes, time_dim=time_dim, axes_dim=axes_dim )
-        return f
-
-    def load_time(self, particle_ids):
-        rv = load_text_data_file(self.info["datafile_pattern"].format(particle_ids[0]), "physical time")
+            time_name = "physical time"
+        rv = load_text_data_file(self.info["datafile"], time_name, self.loader.units)
         return rv
-
-    def load_data_multiple(self, particle_ids):
-        data = []
-        unit = None
-        for pid in particle_ids:
-            self.info["datafile"] = self.info["datafile_pattern"].format(pid)
-            d = self.load_data()
-            if unit is None:
-                unit = d.unit
-            data.append(d.value)
-
-        data = np.array(data)
-        data = data*unit
-        return data
 
 
 def loadCoarseOutputTimes(dataDir, unit):
@@ -580,3 +581,12 @@ def load2d(n, dataFilePattern, Nr, Nphi, unit):
     rv = np.fromfile(dataFilePattern.format(n)).reshape(Nr, Nphi)*unit
     return rv
 
+
+def load_text_data_file(filepath, varname, units):
+    # get info
+    info = planet_vars_scalar[varname]
+    col = info["datacol"]
+    # get data
+    unit = get_unit_from_powers(info["unitpowers"], units)
+    data = np.genfromtxt(filepath, usecols=int(col))*unit
+    return data

@@ -30,7 +30,7 @@ class TestFargo3DMultifluidLoader(unittest.TestCase):
         self.assertTrue("gas" in self.d.fluids)
 
     def test_has_gasdens(self):
-        self.d.fluids["gas"].get("field", "mass density", 0)
+        self.d.fluids["gas"].get("2d", "mass density", 0)
 
     def test_get_fluid_gas(self):
         self.d.get_fluid("gas")
@@ -41,23 +41,23 @@ class TestFargo3DMultifluidLoader(unittest.TestCase):
         self.d.get_fluid("dust3")
 
     def test_gasdens(self):
-        rho = self.d.fluids["gas"].get("field", "mass density", 2)
+        rho = self.d.fluids["gas"].get("2d", "mass density", 2)
         self.assertEqual( rho.data.shape , (64, 32) )
         self.assertEqual( rho.data[1,1] , 4.285694082764542 * u.g / u.cm**2 )
 
     def test_dustdens(self):
-        rho = self.d.fluids["dust1"].get("field", "mass density", 2)
+        rho = self.d.fluids["dust1"].get("2d", "mass density", 2)
         self.assertEqual( rho.data.shape , (64, 32) )
         self.assertAlmostEqual( rho.data[1,1].value , 9.190435006078763e-07 )
 
     def test_gasvrad(self):
-        vrad = self.d.fluids["gas"].get("field", "vrad", 2)
+        vrad = self.d.fluids["gas"].get("2d", "vrad", 2)
         self.assertEqual( vrad.data.shape , (64, 32) )
         self.assertEqual( len(vrad.grid.get_coordinates("r")) , 64 )
         self.assertEqual( vrad.data.shape, (len(vrad.grid.get_coordinates("r")), len(vrad.grid.get_coordinates("phi")) ) )
 
     def test_output_time(self):
-        energy = self.d.fluids["gas"].get("field", "energy density", 2)
+        energy = self.d.fluids["gas"].get("2d", "energy density", 2)
         self.assertTrue( np.abs(energy.time.decompose() - 12.5663706200000007*5.9551995752415031e+07*u.s) < 1e-3*energy.time.decompose())
 
     # def test_vector_mass(self):
@@ -99,10 +99,10 @@ class TestFargo3DMultifluidLoader(unittest.TestCase):
     #     self.assertEqual( vel.data.shape, (2,201,2))
     #     self.assertTrue( all (vel[:,1,0].decompose() == np.array([0.000306735295912537458, 0.0718294173695262217])*1.3062684429152035e+06*u.cm/u.s ))
 
-    # def test_planet(self):
-    #     x = self.d.planets[0].get("x")
-    #     #self.assertEqual( x , None)
-    #     self.assertEqual( x[1].decompose(), 0.600009762159255167*7.7790892764000000e+13*u.cm)
+    def test_planet(self):
+        x = self.d.planets[0].get("x")
+        #self.assertEqual( x , None)
+        self.assertTrue( close(x[1].decompose(), 9.22999995481561974* 5.2 * 1.49597871e13 * u.cm ))
 
     # def test_planet_multi_axes(self):
     #     pos = self.d.planets[0].get("position")
@@ -110,5 +110,8 @@ class TestFargo3DMultifluidLoader(unittest.TestCase):
     #     self.assertEqual( pos[1,0].decompose(), 0.600009762159255167*7.7790892764000000e+13*u.cm )
 
 
+def close(x,y):
+    return np.abs(x-y)<np.abs(1e-5*x)
+    
 if __name__ == '__main__':
     unittest.main()

@@ -25,7 +25,7 @@ class TestFargocptLoader(unittest.TestCase):
         self.assertEqual( self.d.loader.data_dir, code_sample_path + "/outputs" )
 
     def test_has_gasdens(self):
-        self.d.fluids["gas"].get("field", "dens", 0)
+        self.d.fluids["gas"].get("2d", "dens", 0)
 
     def test_get_fluid(self):
         self.d.get_fluid("gas")
@@ -36,18 +36,18 @@ class TestFargocptLoader(unittest.TestCase):
         self.assertEqual( self.d.loader.units['time'] , 5.9551995752415031e+07*u.s)
 
     def test_gasdens(self):
-        rho = self.d.fluids["gas"].get("field", "dens", 4)
+        rho = self.d.fluids["gas"].get("2d", "dens", 4)
         self.assertEqual( rho.data.shape , (30,82) )
         self.assertEqual( rho.data[1,1] , 91.20931257059104*u.g/u.cm**2 )
 
     def test_gasvrad(self):
-        vrad = self.d.fluids["gas"].get("field", "vrad", 3)
+        vrad = self.d.fluids["gas"].get("2d", "vrad", 3)
         self.assertEqual( vrad.data.shape , (31,82) )
         self.assertEqual( len(vrad.grid.get_coordinates("r")) , 31 )
         self.assertEqual( vrad.data.shape, (len(vrad.grid.get_coordinates("r")), len(vrad.grid.get_coordinates("phi")) ) )
 
     def test_output_time(self):
-        energy = self.d.fluids["gas"].get("field", "energy", 5)
+        energy = self.d.fluids["gas"].get("2d", "energy", 5)
         self.assertEqual(energy.time.decompose(), 12.5663706200000007*5.9551995752415031e+07*u.s)
 
     def test_vector_mass(self):
