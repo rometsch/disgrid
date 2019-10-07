@@ -186,7 +186,7 @@ class Loader(interface.Interface):
         #self.get_vectors()
         #self.get_planets()
         #self.get_nbodysystems()
-        #self.register_alias()
+        self.register_alias()
 
     def apply_units(self):
         self.planet_vars_scalar = planet_vars_scalar
@@ -200,7 +200,7 @@ class Loader(interface.Interface):
             particlegroup.alias.register_dict(alias_particle)
         for planet in self.planets:
             planet.alias.register_dict(alias_particle)
-        for fluid in self.fluids:
+        for name, fluid in self.fluids.items():
             fluid.alias.register_dict(alias_fields)
             fluid.alias.register_dict(alias_reduced)
 
