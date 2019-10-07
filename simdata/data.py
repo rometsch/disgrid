@@ -15,7 +15,6 @@ class Data:
             self.loader.set_data_dir(data_dir)
         self.loader.scout()
         self.fluids = self.loader.fluids
-        self.vectors = self.loader.vectors
         self.particlegroups = self.loader.particlegroups
         self.planets = self.loader.planets
         self.parameters = self.loader.parameters
