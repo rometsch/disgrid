@@ -20,7 +20,7 @@ def identify(path):
     except FileNotFoundError:
         return False
 
-field_vars_2d = {
+vars_2d = {
     "mass density" : {
         "pattern" : "{}dens{}.dat",
         "unitpowers" : {"mass" : 1, "length" : -2}
@@ -59,6 +59,40 @@ field_vars_2d = {
         }
 
     }
+
+vars_scalar = {
+    'mass' : {
+        'file' : 'mass.dat',
+        'datacol' : 1,
+        'timecol' : 0,
+        'unitpowers' : {"mass" : 1} },
+    'angular momentum' : {
+        'file' : 'momx.dat',
+        'datacol' : 1,
+        'timecol' : 0,
+        'unitpowers' : {"mass" : 1, "length" : 2, "time" : -1} },
+    'kinetic energy azimuthal' : {
+        'file' : 'ekinx.dat',
+        'datacol' : 1,
+        'timecol' : 0,
+        'unitpowers' : {"mass" : 1, "length" : 2, "time" : -2} },
+    'kinetic energy radial' : {
+        'file' : 'ekiny.dat',
+        'datacol' : 1,
+        'timecol' : 0,
+        'unitpowers' : {"mass" : 1, "length" : 2, "time" : -2} },
+    'kinetic energy vertical' : {
+        'file' : 'ekinz.dat',
+        'datacol' : 1,
+        'timecol' : 0,
+        'unitpowers' : {"mass" : 1, "length" : 2, "time" : -2} },
+    'torque planet {}' : {
+        'file' : 'torq_planet_{}.dat',
+        'for each planet' : True,
+        'datacol' : 1,
+        'timecol' : 0,
+        'unitpowers' : {"mass" : 1, "length" : 2, "time" : -2} },
+}
 
 planet_vars_scalar = {
     'x' : {
@@ -254,15 +288,14 @@ class Loader(interface.Interface):
         self.apply_units()
         self.get_fluids()
         self.get_fields()
-        #self.get_scalars()
         self.get_planets()
+        self.get_scalars()
         self.get_nbodysystems()
         self.register_alias()
 
     def apply_units(self):
         self.planet_vars_scalar = planet_vars_scalar
-        self.field_vars_2d = copy.deepcopy(field_vars_2d)
-        for vardict in [self.planet_vars_scalar, self.field_vars_2d]:
+        for vardict in [self.planet_vars_scalar, vars_2d]:
             for var, info in vardict.items():
                 info["unit"] = get_unit_from_powers(info["unitpowers"], self.units)
 
@@ -293,7 +326,7 @@ class Loader(interface.Interface):
         # add variables to planets
         for pid, planet in zip(planet_ids, self.planets):
             for varname in planet_vars_scalar:
-                planet.register_variable( varname, ScalarLoader( varname, {"datafile" : os.path.join(self.data_dir, "bigplanet{}.dat".format(pid))}, self) )
+                planet.register_variable( varname, ScalarLoader( varname, os.path.join(self.data_dir, "bigplanet{}.dat".format(pid)), planet_vars_scalar[varname], self) )
 
     def get_fluids(self):
         ptrn = re.compile("output(.*)\.dat")
@@ -308,22 +341,27 @@ class Loader(interface.Interface):
     def get_fields_2d(self):
         files = os.listdir(self.data_dir)
         for fluidname in self.fluids.keys():
-            for varname, info in self.field_vars_2d.items():
+            for varname, info in vars_2d.items():
                 info_formatted = copy.deepcopy(info)
                 info_formatted["pattern"] = info_formatted["pattern"].format(fluidname, "{}")
                 if var_in_files(info_formatted["pattern"], files):
                     fieldLoader = FieldLoader(varname, info_formatted, self)
                     self.fluids[fluidname].register_variable(varname, "2d", fieldLoader)
 
+
     def get_scalars(self):
-        gas = self.fluids["gas"]
-        datafile = os.path.join(self.data_dir, "Quantities.dat")
-        variables = load_text_data_variables(datafile)
-        for varname, (column, unitstr) in variables.items():
-            gas.register_variable(varname, "scalar", ScalarLoader(varname, {"datafile" : datafile }, self))
-        # add multi axis scalars
-        if all([v in variables for v in ["radial kinetic energy", "azimuthal kinetic energy"]]):
-            gas.register_variable("kinetic energy", "scalar", ScalarLoader(varname, {"datafile" : datafile, "axes" : { "r" : "radial kinetic energy", "phi" : "azimuthal kinetic energy" } }, self))
+        for fluid_name in self.fluids:
+            fl = self.fluids[fluid_name]
+            monitor_dir = os.path.join(self.data_dir, "monitor", fluid_name)
+            monitor_files = os.listdir(monitor_dir)
+            for name_pattern, info in vars_scalar.items():
+                for n in range(len(self.planets)):
+                    datafile = os.path.join(monitor_dir, info["file"].format(n))
+                    varname = name_pattern.format(n)
+                    if os.path.exists(datafile):
+                        fl.register_variable(varname, "scalar", ScalarLoader(varname, datafile, info, self))
+                    if not "for each planet" in info:
+                        break
 
     def get_domain_size(self):
         self.Nphi, self.Nr = loadNcells(self.data_dir)
@@ -364,10 +402,12 @@ class FieldLoader:
 
 class ScalarLoader:
 
-    def __init__(self, name, info, loader, *args, **kwargs):
+    def __init__(self, name, datafile, info, loader, *args, **kwargs):
         self.loader = loader
+        self.datafile = datafile
         self.info = info
         self.name = name
+        self.units = loader.units
 
     def __call__(self):
         axes = [] if not "axes" in self.info else [key for key in self.info["axes"]]
@@ -383,29 +423,15 @@ class ScalarLoader:
         return f
 
     def load_data(self):
-        if "axes" in self.info:
-            rv = []
-            unit = None
-            for ax, varname in self.info["axes"].items():
-                d = load_text_data_file(self.info["datafile"], varname)
-                if unit is None:
-                    unit = d.unit
-                else:
-                    if unit != d.unit:
-                        raise ValueError("Units of multiaxis scalar don't match")
-                rv.append(d)
-            rv = np.array(rv).transpose()*unit
-        else:
-            rv = load_text_data_file(self.info["datafile"], self.name, self.loader.units)
+        col = self.info["datacol"]
+        unit = get_unit_from_powers(self.info["unitpowers"], self.units)
+        rv = np.genfromtxt(self.datafile, usecols=int(col))*unit
         return rv
 
     def load_time(self):
-        # dirty hack to handle bigplanet{}.dat vs orbit{}.dat
-        if self.info["datafile"].split("/")[-1][:5] == "orbit":
-            time_name = "physical time orbit"
-        else:
-            time_name = "physical time"
-        rv = load_text_data_file(self.info["datafile"], time_name, self.loader.units)
+        col = self.info["timecol"]
+        unit = self.units["time"]
+        rv = np.genfromtxt(self.datafile, usecols=int(col))*unit
         return rv
 
 
@@ -580,13 +606,3 @@ def load2d(n, dataFilePattern, Nr, Nphi, unit):
     # Load 2d data an reshape it
     rv = np.fromfile(dataFilePattern.format(n)).reshape(Nr, Nphi)*unit
     return rv
-
-
-def load_text_data_file(filepath, varname, units):
-    # get info
-    info = planet_vars_scalar[varname]
-    col = info["datacol"]
-    # get data
-    unit = get_unit_from_powers(info["unitpowers"], units)
-    data = np.genfromtxt(filepath, usecols=int(col))*unit
-    return data

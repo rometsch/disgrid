@@ -60,11 +60,20 @@ class TestFargo3DMultifluidLoader(unittest.TestCase):
         energy = self.d.fluids["gas"].get("2d", "energy density", 2)
         self.assertTrue( np.abs(energy.time.decompose() - 12.5663706200000007*5.9551995752415031e+07*u.s) < 1e-3*energy.time.decompose())
 
-    # def test_scalar_mass(self):
-    #     mass = self.d.fluids["gas"].get("scalar", "mass")
-    #     self.assertEqual(mass.data[2].decompose(), 7.8098717547161137e-03*1.9889199999999999e+33*u.g)
-    #     self.assertEqual(mass.time[2].decompose(), 1.2566370620000000e-01*5.9551995752415031e+07*u.s)
+    def test_scalar_mass(self):
+        mass = self.d.fluids["gas"].get("scalar", "mass")
+        self.assertEqual(mass.data[2].decompose(), 0.0312841565937*1.9891e+33 * u.g)
+        self.assertEqual(mass.time[2].decompose(), 1.88495559216*np.sqrt((5.2 * 1.49597871e13)**3 * u.cm**3 / (const.G.cgs * 1.9891e+33 * u.g)).to(u.s))
 
+    def test_scalar_torque_planet_1(self):
+        torq = self.d.fluids["dust1"].get("scalar", "torque planet 1")
+        T = np.sqrt((5.2 * 1.49597871e13)**3 * u.cm**3 / (const.G.cgs * 1.9891e+33 * u.g)).to(u.s)
+        L = 5.2 * 1.49597871e13 * u.cm
+        M = 1.9891e+33 * u.g
+        self.assertTrue(close(torq.data[3].decompose().cgs, -8.46861771884e-11*M*L**2/T**2))
+        self.assertTrue(close(torq.time[3].decompose().cgs, 2.51327412288*T))
+
+        
     # def test_multidim_scalar(self):
     #     ekin = self.d.fluids["gas"].get("scalar", "kinetic energy")
     #     self.assertEqual( ekin.get(5).shape, (2,))
