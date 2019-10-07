@@ -4,9 +4,10 @@ from .grid import Grid
 
 class Field:
     def __init__(self, grid, data, time, name):
-        for x, name in zip((data, time), ["data", "time"]):
+        # ensure data and time have astropy unit
+        for x, n in zip((data, time), ["data", "time"]):
             if not (isinstance(x, u.Quantity) or isinstance(x, u.Unit)):
-                raise TypeError("{} (type={}) doesn't have a unit".format(name, type(x)))
+                raise TypeError("{} (type={}) doesn't have a unit".format(n, type(x)))
 
         if not isinstance(grid, Grid):
             raise TypeError("grid is not a valid Grid class (type={})".format(type(grid)))
@@ -21,6 +22,9 @@ class Field:
 
     def get_data(self):
         return self.data
+
+    def get_name(self):
+        return self.name
 
     def get_time(self):
         return self.time
