@@ -266,7 +266,7 @@ class FieldLoader:
             for baseunit, power in self.info["unitpowers"].items():
                 unit = unit*units[baseunit]**power
         Nr = self.loader.Nr + (1 if "interfaces" in self.info and "r" in self.info["interfaces"] else 0)
-        Nphi = self.loader.Nphi + (1 if "interfaces" in self.info and "phi" in self.info["interfaces"] else 0)
+        Nphi = self.loader.Nphi #+ (1 if "interfaces" in self.info and "phi" in self.info["interfaces"] else 0)
 
         rv = np.fromfile(self.loader.data_dir + "/" + self.info["pattern"].format(n)).reshape(Nr, Nphi)*unit
         return rv
