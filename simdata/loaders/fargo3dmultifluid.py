@@ -32,10 +32,17 @@ vars_2d = {
     ,"vrad" : {
         "pattern" : "{}vy{}.dat",
         "unitpowers" : {"length" : 1, "time" : -1},
+        "interfaces" : ["r"],
         }
     ,"vazimuth" : {
         "pattern" : "{}vx{}.dat",
         "unitpowers" : {"length" : 1, "time" : -1},
+        "interfaces" : ["phi"],
+        }
+    ,"vpolar" : {
+        "pattern" : "{}vz{}.dat",
+        "unitpowers" : {"length" : 1, "time" : -1},
+        "interfaces" : ["theta"],
         }
     ,"grainsize" : {
         "pattern" : "{}grainsize{}.dat",
@@ -57,8 +64,19 @@ vars_2d = {
         "pattern" : "{}grainsize_coag{}.dat",
         "unitpowers" : {"length" : 1},
         }
-
     }
+
+vars_1d = {
+    'torque planet {}' : {
+        'pattern' : 'torq_1d_Y_raw_planet_{}.dat',
+        'for each planet' : True,
+        'directions' : ["r"],
+        'unitpowers' : {"mass" : 1, "length" : 2, "time" : -2} },
+    'velocity radial' : {
+        'pattern' : 'torq_1d_Y_raw_planet_{}.dat',
+        'directions' : ["r"],
+        'unitpowers' : {"mass" : 1, "length" : 2, "time" : -2} },
+}
 
 vars_scalar = {
     'mass' : {
@@ -286,16 +304,15 @@ class Loader(interface.Interface):
         self.get_domain_size()
         self.get_units()
         self.apply_units()
+        self.get_planets()
         self.get_fluids()
         self.get_fields()
-        self.get_planets()
         self.get_scalars()
         self.get_nbodysystems()
         self.register_alias()
 
     def apply_units(self):
-        self.planet_vars_scalar = planet_vars_scalar
-        for vardict in [self.planet_vars_scalar, vars_2d]:
+        for vardict in [planet_vars_scalar, vars_2d, vars_1d, vars_scalar]:
             for var, info in vardict.items():
                 info["unit"] = get_unit_from_powers(info["unitpowers"], self.units)
 
@@ -337,6 +354,7 @@ class Loader(interface.Interface):
 
     def get_fields(self):
         self.get_fields_2d()
+        self.get_fields_1d()
 
     def get_fields_2d(self):
         files = os.listdir(self.data_dir)
@@ -345,9 +363,26 @@ class Loader(interface.Interface):
                 info_formatted = copy.deepcopy(info)
                 info_formatted["pattern"] = info_formatted["pattern"].format(fluidname, "{}")
                 if var_in_files(info_formatted["pattern"], files):
-                    fieldLoader = FieldLoader(varname, info_formatted, self)
+                    fieldLoader = FieldLoader2d(varname, info_formatted, self)
                     self.fluids[fluidname].register_variable(varname, "2d", fieldLoader)
 
+    def get_fields_1d(self):
+        for fluid_name in self.fluids:
+            fl = self.fluids[fluid_name]
+            monitor_dir = os.path.join(self.data_dir, "monitor", fluid_name)
+            monitor_files = os.listdir(monitor_dir)
+            for name_pattern, info in vars_1d.items():
+                for n in range(len(self.planets)):
+                    datafile = os.path.join(monitor_dir, info["pattern"].format(n))
+                    varname = name_pattern.format(n)
+                    if os.path.exists(datafile):
+                        info_formatted = copy.deepcopy(info)
+                        info_formatted["pattern"] = info_formatted["pattern"].format(fluid_name, "{}")
+                        info_formatted["datafile"] = datafile
+                        fieldLoader = FieldLoader1d(varname, info_formatted, self)
+                        fl.register_variable(varname, "1d", fieldLoader)
+                    if not "for each planet" in info or not info["for each planet"]:
+                        break
 
     def get_scalars(self):
         for fluid_name in self.fluids:
@@ -360,7 +395,7 @@ class Loader(interface.Interface):
                     varname = name_pattern.format(n)
                     if os.path.exists(datafile):
                         fl.register_variable(varname, "scalar", ScalarLoader(varname, datafile, info, self))
-                    if not "for each planet" in info:
+                    if not "for each planet" in info or not info["for each planet"]:
                         break
 
     def get_domain_size(self):
@@ -387,17 +422,59 @@ class FieldLoader:
         return f
 
     def load_data(self, n):
+        raise NotImplementedError("This is a virtual method. Please use a FieldLoader{}d for the specific geometry")
+
+    def load_grid(self, n):
+        raise NotImplementedError("This is a virtual method. Please use a FieldLoader{}d for the specific geometry")
+
+class FieldLoader2d(FieldLoader):
+
+    def load_data(self, n):
         unit = self.info["unit"]
-        Nr = self.loader.Nr + (1 if "interfaces" in self.info and "r" in self.info["interfaces"] else 0)
-        Nphi = self.loader.Nphi + (1 if "interfaces" in self.info and "phi" in self.info["interfaces"] else 0)
+        Nr = self.loader.Nr #+ (1 if "interfaces" in self.info and "r" in self.info["interfaces"] else 0)
+        Nphi = self.loader.Nphi #+ (1 if "interfaces" in self.info and "phi" in self.info["interfaces"] else 0)
         rv = np.fromfile(self.loader.data_dir + "/" + self.info["pattern"].format(n)).reshape(Nr, Nphi)*unit
         return rv
 
     def load_grid(self, n):
         r_i = np.genfromtxt(self.loader.data_dir + "/domain_y.dat")[3:-3]*self.loader.units["length"]
+        # account for Fargo3d not writing out last radial interface
+        if "interfaces" in self.info and "r" in self.info["interfaces"]:
+            r_i = r_i[:-1]
         phi_i = np.genfromtxt(self.loader.data_dir + "/domain_x.dat")*u.Unit(1)
         active_interfaces = self.info["interfaces"] if "interfaces" in self.info else []
         g = grid.PolarGrid(r_i = r_i, phi_i = phi_i, active_interfaces=active_interfaces)
+        return g
+
+class FieldLoader1d(FieldLoader):
+
+    def load_data(self, n):
+        unit = self.info["unit"]
+        Nr = self.loader.Nr #+ (1 if "interfaces" in self.info and "r" in self.info["interfaces"] else 0)
+        Nphi = self.loader.Nphi #+ (1 if "interfaces" in self.info and "phi" in self.info["interfaces"] else 0)
+        if self.info["directions"] == ["r"]:
+            N = Nr
+        elif self.info["directions"] == ["phi"]:
+            N = Nphi
+        else:
+            raise ValueError("Trying to construct 1d field but direction is not given. Info = '{}'".format(self.info))
+        datafile = self.info["datafile"]
+        rv = np.fromfile(datafile, count=N, offset=n*N*8)*unit
+        return rv
+
+    def load_grid(self, n):
+        r_i = np.genfromtxt(self.loader.data_dir + "/domain_y.dat")[3:-3]*self.loader.units["length"]
+        # account for Fargo3d not writing out last radial interface
+        if "interfaces" in self.info and "r" in self.info["interfaces"]:
+            r_i = r_i[:-1]
+        phi_i = np.genfromtxt(self.loader.data_dir + "/domain_x.dat")*u.Unit(1)
+        active_interfaces = self.info["interfaces"] if "interfaces" in self.info else []
+        kwargs = {}
+        for d in ["r", "phi"]:
+            if d in self.info["directions"]:
+                kwargs[d + "_i"] = locals()[d+"_i"]
+        kwargs["active_interfaces"] = active_interfaces
+        g = grid.PolarGrid(**kwargs)
         return g
 
 class ScalarLoader:
@@ -424,7 +501,7 @@ class ScalarLoader:
 
     def load_data(self):
         col = self.info["datacol"]
-        unit = get_unit_from_powers(self.info["unitpowers"], self.units)
+        unit = self.info["unit"]
         rv = np.genfromtxt(self.datafile, usecols=int(col))*unit
         return rv
 

@@ -73,6 +73,13 @@ class TestFargo3DMultifluidLoader(unittest.TestCase):
         self.assertTrue(close(torq.data[3].decompose().cgs, -8.46861771884e-11*M*L**2/T**2))
         self.assertTrue(close(torq.time[3].decompose().cgs, 2.51327412288*T))
 
+    def test_1d_torque_planet_1(self):
+        torq = self.d.fluids["dust2"].get("1d", "torque planet 1", 1)
+        T = np.sqrt((5.2 * 1.49597871e13)**3 * u.cm**3 / (const.G.cgs * 1.9891e+33 * u.g)).to(u.s)
+        L = 5.2 * 1.49597871e13 * u.cm
+        M = 1.9891e+33 * u.g
+        self.assertTrue(close(torq.data[15].decompose().cgs, -8.30347786497707e-19*M*L**2/T**2))
+
         
     # def test_multidim_scalar(self):
     #     ekin = self.d.fluids["gas"].get("scalar", "kinetic energy")
