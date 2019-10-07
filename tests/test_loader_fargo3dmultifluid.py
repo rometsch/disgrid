@@ -58,7 +58,7 @@ class TestFargo3DMultifluidLoader(unittest.TestCase):
 
     def test_output_time(self):
         energy = self.d.fluids["gas"].get("field", "energy density", 2)
-        self.assertEqual(energy.time.decompose(), 12.5663706200000007*5.9551995752415031e+07*u.s)
+        self.assertTrue( np.abs(energy.time.decompose() - 12.5663706200000007*5.9551995752415031e+07*u.s) < 1e-3*energy.time.decompose())
 
     # def test_vector_mass(self):
     #     mass = self.d.fluids["gas"].get("vector", "mass")
