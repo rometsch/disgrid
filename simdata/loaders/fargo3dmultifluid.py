@@ -357,7 +357,9 @@ class Loader(interface.Interface):
         # add variables to planets
         for pid, planet in zip(planet_ids, self.planets):
             for varname in planet_vars_scalar:
-                planet.register_variable( varname, ScalarLoader( varname, os.path.join(self.data_dir, "bigplanet{}.dat".format(pid)), planet_vars_scalar[varname], self) )
+                datafile = os.path.join(self.data_dir, "bigplanet{}.dat".format(pid))
+                loader = ScalarLoader( varname, datafile, planet_vars_scalar[varname], self)
+                planet.register_variable( varname, loader )
 
     def get_fluids(self):
         ptrn = re.compile("output(.*)\.dat")
@@ -497,16 +499,9 @@ class ScalarLoader:
         self.units = loader.units
 
     def __call__(self):
-        axes = [] if not "axes" in self.info else [key for key in self.info["axes"]]
         time = self.load_time()
         data = self.load_data()
-        if len(data.shape) == 2:
-            time_dim = 0
-            axes_dim = 1
-        else:
-            time_dim = 0
-            axes_dim = None
-        f = scalar.Scalar(time, data, name=self.name, axes=axes, time_dim=time_dim, axes_dim=axes_dim )
+        f = scalar.Scalar(time, data, name=self.name )
         return f
 
     def load_data(self):
