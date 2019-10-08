@@ -9,8 +9,7 @@ class TestDataMethods(unittest.TestCase):
         np.random.seed(0)
         self.d = np.random.rand(10)*u.cm
         name = 'distance'
-        axes = ['x']
-        self.v = scalar.Scalar(self.t, self.d, name=name, axes=axes)
+        self.v = scalar.Scalar(self.t, self.d, name=name)
 
     def test_no_unit(self):
         with self.assertRaises(TypeError):
@@ -20,11 +19,6 @@ class TestDataMethods(unittest.TestCase):
 
     def test_get_ind_list(self):
         self.assertTrue( all( self.v.get([2,4,7]) == self.d[[2,4,7]]))
-
-    def test_get_low_up(self):
-        self.assertTrue( all( self.v.get(low=2, up=7) == self.d[2:7]))
-        self.assertTrue( all( self.v.get(up=7) == self.d[:7]))
-        self.assertTrue( all( self.v.get(low=7) == self.d[7:]))
 
     def test_get_range(self):
         self.assertTrue( all( self.v.get(range(2,8)) == self.d[2:8]))

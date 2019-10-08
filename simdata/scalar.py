@@ -5,12 +5,10 @@ import astropy.units as u
 
 class Scalar:
 
-    def __init__(self, time, data, axes=[], time_dim=0, name=""):
+    def __init__(self, time, data, name=""):
         self.time = time
         self.data = data
         self.name = name
-        self.axes_dim = axes_dim
-        self.time_dim = time_dim
         for v in [time, data]:
             if not isinstance(v, u.Quantity):
                 raise TypeError("'{}' is a physical value but not an astropy quantity!".format(v))
@@ -35,7 +33,7 @@ class Scalar:
                 raise TypeError("'{}' does not have a unit!".format(t))
         inds = np.logical_and( tmin <= self.time, tmax >= self.time)
         key = np.arange(len(inds))[inds]
-        return self.get(key)
+        return self.get(key, **kwargs)
 
     def get_time_closest(self, t, **kwargs):
         if not isinstance(t, u.Quantity):
