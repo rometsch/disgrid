@@ -51,19 +51,21 @@ alias_fields = {
 }
 
 alias_reduced = {
-    "output time step"        : "analysis time step"
-    ,"simulation time"        : "physical time"
-    ,"mass"                   : "mass"
-    ,"angular momentum"       : "angular momentum"
-    ,"total energy"           : "total energy"
-    ,"internal energy"        : "internal energy"
-    ,"kinetic energy"         : "kinetic energy"
-    ,"eccentricity"           : "eccentricity"
-    ,"argument of periapsis"  : "periastron"
-    ,"mass flow inner"        : ""
-    ,"mass flow outer"        : ""
-    ,"mass flow wavedamping"  : ""
-    ,"mass flow densityfloor" : ""
+    "output time step"           : "analysis time step"
+    ,"simulation time"           : "physical time"
+    ,"mass"                      : "mass"
+    ,"angular momentum"          : "angular momentum"
+    ,"total energy"              : "total energy"
+    ,"internal energy"           : "internal energy"
+    ,"kinetic energy"            : "kinematic energy"
+    ,"kinetic energy radial"     : "radial kinetic energy"
+    ,"kinetic energy azimuthal"  : "azimuthal kinetic energy"
+    ,"eccentricity"              : "eccentricity"
+    ,"argument of periapsis"     : "periastron"
+    ,"mass flow inner"           : ""
+    ,"mass flow outer"           : ""
+    ,"mass flow wavedamping"     : ""
+    ,"mass flow densityfloor"    : ""
 }
 
 alias_particle = {
@@ -144,24 +146,13 @@ class Loader(interface.Interface):
         self.register_alias()
 
     def register_alias(self):
-        self.particlegroups["planets"].alias.register_dict(alias_particle)
         for planet in self.planets:
             planet.alias.register_dict(alias_particle)
         self.fluids["gas"].alias.register_dict(alias_fields)
         self.fluids["gas"].alias.register_dict(alias_reduced)
 
     def get_nbodysystems(self):
-        planet_ids = []
-        p = re.compile("bigplanet(\d).dat")
-        for s in os.listdir(self.data_dir):
-            m = re.match(p, s)
-            if m:
-                planet_ids.append(m.groups()[0])
-        planet_ids.sort()
-        self.particlegroups["planets"] = particles.NbodySystem("planets")
-        self.particlegroups["planets"].register_particles(sorted(planet_ids))
-
-        self.get_nbody_planet_variables()
+        pass
 
     def get_planets(self):
         planet_ids = []
@@ -179,34 +170,10 @@ class Loader(interface.Interface):
         for pid, planet in zip(planet_ids, self.planets):
             planet_variables = load_text_data_variables(os.path.join(self.data_dir,"bigplanet{}.dat".format(pid)))
             for varname in planet_variables:
-                planet.register_variable( varname, ScalarLoader( varname, {"datafile" : os.path.join(self.data_dir, "bigplanet{}.dat".format(pid))}, self) )
-                # register position
-            if all([s in planet_variables for s in ["x", "y"]]):
-                planet.register_variable( "position", ScalarLoader( "position",
-                                                                    {"datafile" : os.path.join(self.data_dir, "bigplanet{}.dat".format(pid)),
-                                                                     "axes" : { "x" : "x", "y" : "y" }}, self) )
-            # register velocities
-            if all([s in planet_variables for s in ["vx", "vy"]]):
-                planet.register_variable( "velocity", ScalarLoader( "velocity",
-                                                                    {"datafile" : os.path.join(self.data_dir, "bigplanet{}.dat".format(pid)),
-                                                                     "axes" : { "x" : "vx", "y" : "vy" }}, self) )
+                datafile =  os.path.join(self.data_dir, "bigplanet{}.dat".format(pid))
+                loader = ScalarLoader( varname, datafile, self)
+                planet.register_variable( varname, loader)
 
-
-    def get_nbody_planet_variables(self):
-        # add all variables defined above in this file to each planet
-        planet_variables = load_text_data_variables(os.path.join(self.data_dir,"bigplanet1.dat"))
-        for varname in planet_variables:
-            self.particlegroups["planets"].register_variable( varname, PlanetScalarLoader( varname, {"datafile_pattern" : os.path.join(self.data_dir, "bigplanet{}.dat")}, self) )
-        # register position
-        if all([s in planet_variables for s in ["x", "y"]]):
-            self.particlegroups["planets"].register_variable( "position", PlanetScalarLoader( "position",
-                                    {"datafile_pattern" : os.path.join(self.data_dir, "bigplanet{}.dat"),
-                                     "axes" : { "x" : "x", "y" : "y" }}, self) )
-        # register velocities
-        if all([s in planet_variables for s in ["vx", "vy"]]):
-            self.particlegroups["planets"].register_variable( "velocity", PlanetScalarLoader( "velocity",
-                                    {"datafile_pattern" : os.path.join(self.data_dir, "bigplanet{}.dat"),
-                                     "axes" : { "x" : "vx", "y" : "vy" }}, self) )
 
     def get_fluids(self):
         self.fluids["gas"] = fluid.Fluid("gas")
@@ -219,17 +186,14 @@ class Loader(interface.Interface):
         files = os.listdir(self.data_dir)
         for varname, info in vars2d.items():
             if var_in_files(info["pattern"], files):
-                gas.register_variable(varname, "2d", FieldLoader(varname, info, self))
+                gas.register_variable(varname, "2d", FieldLoader2d(varname, info, self))
 
     def get_scalars(self):
         gas = self.fluids["gas"]
         datafile = os.path.join(self.data_dir, "Quantities.dat")
         variables = load_text_data_variables(datafile)
         for varname, (column, unitstr) in variables.items():
-            gas.register_variable(varname, "scalar", ScalarLoader(varname, {"datafile" : datafile }, self))
-        # add multi axis scalars
-        if all([v in variables for v in ["radial kinetic energy", "azimuthal kinetic energy"]]):
-            gas.register_variable("kinetic energy", "scalar", ScalarLoader(varname, {"datafile" : datafile, "axes" : { "r" : "radial kinetic energy", "phi" : "azimuthal kinetic energy" } }, self))
+            gas.register_variable(varname, "scalar", ScalarLoader(varname, datafile , self))
 
     def get_domain_size(self):
         self.Nr, self.Nphi = np.genfromtxt(os.path.join(self.data_dir, "dimensions.dat"), usecols=(4,5), dtype=int)
@@ -271,83 +235,21 @@ class FieldLoader2d(interface.FieldLoader):
         return g
 
 class ScalarLoader:
-
-    def __init__(self, name, info, loader, *args, **kwargs):
+    def __init__(self, name, datafile, loader, *args, **kwargs):
         self.loader = loader
-        self.info = info
+        self.datafile = datafile
         self.name = name
 
     def __call__(self):
-        axes = [] if not "axes" in self.info else [key for key in self.info["axes"]]
         time = self.load_time()
         data = self.load_data()
-        if len(data.shape) == 2:
-            time_dim = 0
-            axes_dim = 1
-        else:
-            time_dim = 0
-            axes_dim = None
-        f = scalar.Scalar(time, data, name=self.name, axes=axes, time_dim=time_dim, axes_dim=axes_dim )
+        f = scalar.Scalar(time, data, name=self.name )
         return f
 
     def load_data(self):
-        if "axes" in self.info:
-            rv = []
-            unit = None
-            for ax, varname in self.info["axes"].items():
-                d = load_text_data_file(self.info["datafile"], varname)
-                if unit is None:
-                    unit = d.unit
-                else:
-                    if unit != d.unit:
-                        raise ValueError("Units of multiaxis scalar don't match")
-                rv.append(d)
-            rv = np.array(rv).transpose()*unit
-        else:
-            rv = load_text_data_file(self.info["datafile"], self.name)
+        rv = load_text_data_file(self.datafile, self.name)
         return rv
 
     def load_time(self):
-        rv = load_text_data_file(self.info["datafile"], "physical time")
+        rv = load_text_data_file(self.datafile, "physical time")
         return rv
-
-class PlanetScalarLoader(ScalarLoader):
-
-    def __call__(self, num_output, particle_ids):
-        axes = [] if not "axes" in self.info else [key for key in self.info["axes"]]
-        time = self.load_time(particle_ids)
-        data = self.load_data_multiple(particle_ids)
-        if len(particle_ids) == 1:
-            time_dim = 0
-            data = data[0]
-            if data.ndim == 1:
-                axes_dim = None
-            else:
-                axes_dim = 1
-        else:
-            if data.ndim == 2:
-                time_dim = 1
-                axes_dim = None
-            else:
-                time_dim = 1
-                axes_dim = 2
-        f = particles.ParticleScalar(time, data, name=self.name, axes=axes, time_dim=time_dim, axes_dim=axes_dim )
-        return f
-
-    def load_time(self, particle_ids):
-        rv = load_text_data_file(self.info["datafile_pattern"].format(particle_ids[0]), "physical time")
-        return rv
-
-    def load_data_multiple(self, particle_ids):
-        data = []
-        unit = None
-        for pid in particle_ids:
-            self.info["datafile"] = self.info["datafile_pattern"].format(pid)
-            d = self.load_data()
-            if unit is None:
-                unit = d.unit
-            data.append(d.value)
-
-        data = np.array(data)
-        data = data*unit
-        return data

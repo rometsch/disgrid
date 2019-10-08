@@ -55,49 +55,59 @@ class TestFargocptLoader(unittest.TestCase):
         self.assertEqual(mass.data[2].decompose(), 7.8098717547161137e-03*1.9889199999999999e+33*u.g)
         self.assertEqual(mass.time[2].decompose(), 1.2566370620000000e-01*5.9551995752415031e+07*u.s)
 
-    def test_multidim_scalar(self):
-        ekin = self.d.fluids["gas"].get("scalar", "kinetic energy")
-        self.assertEqual( ekin.get(5).shape, (2,))
-        self.assertEqual( ekin.get(5)[0],  ekin.get(5, axis="r") )
-        self.assertEqual( ekin.get(5)[1],  ekin.get(5, axis="phi") )
+    # def test_multidim_scalar(self):
+    #     ekin = self.d.fluids["gas"].get("scalar", "kinetic energy")
+    #     self.assertEqual( ekin.get(5).shape, (2,))
+    #     self.assertEqual( ekin.get(5)[0],  ekin.get(5, axis="r") )
+    #     self.assertEqual( ekin.get(5)[1],  ekin.get(5, axis="phi") )
 
     def test_scalar_time(self):
+        import pprint
+        pprint.pprint(self.d.fluids["gas"].variable_loaders)
         ekin = self.d.fluids["gas"].get("scalar", "kinetic energy")
         t, v = ekin.get(slice(2,4), return_time=True)
         self.assertTrue( all(t.decompose() == [1.2566370620000000e-01*5.9551995752415031e+07, 1.8849555930000000e-01*5.9551995752415031e+07]*u.s) )
 
-    def test_particlegroups(self):
-        self.assertTrue( "planets" in self.d.particlegroups )
-        self.assertTrue( "omega frame" in self.d.particlegroups["planets"].variable_loaders )
+    def test_scalar_time(self):
+        ekin = self.d.fluids["gas"].get("scalar", "kinetic energy").data
+        ekin_r = self.d.fluids["gas"].get("scalar", "kinetic energy radial").data
+        ekin_phi = self.d.fluids["gas"].get("scalar", "kinetic energy azimuthal").data
+        rel_diff = (ekin - ekin_r - ekin_phi)/ekin
+        self.assertTrue( all( rel_diff < 1e-12 ))
 
-    def test_single_planets_via_particlegroups(self):
-        x = self.d.particlegroups["planets"].get("x", 0)
-        #self.assertEqual( x , None)
-        self.assertEqual( x[1].decompose(), 0.600009762159255167*7.7790892764000000e+13*u.cm)
+        
+    # def test_particlegroups(self):
+    #     self.assertTrue( "planets" in self.d.particlegroups )
+    #     self.assertTrue( "omega frame" in self.d.particlegroups["planets"].variable_loaders )
 
-    def test_multiple_planets_via_particlegroups(self):
-        x = self.d.particlegroups["planets"].get("x")
-        self.assertEqual( x.data.shape, (2,201))
-        #self.assertEqual( x , None)
-        self.assertTrue( all (x[1].decompose() == np.array([0.600009762159255167, 0.997363963701585199])*7.7790892764000000e+13*u.cm ))
+    # def test_single_planets_via_particlegroups(self):
+    #     x = self.d.particlegroups["planets"].get("x", 0)
+    #     #self.assertEqual( x , None)
+    #     self.assertEqual( x[1].decompose(), 0.600009762159255167*7.7790892764000000e+13*u.cm)
 
-    def test_multiple_planets_multi_axes_via_particlegroups(self):
-        pos = self.d.particlegroups["planets"].get("position")
-        self.assertEqual( pos.data.shape, (2,201,2))
-        self.assertTrue( all (pos[:,1,0].decompose() == np.array([0.600009762159255167, 0.997363963701585199])*7.7790892764000000e+13*u.cm ))
-        vel = self.d.particlegroups["planets"].get("velocity")
-        self.assertEqual( vel.data.shape, (2,201,2))
-        self.assertTrue( all (vel[:,1,0].decompose() == np.array([0.000306735295912537458, 0.0718294173695262217])*1.3062684429152035e+06*u.cm/u.s ))
+    # def test_multiple_planets_via_particlegroups(self):
+    #     x = self.d.particlegroups["planets"].get("x")
+    #     self.assertEqual( x.data.shape, (2,201))
+    #     #self.assertEqual( x , None)
+    #     self.assertTrue( all (x[1].decompose() == np.array([0.600009762159255167, 0.997363963701585199])*7.7790892764000000e+13*u.cm ))
+
+    # def test_multiple_planets_multi_axes_via_particlegroups(self):
+    #     pos = self.d.particlegroups["planets"].get("position")
+    #     self.assertEqual( pos.data.shape, (2,201,2))
+    #     self.assertTrue( all (pos[:,1,0].decompose() == np.array([0.600009762159255167, 0.997363963701585199])*7.7790892764000000e+13*u.cm ))
+    #     vel = self.d.particlegroups["planets"].get("velocity")
+    #     self.assertEqual( vel.data.shape, (2,201,2))
+    #     self.assertTrue( all (vel[:,1,0].decompose() == np.array([0.000306735295912537458, 0.0718294173695262217])*1.3062684429152035e+06*u.cm/u.s ))
 
     def test_planet(self):
         x = self.d.planets[0].get("x")
         #self.assertEqual( x , None)
         self.assertEqual( x[1].decompose(), 0.600009762159255167*7.7790892764000000e+13*u.cm)
 
-    def test_planet_multi_axes(self):
-        pos = self.d.planets[0].get("position")
-        self.assertEqual( pos.data.shape, (201,2) )
-        self.assertEqual( pos[1,0].decompose(), 0.600009762159255167*7.7790892764000000e+13*u.cm )
+    # def test_planet_multi_axes(self):
+    #     pos = self.d.planets[0].get("position")
+    #     self.assertEqual( pos.data.shape, (201,2) )
+    #     self.assertEqual( pos[1,0].decompose(), 0.600009762159255167*7.7790892764000000e+13*u.cm )
 
 
 if __name__ == '__main__':
