@@ -244,19 +244,11 @@ class Loader(interface.Interface):
             self.units = {l[0] : float(l[1])*u.Unit(l[2]) for l in
                           [l.split() for l in f if l.split()[0] != '#' and len(l.split())==3]}
 
+class FieldLoader2d(interface.FieldLoader):
 
-class FieldLoader:
-
-    def __init__(self, name, info, loader, *args, **kwargs):
-        self.loader = loader
-        self.info = info
-        self.name = name
-
-
-    def __call__(self, n):
-        t = self.loader.get_output_time(n)
-        f = field.Field(self.load_grid(n), self.load_data(n), t, self.name)
-        return f
+    def load_time(self, n):
+        rv = self.loader.get_output_time(n)
+        return rv
 
     def load_data(self, n):
         if "unit" in self.info:

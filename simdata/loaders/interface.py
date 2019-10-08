@@ -22,3 +22,22 @@ class Interface:
 
     def get_output_time(self, n):
         pass
+
+class FieldLoader:
+    def __init__(self, name, info, loader, *args, **kwargs):
+        self.loader = loader
+        self.info = info
+        self.name = name
+
+    def __call__(self, n):
+        f = field.Field(self.load_grid(n), self.load_data(n), self.load_time(n), self.name)
+        return f
+
+    def load_time(self, n):
+        raise NotImplementedError("This is a virtual method. Please use a FieldLoader{}d for the specific geometry")
+
+    def load_data(self, n):
+        raise NotImplementedError("This is a virtual method. Please use a FieldLoader{}d for the specific geometry")
+
+    def load_grid(self, n):
+        raise NotImplementedError("This is a virtual method. Please use a FieldLoader{}d for the specific geometry")
