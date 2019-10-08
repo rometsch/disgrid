@@ -274,12 +274,18 @@ def get_data_dir(path):
     return rv
 
 def find_first_summary(dataDir):
-    ptrn = re.compile("summary\d+.dat")
+    return "summary{}.dat".format(find_first_summary_number(dataDir))
+
+def find_first_summary_number(dataDir):
+    ptrn = re.compile("summary(\d+).dat")
     summaries = []
     for f in os.listdir(dataDir):
-        if re.search(ptrn, f):
-            summaries.append(f)
-    summaries.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
+        m = re.search(ptrn, f)
+        if m:
+            n = int(m.groups()[0])
+            summaries.append(n)
+    #summaries.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
+    summaries.sort()
     return summaries[0]
 
 def get_unit_from_powers(unitpowers, units):
@@ -302,6 +308,7 @@ class Loader(interface.Interface):
 
     def scout(self):
         self.get_domain_size()
+        self.get_parameters()
         self.get_units()
         self.apply_units()
         self.get_planets()
@@ -310,6 +317,9 @@ class Loader(interface.Interface):
         self.get_scalars()
         self.get_nbodysystems()
         self.register_alias()
+
+    def get_parameters(self):
+        self.parameters = getParamsFromNthSummary(self.data_dir, find_first_summary_number(self.data_dir))
 
     def apply_units(self):
         for vardict in [planet_vars_scalar, vars_2d, vars_1d, vars_scalar]:
@@ -536,20 +546,36 @@ def loadCoarseOutputTimes(dataDir, unit):
 
     return times*unit
 
-
 def getParamFromSummary(dataDir, param):
-    # parse the 0th summary file to get a parameter value
+    return getParamsFromNthSummary(dataDir, find_first_summary_number(dataDir))[param.lower()]
+
+def getParamsFromNthSummary(dataDir, n):
+    # parse the Nth summary file to get all
     search_active = False
-    with open( os.path.join(dataDir, find_first_summary(dataDir)) ) as f:
+    parameters = {}
+    with open( os.path.join(dataDir, "summary{}.dat".format(n)) ) as f:
         for line in f:
+            line = line.strip()
             if not search_active:
                 # look for the parameter section identifier
-                if line.strip() == "PARAMETERS SECTION:":
+                if line == "PARAMETERS SECTION:":
                     search_active = True
-            else:
-                parts = line.strip().split()
-                if parts[0].lower() == param.lower():
-                    return parts[1]
+                continue
+            if line == "" or line[0] in ["#", "="]:
+                continue
+            if line.startswith("*** Input file: "):
+                parameters["config path"] = line.split(":")[-1].strip()
+                break
+            parts = [s.strip() for s in line.split()]
+            try:
+                val = int(parts[1])
+            except ValueError:
+                try:
+                    val = float(parts[1])
+                except ValueError:
+                    val = parts[1]
+            parameters[parts[0].lower()] = val
+    return parameters
 
 
 def loadRadius(dataDir, unit, interface=False):

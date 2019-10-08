@@ -23,6 +23,10 @@ class TestFargo3DMultifluidLoader(unittest.TestCase):
         self.assertEqual( self.d.loader.units['mass'] , 1.9891e+33 * u.g)
         self.assertEqual( self.d.loader.units['time'],  np.sqrt((5.2 * 1.49597871e13)**3 * u.cm**3 / (const.G.cgs * 1.9891e+33 * u.g)).to(u.s))
 
+    def test_parameters(self):
+        self.assertEqual( self.d.parameters["amin"] , 0.001)
+        self.assertEqual( self.d.parameters["planetconfig"] , 'setups/hd163296/hd163296.cfg')
+
     def test_data_dir(self):
         self.assertEqual( self.d.loader.data_dir, code_sample_path + "/outputs" )
 
@@ -80,7 +84,7 @@ class TestFargo3DMultifluidLoader(unittest.TestCase):
         M = 1.9891e+33 * u.g
         self.assertTrue(close(torq.data[15].decompose().cgs, -8.30347786497707e-19*M*L**2/T**2))
 
-        
+
     # def test_multidim_scalar(self):
     #     ekin = self.d.fluids["gas"].get("scalar", "kinetic energy")
     #     self.assertEqual( ekin.get(5).shape, (2,))
@@ -128,6 +132,6 @@ class TestFargo3DMultifluidLoader(unittest.TestCase):
 
 def close(x,y):
     return np.abs(x-y)<np.abs(1e-5*x)
-    
+
 if __name__ == '__main__':
     unittest.main()
