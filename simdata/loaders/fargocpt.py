@@ -40,7 +40,6 @@ vars2d = {
         "unit" : u.cm/u.s,
         "interfaces" : ["phi"]
         }
-
     }
 
 alias_fields = {
@@ -133,17 +132,36 @@ class Loader(interface.Interface):
         super().__init__(*args, **kwargs)
         self.data_dir = get_data_dir(self.path)
         self.output_times = []
+        self.fine_output_times = []
 
     def scout(self):
-        self.get_domain_size()
         self.get_units()
+        self.get_domain_size()
+        self.load_grid()
+        self.load_times()
         self.get_fluids()
+        self.get_planets()
         self.get_nbodysystems()
         self.get_fields()
         self.get_scalars()
-        self.get_planets()
         self.get_nbodysystems()
         self.register_alias()
+
+    def load_grid(self):
+        self.r_i = np.genfromtxt(self.data_dir + "/used_rad.dat")*self.units["length"]
+        self.phi_i = np.linspace(-np.pi, np.pi, self.Nphi+1)*u.Unit(1)
+
+
+    def load_times(self):
+        self.output_times = load_text_data_file(os.path.join(self.data_dir, "misc.dat"), "physical time")
+        self.fine_output_times = load_text_data_file(os.path.join(self.data_dir, "Quantities.dat"), "physical time")
+
+    def get_output_time(self, n):
+        return self.output_times[n]
+
+    def get_fine_output_time(self, n):
+        rv = self.fine_output_times[n]
+        return rv
 
     def register_alias(self):
         for planet in self.planets:
@@ -180,6 +198,7 @@ class Loader(interface.Interface):
 
     def get_fields(self):
         self.get_fields_2d()
+        self.get_fields_1d()
 
     def get_fields_2d(self):
         gas = self.fluids["gas"]
@@ -187,6 +206,31 @@ class Loader(interface.Interface):
         for varname, info in vars2d.items():
             if var_in_files(info["pattern"], files):
                 gas.register_variable(varname, "2d", FieldLoader2d(varname, info, self))
+
+    def get_fields_1d(self):
+        gas = self.fluids["gas"]
+        files = os.listdir(self.data_dir)
+        for n in range(len(self.planets)):
+            if "gas1D_torque_planet{}_0.dat".format(n) in files:
+                varname = "torque planet {}".format(n)
+                info = { "pattern" : os.path.join(self.data_dir, "gas1D_torque_planet{}_{}.dat".format(n, "{}")) }
+                loader = FieldLoader1dTorq(varname, info, self)
+                gas.register_variable(varname, "1d", loader)
+        if "gasMassFlow1D.info" in files:
+            varname = "mass flow".format(n)
+            info = {}
+            loader = FieldLoader1dMassFlow(varname, info, self)
+            gas.register_variable(varname, "1d", loader)
+        for fname in files:
+            m = re.search("(.*)1D\.info", fname)
+            if m:
+                stem = m.groups()[0]
+                infofile = os.path.join(self.data_dir, fname)
+                varname = stem[3:].lower()
+                if varname == "massflow":
+                    continue
+                loader = FieldLoader1d(varname, {"infofile" : infofile}, self)
+                gas.register_variable(varname, "1d", loader)
 
     def get_scalars(self):
         gas = self.fluids["gas"]
@@ -197,11 +241,6 @@ class Loader(interface.Interface):
 
     def get_domain_size(self):
         self.Nr, self.Nphi = np.genfromtxt(os.path.join(self.data_dir, "dimensions.dat"), usecols=(4,5), dtype=int)
-
-    def get_output_time(self, n):
-        if self.output_times == []:
-            self.output_times = load_text_data_file(os.path.join(self.data_dir, "misc.dat"), "physical time")
-        return self.output_times[n]
 
     def get_units(self):
         with open(os.path.join(self.data_dir,'units.dat'),'r') as f:
@@ -223,16 +262,105 @@ class FieldLoader2d(interface.FieldLoader):
                 unit = unit*units[baseunit]**power
         Nr = self.loader.Nr + (1 if "interfaces" in self.info and "r" in self.info["interfaces"] else 0)
         Nphi = self.loader.Nphi #+ (1 if "interfaces" in self.info and "phi" in self.info["interfaces"] else 0)
-
         rv = np.fromfile(self.loader.data_dir + "/" + self.info["pattern"].format(n)).reshape(Nr, Nphi)*unit
         return rv
 
     def load_grid(self, n):
-        r_i = np.genfromtxt(self.loader.data_dir + "/used_rad.dat")*self.loader.units["length"]
-        phi_i = np.linspace(-np.pi, np.pi, self.loader.Nphi+1)*u.Unit(1)
         active_interfaces = self.info["interfaces"] if "interfaces" in self.info else []
-        g = grid.PolarGrid(r_i = r_i, phi_i = phi_i, active_interfaces=active_interfaces)
+        g = grid.PolarGrid(r_i = self.loader.r_i, phi_i = self.loader.phi_i, active_interfaces=active_interfaces)
         return g
+
+def parse_1d_info_file(fname):
+    data_dir = os.path.dirname(os.path.abspath(fname))
+    stem =  os.path.basename(os.path.abspath(fname))[:-7]
+    pattern = os.path.join(data_dir, "{}1D{}.dat".format(stem, "{}"))
+    with open(fname, "r") as infofile:
+        for line in infofile:
+            line = line.strip()
+            parts = [ s.strip() for s in line.split("=")]
+            if parts[0] == "Nr":
+                Nr = int(parts[1])
+            elif parts[0] == "unit":
+                unit = u.Unit(parts[1])
+    return {"unit" : unit, "Nr": Nr, "pattern" : pattern}
+
+class FieldLoader1d(interface.FieldLoader):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fileinfo = parse_1d_info_file(self.info["infofile"])
+
+    def load_time(self, n):
+        rv = self.loader.get_output_time(n)
+        return rv
+
+    def load_data(self, n):
+        unit = self.fileinfo["unit"]
+        rv = np.fromfile(self.fileinfo["pattern"].format(n))*self.fileinfo["unit"]
+        return rv
+
+    def load_grid(self, n):
+        if self.fileinfo["Nr"] == len(self.loader.r_i):
+            active_interfaces = ["r"]
+        else:
+            active_interfaces = []
+        g = grid.PolarGrid(r_i = self.loader.r_i, active_interfaces=active_interfaces)
+        return g
+
+class FieldLoader1dTorq(interface.FieldLoader):
+
+    def load_time(self, n):
+        rv = self.loader.get_output_time(n)
+        return rv
+
+    def load_data(self, n):
+        datafile = self.info["pattern"].format(n)
+        data = np.fromfile(datafile, dtype=float)
+        v = data[1::2]*u.Unit("cm^2 g / s^2")
+        return data
+
+    def load_grid(self, n):
+        g = grid.PolarGrid(r_i = self.loader.r_i)
+        return g
+
+def load1dMassFlow(n, dataDir):
+    # parse datafile info
+    Nr = 0
+    unit = 1
+    with open(os.path.join(dataDir, "gasMassFlow1D.info"), "r") as infofile:
+        for line in infofile:
+            line = line.strip()
+            parts = [ s.strip() for s in line.split("=")]
+            if parts[0] == "Nr":
+                Nr = int(parts[1])
+            elif parts[0] == "unit":
+                unit = u.Unit(parts[1])
+    # get data
+    Nsamples = 100
+    data = np.fromfile(os.path.join(dataDir, "gasMassFlow1D.dat"),
+                       count=Nsamples*Nr, offset=Nr*n*8)
+    data = data.reshape([int(len(data)/Nr), Nr])
+    data = np.average(data, axis=0)
+    if n==0:
+        data = np.zeros(len(data))
+    rv = data*unit
+    return rv
+
+class FieldLoader1dMassFlow(interface.FieldLoader):
+
+    def load_time(self, n):
+        rv = self.loader.get_fine_output_time(n)
+        return rv
+
+    def load_data(self, n):
+        rv = load1dMassFlow(n, self.data_dir)
+        return rv
+
+    def load_grid(self, n):
+        r_i = np.genfromtxt(self.loader.data_dir + "/used_rad.dat")*self.loader.units["length"]
+        g = grid.PolarGrid(r_i = r_i, active_interfaces=["r"])
+        return g
+
 
 class ScalarLoader:
     def __init__(self, name, datafile, loader, *args, **kwargs):
@@ -253,3 +381,41 @@ class ScalarLoader:
     def load_time(self):
         rv = load_text_data_file(self.datafile, "physical time")
         return rv
+
+
+def load1dRadial(n, dataFilePattern, unit, lengthunit=None):
+    data = np.fromfile(dataFilePattern.format(n), dtype=float)
+    if 'torque_planet' in dataFilePattern:
+        v = data[1::2]*unit
+        r = data[::2]
+    else:
+        v = data[1::4]*unit
+        r = data[::4]
+    if lengthunit is None:
+        return v
+    else:
+        r = r*lengthunit
+        return (r,v)
+
+def load1dMassFlow(n, dataDir):
+    # parse datafile info
+    Nr = 0
+    unit = 1
+    with open(os.path.join(dataDir, "gasMassFlow1D.info"), "r") as infofile:
+        for line in infofile:
+            line = line.strip()
+            parts = [ s.strip() for s in line.split("=")]
+            if parts[0] == "Nr":
+                Nr = int(parts[1])
+            elif parts[0] == "unit":
+                unit = u.Unit(parts[1])
+    # get data
+    Nsamples = 100
+    data = np.fromfile(os.path.join(dataDir, "gasMassFlow1D.dat"),
+                       count=Nsamples*Nr, offset=Nr*n*8)
+    data = data.reshape([int(len(data)/Nr), Nr])
+    data = np.average(data, axis=0)
+    if n==0:
+        data = np.zeros(len(data))
+    rv = data*unit
+    return rv
