@@ -277,6 +277,9 @@ def find_first_summary(dataDir):
     return "summary{}.dat".format(find_first_summary_number(dataDir))
 
 def find_first_summary_number(dataDir):
+    return find_summary_numbers(dataDir)[0]
+
+def find_summary_numbers(dataDir):
     ptrn = re.compile("summary(\d+).dat")
     summaries = []
     for f in os.listdir(dataDir):
@@ -284,9 +287,8 @@ def find_first_summary_number(dataDir):
         if m:
             n = int(m.groups()[0])
             summaries.append(n)
-    #summaries.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
     summaries.sort()
-    return summaries[0]
+    return summaries
 
 def get_unit_from_powers(unitpowers, units):
     unit = 1.0
@@ -302,6 +304,7 @@ class Loader(interface.Interface):
         super().__init__(*args, **kwargs)
         self.data_dir = get_data_dir(self.path)
         self.output_times = np.array([])
+        self.fine_output_times = np.array([])
 
     def set_data_dir(self, data_dir):
         self.data_dir = data_dir
@@ -311,6 +314,7 @@ class Loader(interface.Interface):
         self.get_parameters()
         self.get_units()
         self.apply_units()
+        self.load_times()
         self.get_planets()
         self.get_fluids()
         self.get_fields()
@@ -411,10 +415,16 @@ class Loader(interface.Interface):
     def get_domain_size(self):
         self.Nphi, self.Nr = loadNcells(self.data_dir)
 
+    def load_times(self):
+        self.output_times = loadCoarseOutputTimes(self.data_dir, self.units["time"])
+        self.fine_output_times = loadFineOutputTimes(self.data_dir, self.units["time"])
+
     def get_output_time(self, n):
-        if self.output_times.size == 0:
-            self.output_times = loadCoarseOutputTimes(self.data_dir, self.units["time"])
         return self.output_times[n]
+
+    def get_fine_output_time(self, n):
+        rv = self.fine_output_times[n]
+        return rv
 
     def get_units(self):
         self.units = loadUnits(self.data_dir)
@@ -427,9 +437,11 @@ class FieldLoader:
         self.name = name
 
     def __call__(self, n):
-        t = self.loader.get_output_time(n)
-        f = field.Field(self.load_grid(n), self.load_data(n), t, self.name)
+        f = field.Field(self.load_grid(n), self.load_data(n), self.load_time(n), self.name)
         return f
+
+    def load_time(self, n):
+        raise NotImplementedError("This is a virtual method. Please use a FieldLoader{}d for the specific geometry")
 
     def load_data(self, n):
         raise NotImplementedError("This is a virtual method. Please use a FieldLoader{}d for the specific geometry")
@@ -438,6 +450,10 @@ class FieldLoader:
         raise NotImplementedError("This is a virtual method. Please use a FieldLoader{}d for the specific geometry")
 
 class FieldLoader2d(FieldLoader):
+
+    def load_time(self, n):
+        rv = self.loader.get_output_time(n)
+        return rv
 
     def load_data(self, n):
         unit = self.info["unit"]
@@ -457,6 +473,10 @@ class FieldLoader2d(FieldLoader):
         return g
 
 class FieldLoader1d(FieldLoader):
+
+    def load_time(self, n):
+        rv = self.loader.get_fine_output_time(n)
+        return rv
 
     def load_data(self, n):
         unit = self.info["unit"]
@@ -543,8 +563,20 @@ def loadCoarseOutputTimes(dataDir, unit):
     #times = np.genfromtxt( os.path.join(dataDir, 'planet0.dat'))[:,8]
     #times = times*unit
     # correct for double entries in the planet file
-
     return times*unit
+
+def loadFineOutputTimes(dataDir, unit):
+    numbers = find_summary_numbers(dataDir)
+    times = np.array([])
+    for n in numbers:
+        params = getParamsFromNthSummary(dataDir, n)
+        dt = params["dt"]
+        Ninterm = params["ninterm"]
+        offset = 0 if len(times) == 0 else times[-1]
+        new_times = np.arange(1, Ninterm+1)*dt + offset
+        times = np.append( times, new_times )
+    times = times*unit
+    return times
 
 def getParamFromSummary(dataDir, param):
     return getParamsFromNthSummary(dataDir, find_first_summary_number(dataDir))[param.lower()]

@@ -27,6 +27,12 @@ class TestFargo3DMultifluidLoader(unittest.TestCase):
         self.assertEqual( self.d.parameters["amin"] , 0.001)
         self.assertEqual( self.d.parameters["planetconfig"] , 'setups/hd163296/hd163296.cfg')
 
+    def test_fine_output_times(self):
+        time = self.d.fluids["gas"].get("scalar", "mass").time
+        reconstructed = self.d.loader.fine_output_times[:len(time)]
+        rel_diff = (reconstructed - time)/time
+        self.assertTrue( all( rel_diff < 1e-10 ) )
+
     def test_data_dir(self):
         self.assertEqual( self.d.loader.data_dir, code_sample_path + "/outputs" )
 
