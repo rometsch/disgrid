@@ -1,10 +1,12 @@
+import os
 import unittest
 from simdata import data
 from simdata.loaders import fargocpt
 import astropy.units as u
 import numpy as np
 
-code_sample_path = "samples/fargocpt"
+from run import get_repo_abspath
+code_sample_path = os.path.join(get_repo_abspath(),"samples/fargocpt")
 
 class TestFargocptLoader(unittest.TestCase):
 

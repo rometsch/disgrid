@@ -4,8 +4,10 @@ from simdata.loaders import fargo3dmultifluid
 import astropy.units as u
 import astropy.constants as const
 import numpy as np
+import os
 
-code_sample_path = "samples/fargo3dmultifluid"
+from run import get_repo_abspath
+code_sample_path = os.path.join(get_repo_abspath(),"samples/fargo3dmultifluid")
 
 class TestFargo3DMultifluidLoader(unittest.TestCase):
 
