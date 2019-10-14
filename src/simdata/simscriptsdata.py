@@ -53,6 +53,9 @@ def mount_sshfs(remote, local, remove=True):
 
 def unmount_sshfs(local, remove=False):
     # unmount a sshfs mount
-    run(["fusermount", "-u", local])
+    if sys.platform == "darwin":
+        run(["umount", "-f", local])
+    else:
+        run(["fusermount", "-u", local])
     import os
     os.rmdir(local)
