@@ -39,6 +39,10 @@ class FieldLoader:
     def load_time(self, n):
         raise NotImplementedError("This is a virtual method. Please use a FieldLoader{}d for the specific geometry")
 
+    # def load_times(self,):
+    #     """Returns an array containing the time for each output"""
+    #     return self.load_time(slice(0,-1,1))
+
     def load_data(self, n):
         raise NotImplementedError("This is a virtual method. Please use a FieldLoader{}d for the specific geometry")
 

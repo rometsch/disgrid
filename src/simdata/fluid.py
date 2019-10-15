@@ -20,11 +20,29 @@ class Fluid:
 
     def get(self, geometry, name, num_output=None, *args, **kwargs):
         name = self.alias(name)
+        loader = self._get_loader(geometry, name)
         if geometry == "scalar":
-            return self.variable_loaders[geometry][name](*args, **kwargs)
+            return loader(*args, **kwargs)
         elif geometry in supported_geometries:
             if num_output is None:
                 raise TypeError("get() missing 1 required optional argument: 'num_output' for geometry={}".format(", ".join(supported_geometries[:-1])))
-            return self.variable_loaders[geometry][name](num_output, *args, **kwargs)
+            return loader(num_output, *args, **kwargs)
+
+    def _get_loader(self, geometry, name):
+        if geometry in supported_geometries:
+            return self.variable_loaders[geometry][name]
         else:
             raise TypeError("Unknown geometry '{}'".format(geometry))
+        
+    def get_time(self, geometry, name, num_output=None):
+        """Return an array containing the time for each output for the given quantity"""
+        name = self.alias(name)
+        loader = self._get_loader(geometry, name)
+        return loader.load_time(num_output)
+        
+    def get_grid(self, geometry, name, num_output=0):
+        """Get a grid appropriate for the given quantity"""
+        name = self.alias(name)
+        loader = self._get_loader(geometry, name)
+        return loader.load_grid(num_output)
+

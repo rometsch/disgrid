@@ -250,7 +250,10 @@ class Loader(interface.Interface):
 class FieldLoader2d(interface.FieldLoader):
 
     def load_time(self, n):
-        rv = self.loader.get_output_time(n)
+        if n is None:
+            rv = self.loader.output_times
+        else:
+            rv = self.loader.get_output_time(n)
         return rv
 
     def load_data(self, n):
@@ -291,7 +294,10 @@ class FieldLoader1d(interface.FieldLoader):
         self.fileinfo = parse_1d_info_file(self.info["infofile"])
 
     def load_time(self, n):
-        rv = self.loader.get_output_time(n)
+        if n is None:
+            rv = self.loader.output_times
+        else:
+            rv = self.loader.get_output_time(n)
         return rv
 
     def load_data(self, n):
