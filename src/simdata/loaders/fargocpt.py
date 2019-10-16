@@ -302,7 +302,7 @@ class FieldLoader1d(interface.FieldLoader):
 
     def load_data(self, n):
         unit = self.fileinfo["unit"]
-        rv = np.fromfile(self.fileinfo["pattern"].format(n))*self.fileinfo["unit"]
+        rv =  load1dRadial(n, self.fileinfo["pattern"], self.fileinfo["unit"])
         return rv
 
     def load_grid(self, n):
