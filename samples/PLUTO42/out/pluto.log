@@ -1,0 +1,155 @@
+
+
+   ___  __   __  ____________   
+  / _ \/ /  / / / /_  __/ __ \ 
+ / ___/ /__/ /_/ / / / / /_/ /  
+/_/  /____/\____/ /_/  \____/   
+=============================    v. 4.2  
+
+> System:
+
+  USER:             alex
+  SYSTEM_NAME:      Linux
+  NODE_NAME:        SquirtlePC
+  ARCH:             x86_64
+  BYTE_ORDER:       little
+
+> Local time:       Tue Oct 15 00:26:04 2019
+
+> Cmd line args:    
+
+> Header configuration:
+
+  PHYSICS:          HD
+  DIMENSIONS:       2
+  COMPONENTS:       2
+  GEOMETRY:         Polar
+  BODY_FORCE:       EXPLICIT
+  RECONSTRUCTION:   Linear TVD (Primitive lim)
+  TRACERS:          0
+  VARIABLES:        4
+  ENTROPY_SWITCH:   NO
+  LOADED MODULES:
+
+  o [FARGO]
+     - Order:         3
+     - Average Speed: YES
+     - Av. Frequency: 10
+
+  ROTATION:         YES
+  EOS:              Ideal
+  TIME INTEGRATOR:  Runga-Kutta II
+  DIM. SPLITTING:   No
+
+> Runtime configuration (pluto.ini):
+
+  +----------------------------------------------------------
+  | [Grid]
+  | 
+  | X1-grid    1    0.4    128    u    2.5 
+  | X2-grid    1    0.0    80    u    6.283185307
+  | X3-grid    1   -1.0      1    u    1.0
+  | 
+  | [Chombo Refinement]
+  | 
+  | Levels           4
+  | Ref_ratio        2 2 2 2 2 
+  | Regrid_interval  2 2 2 2 
+  | Refine_thresh    0.3
+  | Tag_buffer_size  3
+  | Block_factor     8
+  | Max_grid_size    64
+  | Fill_ratio       0.75
+  | 
+  | [Time]
+  | 
+  | CFL              0.4
+  | CFL_max_var      1.1
+  | tstop            5.0
+  | first_dt         1.e-4
+  | 
+  | [Solver]
+  | 
+  | Solver         roe
+  | 
+  | [Boundary]
+  | 
+  | X1-beg        userdef
+  | X1-end        userdef
+  | X2-beg        periodic
+  | X2-end        periodic
+  | X3-beg        periodic
+  | X3-end        periodic
+  | 
+  | [Static Grid Output]
+  | 
+  | output_dir ./out
+  | uservar    0
+  | dbl        5.0  -200   single_file
+  | flt       -1.0  -1   single_file
+  | vtk       -1.0  -1   single_file
+  | tab       -1.0  -1   
+  | ppm       -1.0  -1   
+  | png       -1.0  -1
+  | log        100
+  | analysis   1.0
+  | 
+  | [Chombo HDF5 output]
+  | 
+  | Checkpoint_interval  -1.0  0
+  | Plot_interval         1.0  0 
+  | 
+  | [Parameters]
+  | 
+  | Mstar                1.0  
+  | Mdisk                0.01  
+  | Mplanet              320.0  
+  | Viscosity            1.e15  
+  +---------------------------------------------------------
+
+> Generating grid...
+
+  X1: [ 0.400000,  2.500000], 128 point(s), 3 ghosts
+  X2: [ 0.000000,  6.283185], 80 point(s), 3 ghosts
+
+> Memory allocation
+> Assigning initial conditions (Startup) ...
+> Normalization Units:
+
+  [Density]:      4.249e-09 (gr/cm^3), 2.540e+15 (1/cm^3)
+  [Pressure]:     1.846e+02 (dyne/cm^2)
+  [Velocity]:     2.085e+05 (cm/s)
+  [Length]:       7.779e+13 (cm)
+  [Temperature]:  5.226e+02 X (p/rho*mu) (K)
+  [Time]:         3.732e+08 (sec), 1.183e+01 (yrs) 
+ 
+> Number of processors: 4
+> Typical proc size:    64 X 40
+> Parallel Directions:  X1/X2
+> Basic data type:
+  sizeof (char)     = 1
+  sizeof (uchar)    = 1
+  sizeof (short)    = 2
+  sizeof (ushort)   = 2
+  sizeof (int)      = 4
+  sizeof (*int)     = 8
+  sizeof (float)    = 4
+  sizeof (double)   = 8
+  sizeof (*double)  = 8
+> Writing file #0 (dbl) to disk... [ 0.00 sec]
+> Starting computation... 
+
+step:0 ; t = 0.0000e+00 ; dt = 1.0000e-04 ; 0 % ; [0.000000, 0]
+step:100 ; t = 5.8619e-01 ; dt = 8.7258e-03 ; 11 % ; [3.670165, 0]
+step:200 ; t = 1.4030e+00 ; dt = 8.0814e-03 ; 28 % ; [4.093267, 0]
+step:300 ; t = 2.2224e+00 ; dt = 8.4717e-03 ; 44 % ; [3.894431, 0]
+step:400 ; t = 3.0448e+00 ; dt = 8.2786e-03 ; 60 % ; [3.881820, 0]
+step:500 ; t = 3.8696e+00 ; dt = 7.9764e-03 ; 77 % ; [4.135189, 0]
+step:600 ; t = 4.6872e+00 ; dt = 8.2437e-03 ; 93 % ; [4.002299, 0]
+> Writing file #1 (dbl) to disk... [ 0.00 sec]
+
+> Total allocated memory    0.52 Mb (proc #0)
+> Elapsed time              0d:0h:0m:2s
+> Average time/step         3.13e-03  (sec)  
+> Local time                Tue Oct 15 00:26:06 2019
+> Done

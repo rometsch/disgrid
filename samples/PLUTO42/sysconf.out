@@ -1,0 +1,12 @@
+USER           = alex
+WORKING_DIR    = /home/alex/Lib/simdata/samples/PLUTO42
+SYSTEM_NAME    = Linux
+NODE_NAME      = SquirtlePC
+RELEASE        = 4.15.0-64-generic
+ARCH           = x86_64
+BYTE_ORDER     = little
+VERSION        = #73-Ubuntu SMP Thu Sep 12 13:16:13 UTC 2019
+PLUTO_DIR      = /home/alex/Lib/PLUTO/PLUTO-stoll
+PLUTO_VERSION  = "4.2"
+C_COMPILER     = gcc
+MPI_C_COMPILER = mpicc
