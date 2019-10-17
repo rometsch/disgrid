@@ -2,7 +2,9 @@ from .alias import Alias
 supported_geometries= ["3d", "2d", "1d", "scalar"]
 
 class Fluid:
-    def __init__(self, name, alias = Alias()):
+    def __init__(self, name, alias=None):
+        if alias is None:
+            alias = Alias()
         self.name = name
         self.variable_loaders = {g:{} for g in supported_geometries}
         self.alias = alias
