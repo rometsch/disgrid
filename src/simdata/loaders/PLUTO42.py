@@ -388,35 +388,18 @@ def loadFineOutputTimes(dataDir, unit):
 
 
 #todo, call grid
-
-from alexpy import converter as cv
-
 def loadRadius(dataDir, unit, interface=False):
-    #todo
-    g, *_ = cv.dependencies(origin=dataDir)
-    g[0].normalize(val=unit)
-    return (g[0].x*unit, g[0].dx*unit)
+    g = PGrid.Grid(DIR=0, origin=self.loader.data_dir)
 
-    #r = np.genfromtxt(os.path.join(dataDir, 'domain_y.dat'))*unit
-    #r = r[3:-3] #remove ghost cells
-    #dr = r[1:] - r[:-1]
-    #if not interface:
-    #    r = 0.5*(r[1:] + r[:-1])
-    #return (r, dr)
+    if not interface: return (g.x*unit, g.dx*unit)
+    else: return (g.xi*unit, g.dx*unit)
 
 #todo, call grid
 def loadPhi(dataDir, interface=False):
-    #todo
+    g = PGrid.Grid(DIR=0, origin=self.loader.data_dir)
 
-    g, *_ = cv.dependencies(origin=dataDir)
-    return g[1].x
-
-    #phiMin, phiMax, Nphi = np.genfromtxt(os.path.join(dataDir, 'dimensions.dat'), usecols=(0,1,6))
-    #phi = np.linspace(phiMin, phiMax, Nphi)
-    #phi = np.genfromtxt(os.path.join(dataDir, 'domain_x.dat'))
-    #if not interface:
-    #    phi = 0.5*(phi[1:] + phi[:-1])
-    #return phi
+    if not interface: return g.x
+    else: return g.xi
 
 def loadMeshGrid(dataDir, unit):
     # return a meshgrid for the disk to plot data
@@ -472,7 +455,7 @@ def loadUnits(dataDir, dimensions):
 def loadNcells(dataDir):
     #todo
     # Nphi, Nr = np.genfromtxt(os.path.join(dataDir, 'dimensions.dat'), usecols=(6,7), dtype=int)
-
-    _, NX1, NX2, NX3 = cv.dependencies(origin=dataDir)
+    grid = [PGrid.Grid(DIR=i, origin=dataDir) for i in [0, 1, 2]]
+    NX1, NX2, NX3 = [g.Ncells for g in grid]
 
     return (NX1, NX2, NX3)
