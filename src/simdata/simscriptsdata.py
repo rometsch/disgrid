@@ -1,8 +1,7 @@
 # simscripts integration for data class
-from subprocess import run
 from .data import Data
-import sys
-import time
+from simscripts.search import remote_path
+from .mount import Mount
 
 class SData(Data):
     # data loader with simscripts support to locate remote simulations
@@ -18,13 +17,9 @@ class SData(Data):
         super().__init__(self.path, **kwargs)
 
     def mount(self):
-        from simscripts.search import remote_path
-        from tempfile import mkdtemp
-        rpath = remote_path(self.sim)
-        self.tempdir = mkdtemp(suffix=self.sim["uuid"], prefix="simdata-")
-        lpath = self.tempdir
-        mount_sshfs(rpath, lpath, remove=True)
-        return lpath
+        self.mount = Mount(remote_path(self.sim), self.sim["uuid"])
+        local_path = self.mount.get_path()
+        return local_path
 
 def simscripts_global_lookup(pattern, remote=True, search_args=None):
     try:
@@ -45,17 +40,3 @@ def simscripts_global_lookup(pattern, remote=True, search_args=None):
         print("Simscripts is not installed on this maschine!")
         return {}
 
-def mount_sshfs(remote, local, remove=True):
-    # mount a remote location to a local directory using sshfs
-    run(["sshfs", "-o", "ro", remote, local])
-    import atexit
-    atexit.register( lambda : unmount_sshfs(local, remove=remove) )
-
-def unmount_sshfs(local, remove=False):
-    # unmount a sshfs mount
-    if sys.platform == "darwin":
-        run(["umount", "-f", local])
-    else:
-        run(["fusermount", "-u", local])
-    import os
-    os.rmdir(local)
