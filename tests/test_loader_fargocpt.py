@@ -73,7 +73,7 @@ class TestFargocptLoader(unittest.TestCase):
 
     def test_1d_field_loader(self):
         e = self.d.fluids["gas"].get("1d", "eccentricity", 5)
-        self.assertEqual( e.data[15], 0.04094842644033545 )
+        self.assertEqual( e.data[15], 0.017409129898832275 )
         self.assertEqual( e.time.decompose().cgs, 7.4835244978551304e+08*u.s )
 
     def test_planet(self):
