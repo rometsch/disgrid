@@ -5,5 +5,4 @@ try:
     import simscripts.search
     from .simscriptsdata import SData
 except ImportError as e:
-    print(e)
     pass
