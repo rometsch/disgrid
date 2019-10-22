@@ -46,6 +46,18 @@ class TestPLUTO42Loader(unittest.TestCase):
     def test_has_gasdens(self):
         self.d.fluids["gas"].get("2d", "mass density", 1)
 
+    def test_has_gasprs(self):
+        if self.d.loader.eos == 'IDEAL':
+            self.d.fluids["gas"].get("2d", "pressure", 1)
+        else:
+            print(self.eos, 'eos does not support pressure.')
+
+    def test_has_gastemp(self):
+        if self.d.loader.eos == 'IDEAL':
+            self.d.fluids["gas"].get("2d", "temperature", 1)
+        else:
+            print(self.eos, 'eos does not support temperature.')
+
     def test_get_fluid_gas(self):
         self.d.get_fluid("gas")
 

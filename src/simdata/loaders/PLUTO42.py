@@ -223,6 +223,7 @@ class Loader(interface.Interface):
 
     def get_fluids(self):
         self.fluids['gas'] = fluid.Fluid('gas') # hack
+        self.fluids['gas'].mean_mol_weight = 2.353
 
     def get_fields(self):
         self.get_fields_2d()
@@ -259,7 +260,8 @@ class Loader(interface.Interface):
 
         if self.dimensions == 3:
             vars_2d["mass density"]["unitpowers"]["length"] -= 1
-            #vars_scalar["thermal energy density"]["unitpowers"]["length"] -= 1
+            vars_2d["pressure"]["unitpowers"]["length"] -= 1
+            vars_scalar["thermal energy density"]["unitpowers"]["length"] -= 1
 
         #rho is always first
         vars_2d["mass density"]["numvar"] = 0
@@ -272,8 +274,11 @@ class Loader(interface.Interface):
 
         #check if the simulation is adiabatic
         if 'prs' in varnames:
+            self.eos = 'IDEAL'
             vars_2d['pressure']["numvar"] = last_index
             last_index += 1
+        else:
+            self.eos = 'ISOTHERMAL'
 
         #activate additional variables
         for varname in varnames[last_index:]:
@@ -282,7 +287,13 @@ class Loader(interface.Interface):
                     vars_2d[var]["numvar"] = last_index
                     last_index += 1
 
+        #allow temperature if not defined... this is tricky because PLUTO outputs pressure only
+
+        if vars_2d["temperature"]["numvar"] == -1 and vars_2d["pressure"]["numvar"] != -1:
+            vars_2d["temperature"]["numvar"] = 99
+
         self.NVAR = last_index
+
         #check if all fields exist in the same file:
         if output_format == 'single_file':
             for var in vars_2d:
@@ -291,7 +302,7 @@ class Loader(interface.Interface):
     def get_fields_2d(self):
         for fluidname in self.fluids.keys():
             for varname, info in vars_2d.items():
-                if vars_2d[varname]["numvar"] > -1:
+                if vars_2d[varname]["numvar"] != -1:
                     fieldLoader = FieldLoader2d(varname, info, self)
                     self.fluids[fluidname].register_variable(varname, '2d', fieldLoader)
        
@@ -335,11 +346,28 @@ class FieldLoader2d(interface.FieldLoader):
         NVAR = self.loader.NVAR
         reshape_instructions = [NX3, NX2, NX1][3-self.loader.dimensions:]
         filename = self.loader.data_dir + "/" + self.info["pattern"].format(n)
-        if self.loader.output_format == 'single_file':
-            memmap = np.memmap(filename, dtype=float, shape=(NVAR, *reshape_instructions))
-            rv = np.array(memmap[self.info["numvar"]], dtype=float).swapaxes(0,-1)*unit
-        else:
-            rv = np.fromfile(filename).reshape(*reshape_instructions).swapaxes(0,-1)*unit
+
+        #check for temperature... this can be tricky.
+        if self.info["numvar"] == 99: #99 is the code for temperature in an *adiabatic* simulation. This assumes pressure exists!
+            mean_mol_weight = self.loader.fluids['gas'].mean_mol_weight*u.g/u.mol
+            if self.loader.output_format == 'single_file':
+                memmap = np.memmap(filename, dtype=float, shape=(NVAR, *reshape_instructions))
+                prs = np.array(memmap[vars_2d["pressure"]["numvar"]], dtype=float).swapaxes(0,-1)*vars_2d["pressure"]["unit"]
+                dens = np.array(memmap[vars_2d["mass density"]["numvar"]], dtype=float).swapaxes(0,-1)*vars_2d["mass density"]["unit"]
+                rv = ( prs/dens * mean_mol_weight / const.R ).decompose().cgs
+            else:
+                prs_filename = self.loader.data_dir + "/" + vars_2d["pressure"]["pattern"].format(n)
+                dens_filename = self.loader.data_dir + "/" + vars_2d["mass density"]["pattern"].format(n)
+                prs = np.fromfile(filename).reshape(*reshape_instructions).swapaxes(0,-1)*vars_2d["pressure"]["unit"]
+                dens = np.fromfile(filename).reshape(*reshape_instructions).swapaxes(0,-1)*vars_2d["mass density"]["unit"]
+                rv = ( prs/dens * mean_mol_weight / const.R ).decompose().cgs
+
+        else: #a regular case
+            if self.loader.output_format == 'single_file':
+                memmap = np.memmap(filename, dtype=float, shape=(NVAR, *reshape_instructions))
+                rv = np.array(memmap[self.info["numvar"]], dtype=float).swapaxes(0,-1)*unit
+            else:
+                rv = np.fromfile(filename).reshape(*reshape_instructions).swapaxes(0,-1)*unit
         return rv
 
     def load_grid(self, n):
