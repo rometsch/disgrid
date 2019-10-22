@@ -8,8 +8,11 @@ def check_alias(a):
     return False
 
 class Alias:
-    def __init__(self, alias_dict = {}):
-        self.ad = alias_dict
+    def __init__(self, alias_dict=None):
+        if alias_dict is None:
+            self.ad = dict()
+        else:
+            self.ad = alias_dict
 
     def __call__(self, name, variable_type = None):
         # return an alias if one is known

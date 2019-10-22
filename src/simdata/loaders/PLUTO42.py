@@ -16,7 +16,7 @@ from .. import field
 from .. import grid
 from .. import scalar
 from .. import particles
-from .PLUTO42aux import PLUTOgrid as PGrid
+from .PLUTO42_aux import PLUTOgrid as PGrid
 
 
 def identify(path):

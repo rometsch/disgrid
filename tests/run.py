@@ -19,6 +19,7 @@ from test_scalar import *
 from test_alias import *
 from test_loader_fargocpt import *
 from test_loader_fargo3dmultifluid import *
+from test_loader_PLUTO42 import *
 
 if __name__=="__main__":
     unittest.main()
