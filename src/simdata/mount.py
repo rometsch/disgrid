@@ -9,9 +9,8 @@ from .doublefork import detachify
 from uuid import uuid4
 
 class Mount:
-    def __init__(self, remote, uuid):
+    def __init__(self, remote):
         self.remote = remote
-        self.sim_uuid = uuid
         self.mount_uuid = str(uuid4())
         self.mount()
 
@@ -30,7 +29,7 @@ class Mount:
         self.flag_active()
 
     def create_mount(self):
-        self.tempdir = Path( mkdtemp(suffix="-"+self.sim_uuid, prefix="simdata-") )
+        self.tempdir = Path( mkdtemp(prefix="simdata-") )
         os.mkdir( self.tempdir / "active" )
         os.mkdir( self.get_path() )
         mount_sshfs(self.remote, self.get_path(), remove=True)

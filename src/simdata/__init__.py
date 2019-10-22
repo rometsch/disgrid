@@ -1,8 +1,3 @@
 from .data import Data
+from .remotedata import RemoteData
 
-# import simscripts integration when simscripts is installed
-try:
-    import simscripts.search
-    from .simscriptsdata import SData
-except ImportError as e:
-    pass
