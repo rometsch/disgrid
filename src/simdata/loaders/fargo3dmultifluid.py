@@ -306,9 +306,6 @@ class Loader(interface.Interface):
         self.output_times = np.array([])
         self.fine_output_times = np.array([])
 
-    def set_data_dir(self, data_dir):
-        self.data_dir = data_dir
-
     def scout(self):
         self.get_domain_size()
         self.get_parameters()
