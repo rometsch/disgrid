@@ -35,7 +35,18 @@ class Scalar:
         key = np.arange(len(inds))[inds]
         return self.get(key, **kwargs)
 
-    def get_time_closest(self, t, **kwargs):
+    def get_closest_to_time(self, t, **kwargs):
+        """ Get the data that's closest to the given time.
+
+        Parameters
+        ----------
+        t: :obj:`astropy.units.Quantity`
+            Time for which to get the value.
+
+        Returns:
+        :obj:`astropy.units.Quantity`
+            Datapoint for which time is closes to t.
+        """
         if not isinstance(t, u.Quantity):
             raise TypeError("'{}' does not have a unit!".format(t))
         ind = np.argmin( np.abs(self.time-t))
