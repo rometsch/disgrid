@@ -58,6 +58,15 @@ class TestPLUTO42Loader(unittest.TestCase):
         else:
             print(self.eos, 'eos does not support temperature.')
 
+    def test_can_calc_scale_height(self):
+        if self.d.loader.eos == 'IDEAL':
+            data = self.d.fluids["gas"].get("2d", "pressure scale height", 0)
+            #r[36] = 5.194 au
+            self.assertTrue( close( data.data[36][0].to('au'), 0.05*5.2*u.au) )
+
+        else:
+            print(self.eos, 'eos does not support temperature.')
+
     def test_get_fluid_gas(self):
         self.d.get_fluid("gas")
 
@@ -67,10 +76,20 @@ class TestPLUTO42Loader(unittest.TestCase):
         #self.d.get_fluid("dust3")
 
     def test_gasdens(self):
-        #test density file structure: density. Also check one specific value
+        #test file structure: density. Also check one specific value
         rho = self.d.fluids["gas"].get("2d", "mass density", 1)
         self.assertEqual( rho.data.shape , (128, 80) )
         self.assertTrue( close( rho.data[1,1], 1157507.6839857362 * u.g / u.cm**2) )
+
+    def test_gastemp(self):
+        #test file structure: temperature. Also check one specific value
+        # (checks prs/dens too, if temperature is not explicitly output.)
+        if self.d.loader.eos == 'IDEAL':
+            tmp = self.d.fluids["gas"].get("2d", "temperature", 0)
+            self.assertEqual( tmp.data.shape , (128, 80) )
+            self.assertTrue( close( tmp.data[36,0], 121.5 * u.K) )
+        else:
+            print(self.eos, 'eos does not support temperature.')
 
     #def test_dustdens(self):
     #    rho = self.d.fluids["dust1"].get("2d", "mass density", 2)
@@ -157,7 +176,11 @@ class TestPLUTO42Loader(unittest.TestCase):
 
 
 def close(x,y):
-    return np.abs(x-y)<np.abs(1e-2*x)
+    if np.abs(x-y)<np.abs(1e-2*x):
+        return True
+    else:
+        print('failed to match: %.3le to %.3le'%(x.value,y.value))
+        return False
 
 if __name__ == '__main__':
     unittest.main()

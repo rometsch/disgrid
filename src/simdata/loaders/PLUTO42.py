@@ -26,72 +26,87 @@ def identify(path):
     except FileNotFoundError:
         return False
 
+NOT_FOUND = -404
+CAN_CONVERT = -1
+
 vars_2d = {
     "mass density" : {
         "pattern" : "rho.{}.dbl",
         "shorthand"  : "rho",
-        "numvar" : -1,
+        "numvar" : NOT_FOUND,
         "unitpowers" : {"mass" : 1, "length" : -2}
         }
     ,"pressure" : {
         "pattern" : "prs.{}.dbl",
         "shorthand"  : "prs",
-        "numvar" : -1,
+        "numvar" : NOT_FOUND,
         "unitpowers" : {"mass" : 1, "time" : -2}
         }
     ,"vrad" : {
         "pattern" : "vx1.{}.dbl",
         "shorthand"  : "vx1",
-        "numvar" : -1,
+        "numvar" : NOT_FOUND,
         "unitpowers" : {"length" : 1, "time" : -1}
         }
     ,"vazimuth" : {
         "pattern" : "vx3.{}.dbl",
         "shorthand"  : "vx3",
-        "numvar" : -1,
+        "numvar" : NOT_FOUND,
         "unitpowers" : {"length" : 1, "time" : -1}
         }
     ,"vpolar" : {
         "pattern" : "vx2.{}.dbl",
         "shorthand"  : "vx2",
-        "numvar" : -1,
+        "numvar" : NOT_FOUND,
         "unitpowers" : {"length" : 1, "time" : -1}
         }
     ,"vx" : {
         "pattern" : "vx1.{}.dbl",
         "shorthand"  : "vx1",
-        "numvar" : -1,
+        "numvar" : NOT_FOUND,
         "unitpowers" : {"length" : 1, "time" : -1}
         }
     ,"vy" : {
         "pattern" : "vx2.{}.dbl",
         "shorthand"  : "vx2",
-        "numvar" : -1,
+        "numvar" : NOT_FOUND,
         "unitpowers" : {"length" : 1, "time" : -1}
         }
     ,"vz" : {
         "pattern" : "vx3.{}.dbl",
         "shorthand"  : "vx3",
-        "numvar" : -1,
+        "numvar" : NOT_FOUND,
         "unitpowers" : {"length" : 1, "time" : -1}
         }
     ,"temperature" : {
         "pattern" : "T.{}.dbl",
         "shorthand"  : "T",
-        "numvar" : -1,
+        "numvar" : NOT_FOUND,
         "unitpowers" : {"temperature" : 1}
         }
     ,"vortensity" : {
         "pattern" : "vort.{}.dbl",
         "shorthand"  : "vort",
-        "numvar" : -1,
+        "numvar" : NOT_FOUND,
         "unitpowers" : {"mass" : -1, "length" : 2, "time" : -1}
         }
     ,"opacity" : {
         "pattern" : "opac.{}.dbl",
         "shorthand"  : "opac",
-        "numvar" : -1,
+        "numvar" : NOT_FOUND,
         "unitpowers" : {"mass" : -1, "length" : 2}
+        }
+    ,"pressure scale height" : {
+        "pattern" : "H.{}.dbl",
+        "shorthand"  : "H",
+        "numvar" : NOT_FOUND,
+        "unitpowers" : {"length" : 1}
+        }
+    ,"aspect ratio" : {
+        "pattern" : "h.{}.dbl",
+        "shorthand"  : "h",
+        "numvar" : NOT_FOUND,
+        "unitpowers" : {}
         }
     }
 
@@ -195,16 +210,16 @@ class Loader(interface.Interface):
     def scout(self):
         self.get_geometry()
         self.get_domain_size()
-        self.assign_variables()
-        #self.get_parameters()
         self.get_units()
+        self.get_fluids()
+        self.assign_variables()
+        self.assign_convertible_variables()
+        self.set_EOS()
+        self.set_parameters()
         self.apply_units()
         self.load_times()
-        #self.get_planets()
-        self.get_fluids()
         self.get_fields()
         self.get_scalars()
-        #self.get_nbodysystems()
         self.register_alias()
 
     def apply_units(self):
@@ -223,7 +238,24 @@ class Loader(interface.Interface):
 
     def get_fluids(self):
         self.fluids['gas'] = fluid.Fluid('gas') # hack
-        self.fluids['gas'].mean_mol_weight = 2.353
+
+    def set_parameters(self, mean_mol_weight=2.353, mass_sys=1.0):
+        self.fluids['gas'].mean_mol_weight = mean_mol_weight *u.g/u.mol
+        self.mass_sys = mass_sys * self.units['mass'].cgs
+        self.GM = (mass_sys * self.units['mass'] * const.G).decompose().cgs
+        self.fluids['gas'].mu_R = (self.fluids['gas'].mean_mol_weight/const.R).decompose().cgs
+
+    def set_EOS(self):
+        if vars_2d['pressure']["numvar"] >= 0:
+            self.eos = 'IDEAL'
+        else:
+            self.eos = 'ISOTHERMAL'
+
+    def get_parameters(self):
+        mu = self.fluids['gas'].mean_mol_weight
+        M_sys = self.mass_sys
+
+        return dict(mean_mol_weight=mu, mass_sys=M_sys)
 
     def get_fields(self):
         self.get_fields_2d()
@@ -257,7 +289,6 @@ class Loader(interface.Interface):
             vars_2d["vz"]["pattern"] = "vx2.{}.dbl"
             vars_2d["vz"]["shorthand"] = "vx2"
 
-
         if self.dimensions == 3:
             vars_2d["mass density"]["unitpowers"]["length"] -= 1
             vars_2d["pressure"]["unitpowers"]["length"] -= 1
@@ -274,11 +305,8 @@ class Loader(interface.Interface):
 
         #check if the simulation is adiabatic
         if 'prs' in varnames:
-            self.eos = 'IDEAL'
             vars_2d['pressure']["numvar"] = last_index
             last_index += 1
-        else:
-            self.eos = 'ISOTHERMAL'
 
         #activate additional variables
         for varname in varnames[last_index:]:
@@ -287,11 +315,6 @@ class Loader(interface.Interface):
                     vars_2d[var]["numvar"] = last_index
                     last_index += 1
 
-        #allow temperature if not defined... this is tricky because PLUTO outputs pressure only
-
-        if vars_2d["temperature"]["numvar"] == -1 and vars_2d["pressure"]["numvar"] != -1:
-            vars_2d["temperature"]["numvar"] = 99
-
         self.NVAR = last_index
 
         #check if all fields exist in the same file:
@@ -299,10 +322,31 @@ class Loader(interface.Interface):
             for var in vars_2d:
                 vars_2d[var]["pattern"] = "data.{:04d}.dbl"
 
+    def assign_convertible_variables(self):
+        """This is aimed at a future module of simdata.
+        PLUTO only outputs a handful of fields, but the user might want to calculate some additional ones.
+        This function checks if the conditions are met to do so.
+        E.g. pressure and density are needed for temperature, but temperature is not always output."""
+        have_prs = vars_2d["pressure"]["numvar"] >= 0
+        have_rho = vars_2d["mass density"]["numvar"] >= 0
+        have_tmp = False
+
+        if vars_2d["temperature"]["numvar"] == NOT_FOUND and have_prs and have_rho:
+            vars_2d["temperature"]["numvar"] = CAN_CONVERT
+            have_tmp = True
+
+        if have_rho and have_tmp and vars_2d["opacity"]["numvar"] == NOT_FOUND:
+            vars_2d["opacity"]["numvar"] = CAN_CONVERT
+
+        if have_tmp:
+            vars_2d["pressure scale height"]["numvar"] = CAN_CONVERT
+            vars_2d["aspect ratio"]["numvar"] = CAN_CONVERT
+
+
     def get_fields_2d(self):
         for fluidname in self.fluids.keys():
             for varname, info in vars_2d.items():
-                if vars_2d[varname]["numvar"] != -1:
+                if vars_2d[varname]["numvar"] != NOT_FOUND:
                     fieldLoader = FieldLoader2d(varname, info, self)
                     self.fluids[fluidname].register_variable(varname, '2d', fieldLoader)
        
@@ -339,43 +383,90 @@ class FieldLoader2d(interface.FieldLoader):
         return rv
 
     def load_data(self, n):
-        unit = self.info["unit"] #astropy unit object
-        NX1 = self.loader.NX1
-        NX2 = self.loader.NX2
-        NX3 = self.loader.NX3
-        NVAR = self.loader.NVAR
-        reshape_instructions = [NX3, NX2, NX1][3-self.loader.dimensions:]
-        filename = self.loader.data_dir + "/" + self.info["pattern"].format(n)
+        """
+        simdata expects output in the form data[x1][x2][x3], but most operations (for disks!)
+        are much easier if the x1 coordinate (r) is exposed first (i.e. data[x3][x2][x1]).
+        This function returns data in the [x1..3] format, but internally it uses [x3..1]
+        since I want to call this recursively sometimes.
+        This is controlled by setting internal to True for internal use.
+        """
+        if self.info["numvar"] >= 0: #a regular case
+            rv = self.read_data(n)
+        elif self.info["numvar"] == CAN_CONVERT:
+            rv = self.convert_data(n)
+        else:
+            raise KeyError("I could not identify this variable!")
 
-        #check for temperature... this can be tricky.
-        if self.info["numvar"] == 99: #99 is the code for temperature in an *adiabatic* simulation. This assumes pressure exists!
-            mean_mol_weight = self.loader.fluids['gas'].mean_mol_weight*u.g/u.mol
-            if self.loader.output_format == 'single_file':
-                memmap = np.memmap(filename, dtype=float, shape=(NVAR, *reshape_instructions))
-                prs = np.array(memmap[vars_2d["pressure"]["numvar"]], dtype=float).swapaxes(0,-1)*vars_2d["pressure"]["unit"]
-                dens = np.array(memmap[vars_2d["mass density"]["numvar"]], dtype=float).swapaxes(0,-1)*vars_2d["mass density"]["unit"]
-                rv = ( prs/dens * mean_mol_weight / const.R ).decompose().cgs
-            else:
-                prs_filename = self.loader.data_dir + "/" + vars_2d["pressure"]["pattern"].format(n)
-                dens_filename = self.loader.data_dir + "/" + vars_2d["mass density"]["pattern"].format(n)
-                prs = np.fromfile(filename).reshape(*reshape_instructions).swapaxes(0,-1)*vars_2d["pressure"]["unit"]
-                dens = np.fromfile(filename).reshape(*reshape_instructions).swapaxes(0,-1)*vars_2d["mass density"]["unit"]
-                rv = ( prs/dens * mean_mol_weight / const.R ).decompose().cgs
+        rv = rv.swapaxes(0, -1)
 
-        else: #a regular case
-            if self.loader.output_format == 'single_file':
-                memmap = np.memmap(filename, dtype=float, shape=(NVAR, *reshape_instructions))
-                rv = np.array(memmap[self.info["numvar"]], dtype=float).swapaxes(0,-1)*unit
-            else:
-                rv = np.fromfile(filename).reshape(*reshape_instructions).swapaxes(0,-1)*unit
         return rv
 
-    def load_grid(self, n):
+    def load_grid(self, n=0):
         g = [PGrid.Grid(i, origin=self.loader.data_dir) for i in [0, 1, 2]]
 
         r_i   = g[0].xi*self.loader.units["length"]
         phi_i = g[1].xi*u.radian
         return grid.PolarGrid(r_i = r_i, phi_i = phi_i, active_interfaces=[])
+
+    def read_data(self, n, qty=None):
+        """Given a file number n, reads the corresponding data file and returns the data.
+
+        This function is meant to be used internally only!
+        It's the backend for load_data().
+
+        The argument "qty" is used CURRENTLY INTERNALLY ONLY.
+        In the future there will be a conversion module that might depend on it.
+        By calling with qty!=None, the self.info argument is overridden
+        and the requested quantity is returned itself.
+
+        Issue: qty is searched for in vars_2d, not registered variables.
+        """
+        file_format = [self.loader.NX3, self.loader.NX2, self.loader.NX1][3-self.loader.dimensions:]
+
+        if not qty:  qty_info = self.info
+        else:        qty_info = vars_2d[qty]
+
+        unit = qty_info["unit"]
+
+        filename = self.loader.data_dir + "/" + qty_info["pattern"].format(n)
+        if self.loader.output_format == 'single_file':
+            memmap = np.memmap(filename, dtype=float, shape=(self.loader.NVAR, *file_format))
+            rv = np.array(memmap[qty_info["numvar"]], dtype=float)
+            rv = (rv*unit).decompose().cgs
+        else:
+            rv = np.fromfile(filename).reshape(*file_format)
+            rv = (rv*unit).decompose().cgs
+
+        return rv
+
+    def convert_data(self, n, qty=None):
+        """Given a requested field (e.g. "temperature"), calculates said field using existing data.
+        For temperature, it will read pressure and density and do the math needed.
+        """
+        if not qty:  name = self.name
+        else:        name = qty
+
+        if name == 'temperature':
+            mu_R = self.loader.fluids['gas'].mu_R
+            prs = self.read_data(n, 'pressure')
+            dens = self.read_data(n, 'mass density')
+            rv = ( prs/dens * mu_R ).decompose().cgs
+
+        elif name == 'pressure scale height':
+            prs = self.read_data(n, 'pressure')
+            dens = self.read_data(n, 'mass density')
+            GM = self.loader.GM
+            r = self.load_grid().r_c
+            rv = np.sqrt( prs/(dens*GM) *(r*r*r) ).decompose().cgs
+
+        elif name == 'aspect ratio':
+            H = self.convert_data(n, 'pressure scale height')
+            r = self.load_grid().r_c
+            rv = (H/r).decompose().cgs
+
+        return rv
+
+
 
 class ScalarLoader:
     def __init__(self, name, datafile, info, loader, *args, **kwargs):
@@ -474,8 +565,7 @@ def loadUnits(dataDir, dimensions):
         unit = u.Unit(unit_str.replace('gr', 'g').replace('sec','s'))
         units[name] = u.Unit(value*unit)
     # calculate mass unit from density and length
-    if dimensions == 2:
-        units["density"] = units["density"]*units["length"] # fix for 2d density
+    units["density"] *= units["length"]**(3-dimensions) # fix for non-3d density
     units["mass"] = u.Unit((units["density"]*units["length"]**dimensions).decompose()).cgs
     units["time"] = units["time"]/(1*units["length"]).value #why?
     return units
