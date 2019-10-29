@@ -8,6 +8,7 @@ from pathlib import Path
 from .doublefork import detachify
 from uuid import uuid4
 
+
 class Mount:
     def __init__(self, remote):
         self.remote = remote
@@ -29,9 +30,9 @@ class Mount:
         self.flag_active()
 
     def create_mount(self):
-        self.tempdir = Path( mkdtemp(prefix="simdata-") )
-        os.mkdir( self.tempdir / "active" )
-        os.mkdir( self.get_path() )
+        self.tempdir = Path(mkdtemp(prefix="simdata-"))
+        os.mkdir(self.tempdir / "active")
+        os.mkdir(self.get_path())
         mount_sshfs(self.remote, self.get_path(), remove=True)
 
     def flag_active(self):
@@ -44,7 +45,7 @@ class Mount:
     def flag_finished(self):
         """ Flag the mount point to be in not in use anymore. """
         self.get_finished_flag_file().touch()
-        os.remove( self.get_active_flag_file() )
+        os.remove(self.get_active_flag_file())
 
     def time_since_finished(self):
         """ Return the time since the finished flag file was last touched """
@@ -55,17 +56,17 @@ class Mount:
 
     def in_use(self):
         """ Check whether there are still users of the mount point """
-        return len( os.listdir( self.tempdir / "active" ) ) > 0
+        return len(os.listdir(self.tempdir / "active")) > 0
 
     def get_finished_flag_file(self):
-        return Path( self.tempdir ) / "finished"
+        return Path(self.tempdir) / "finished"
 
     def flag_finished_on_exit(self):
-        atexit.register( lambda : self.flag_finished() )
+        atexit.register(lambda: self.flag_finished())
 
     def create_unmounter(self):
         """ Spawn a detached process to unmount the sshfs after a certain period. """
-        atexit.register( lambda : unmount_delayed(self, remove=True) )
+        atexit.register(lambda: unmount_delayed(self, remove=True))
 
     def get_path(self):
         """ Return the path of the mount point """
@@ -73,15 +74,17 @@ class Mount:
 
     def unmount(self):
         """ Unmount and remove temporary directories """
-        unmount_sshfs( self.get_path() )
-        os.rmdir( self.get_path() )
-        os.rmdir( self.tempdir / "active" )
-        os.remove( self.get_finished_flag_file() )
-        os.rmdir( self.tempdir )
+        unmount_sshfs(self.get_path())
+        os.rmdir(self.get_path())
+        os.rmdir(self.tempdir / "active")
+        os.remove(self.get_finished_flag_file())
+        os.rmdir(self.tempdir)
+
 
 def mount_sshfs(remote, local, remove=True):
     # mount a remote location to a local directory using sshfs
     run(["sshfs", "-o", "ro", remote, local])
+
 
 def find_existing_mount(path):
     res = run(["mount"], stdout=PIPE, encoding="utf-8").stdout.splitlines()
@@ -89,12 +92,14 @@ def find_existing_mount(path):
         if path in line:
             return Path(line.split()[2])
 
+
 def unmount_sshfs(local):
     # unmount a sshfs mount
     if sys.platform == "darwin":
         run(["umount", "-f", local])
     else:
         run(["fusermount", "-u", local])
+
 
 @detachify
 def unmount_delayed(mount, remove=False):

@@ -1,13 +1,15 @@
 import astropy.units as u
 from .grid import Grid
 
+
 class Field:
     def __init__(self, grid, data, time, name):
         for x, n in zip((data, time), ["data", "time"]):
             ensure_is_astropy_quantity(x, name=n)
 
         if not isinstance(grid, Grid):
-            raise TypeError("grid is not a valid Grid class (type={})".format(type(grid)))
+            raise TypeError("grid is not a valid Grid class (type={})".format(
+                type(grid)))
 
         self.grid = grid
         self.data = data
@@ -28,6 +30,7 @@ class Field:
 
     def get(self, key):
         return self.__dict__[key]
+
 
 def ensure_is_astropy_quantity(x, name="variable"):
     # ensure data and time have astropy unit=

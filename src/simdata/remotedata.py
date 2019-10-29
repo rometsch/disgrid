@@ -2,6 +2,7 @@
 from .data import Data
 from .mount import Mount
 
+
 class RemoteData(Data):
     """ Data interface for simulations on remote hosts.
     Simdirs on remote hosts are mounted using sshfs. 
@@ -18,6 +19,7 @@ class RemoteData(Data):
         self.mount_point = Mount(self.remote_path)
         local_path = self.mount_point.get_path()
         return local_path
+
 
 def is_local_path(path):
     """ Evaluate whether 'path' is not of the form host:path. """

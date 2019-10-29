@@ -7,6 +7,7 @@ import copy
 # import all loaders
 from . import loaders
 
+
 class Data:
     """ Create a data interface for the data in 'path' """
     def __init__(self, path=os.getcwd(), loader=None, **kwargs):

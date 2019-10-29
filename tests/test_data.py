@@ -1,6 +1,7 @@
 import unittest
 from simdata import data
 
+
 class TestDataMethods(unittest.TestCase):
     def setUp(self):
         pass

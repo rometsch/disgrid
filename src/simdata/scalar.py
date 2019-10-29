@@ -3,15 +3,17 @@
 import numpy as np
 import astropy.units as u
 
-class Scalar:
 
+class Scalar:
     def __init__(self, time, data, name=""):
         self.time = time
         self.data = data
         self.name = name
         for v in [time, data]:
             if not isinstance(v, u.Quantity):
-                raise TypeError("'{}' is a physical value but not an astropy quantity!".format(v))
+                raise TypeError(
+                    "'{}' is a physical value but not an astropy quantity!".
+                    format(v))
 
     def __getitem__(self, key):
         return self.get(key)
@@ -31,7 +33,7 @@ class Scalar:
         for t in [tmin, tmax]:
             if not isinstance(t, u.Quantity):
                 raise TypeError("'{}' does not have a unit!".format(t))
-        inds = np.logical_and( tmin <= self.time, tmax >= self.time)
+        inds = np.logical_and(tmin <= self.time, tmax >= self.time)
         key = np.arange(len(inds))[inds]
         return self.get(key, **kwargs)
 
@@ -49,5 +51,5 @@ class Scalar:
         """
         if not isinstance(t, u.Quantity):
             raise TypeError("'{}' does not have a unit!".format(t))
-        ind = np.argmin( np.abs(self.time-t))
+        ind = np.argmin(np.abs(self.time - t))
         return self.get(key=ind, **kwargs)

@@ -4,11 +4,13 @@ from .alias import Alias
 
 required_data = ["time", "position", "velocity"]
 
+
 def check_data(data):
     # need at least time, position and velocities
     for varname in required_data:
         if not varname in data:
-            raise KeyError("nbody data must contain "+varname)
+            raise KeyError("nbody data must contain " + varname)
+
 
 class NbodySystem:
     # class to hold data for an nbody system for all timesteps
@@ -28,7 +30,9 @@ class NbodySystem:
 
     def register_variable(self, name, loader_function):
         if not callable(loader_function):
-            raise TypeError("Loader function '{}' for '{}' not callable".format(loader_function, name))
+            raise TypeError(
+                "Loader function '{}' for '{}' not callable".format(
+                    loader_function, name))
 
         self.variable_loaders[name] = loader_function
 
@@ -36,7 +40,9 @@ class NbodySystem:
         name = self.alias(name)
         if num_particles is None:
             num_particles = slice(len(self.ids))
-        return self.variable_loaders[name](num_output, self.ids[num_particles], *args, **kwargs)
+        return self.variable_loaders[name](num_output, self.ids[num_particles],
+                                           *args, **kwargs)
+
 
 class Planet(NbodySystem):
     def __init__(self, name, nid):
@@ -47,10 +53,10 @@ class Planet(NbodySystem):
         name = self.alias(name)
         return self.variable_loaders[name]()
 
-        
+
 class ParticleScalar(scalar.Scalar):
     pass
-    
+
     # def get(self, ids=None, *args, **kwargs):
     #     data = super().get(*args, **kwargs)
     #     time = None

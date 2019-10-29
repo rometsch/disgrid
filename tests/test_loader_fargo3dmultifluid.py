@@ -7,36 +7,43 @@ import numpy as np
 import os
 
 from run import get_repo_abspath
-code_sample_path = os.path.join(get_repo_abspath(),"samples/fargo3dmultifluid")
+code_sample_path = os.path.join(get_repo_abspath(),
+                                "samples/fargo3dmultifluid")
+
 
 class TestFargo3DMultifluidLoader(unittest.TestCase):
-
     def setUp(self):
         self.d = data.Data(code_sample_path)
 
     def test_identify_code_via_data(self):
-        self.assertEqual( self.d.loader.code_info, ( "fargo3d", "2.0", "multifluid") )
+        self.assertEqual(self.d.loader.code_info,
+                         ("fargo3d", "2.0", "multifluid"))
 
     def test_identify_code_directly(self):
-        self.assertTrue( fargo3dmultifluid.identify(code_sample_path) )
+        self.assertTrue(fargo3dmultifluid.identify(code_sample_path))
 
     def test_units(self):
-        self.assertEqual( self.d.loader.units['length'], 5.2 * 1.49597871e13 * u.cm)
-        self.assertEqual( self.d.loader.units['mass'] , 1.9891e+33 * u.g)
-        self.assertEqual( self.d.loader.units['time'],  np.sqrt((5.2 * 1.49597871e13)**3 * u.cm**3 / (const.G.cgs * 1.9891e+33 * u.g)).to(u.s))
+        self.assertEqual(self.d.loader.units['length'],
+                         5.2 * 1.49597871e13 * u.cm)
+        self.assertEqual(self.d.loader.units['mass'], 1.9891e+33 * u.g)
+        self.assertEqual(
+            self.d.loader.units['time'],
+            np.sqrt((5.2 * 1.49597871e13)**3 * u.cm**3 /
+                    (const.G.cgs * 1.9891e+33 * u.g)).to(u.s))
 
     def test_parameters(self):
-        self.assertEqual( self.d.parameters["amin"] , 0.001)
-        self.assertEqual( self.d.parameters["planetconfig"] , 'setups/hd163296/hd163296.cfg')
+        self.assertEqual(self.d.parameters["amin"], 0.001)
+        self.assertEqual(self.d.parameters["planetconfig"],
+                         'setups/hd163296/hd163296.cfg')
 
     def test_fine_output_times(self):
         time = self.d.fluids["gas"].get("scalar", "mass").time
         reconstructed = self.d.loader.fine_output_times[:len(time)]
-        rel_diff = (reconstructed - time)/time
-        self.assertTrue( all( rel_diff < 1e-10 ) )
+        rel_diff = (reconstructed - time) / time
+        self.assertTrue(all(rel_diff < 1e-10))
 
     def test_data_dir(self):
-        self.assertEqual( self.d.loader.data_dir, code_sample_path + "/outputs" )
+        self.assertEqual(self.d.loader.data_dir, code_sample_path + "/outputs")
 
     def test_has_gas(self):
         self.assertTrue("gas" in self.d.fluids)
@@ -54,44 +61,58 @@ class TestFargo3DMultifluidLoader(unittest.TestCase):
 
     def test_gasdens(self):
         rho = self.d.fluids["gas"].get("2d", "mass density", 2)
-        self.assertEqual( rho.data.shape , (64, 32) )
-        self.assertEqual( rho.data[1,1] , 4.285694082764542 * u.g / u.cm**2 )
+        self.assertEqual(rho.data.shape, (64, 32))
+        self.assertEqual(rho.data[1, 1], 4.285694082764542 * u.g / u.cm**2)
 
     def test_dustdens(self):
         rho = self.d.fluids["dust1"].get("2d", "mass density", 2)
-        self.assertEqual( rho.data.shape , (64, 32) )
-        self.assertAlmostEqual( rho.data[1,1].value , 9.190435006078763e-07 )
+        self.assertEqual(rho.data.shape, (64, 32))
+        self.assertAlmostEqual(rho.data[1, 1].value, 9.190435006078763e-07)
 
     def test_gasvrad(self):
         vrad = self.d.fluids["gas"].get("2d", "vrad", 2)
-        self.assertEqual( vrad.data.shape , (64, 32) )
-        self.assertEqual( len(vrad.grid.get_coordinates("r")) , 64 )
-        self.assertEqual( vrad.data.shape, (len(vrad.grid.get_coordinates("r")), len(vrad.grid.get_coordinates("phi")) ) )
+        self.assertEqual(vrad.data.shape, (64, 32))
+        self.assertEqual(len(vrad.grid.get_coordinates("r")), 64)
+        self.assertEqual(vrad.data.shape,
+                         (len(vrad.grid.get_coordinates("r")),
+                          len(vrad.grid.get_coordinates("phi"))))
 
     def test_output_time(self):
         energy = self.d.fluids["gas"].get("2d", "energy density", 2)
-        self.assertTrue( np.abs(energy.time.decompose() - 12.5663706200000007*5.9551995752415031e+07*u.s) < 1e-3*energy.time.decompose())
+        self.assertTrue(
+            np.abs(energy.time.decompose() -
+                   12.5663706200000007 * 5.9551995752415031e+07 * u.s) < 1e-3 *
+            energy.time.decompose())
 
     def test_scalar_mass(self):
         mass = self.d.fluids["gas"].get("scalar", "mass")
-        self.assertEqual(mass.data[2].decompose(), 0.0312841565937*1.9891e+33 * u.g)
-        self.assertEqual(mass.time[2].decompose(), 1.88495559216*np.sqrt((5.2 * 1.49597871e13)**3 * u.cm**3 / (const.G.cgs * 1.9891e+33 * u.g)).to(u.s))
+        self.assertEqual(mass.data[2].decompose(),
+                         0.0312841565937 * 1.9891e+33 * u.g)
+        self.assertEqual(
+            mass.time[2].decompose(),
+            1.88495559216 * np.sqrt((5.2 * 1.49597871e13)**3 * u.cm**3 /
+                                    (const.G.cgs * 1.9891e+33 * u.g)).to(u.s))
 
     def test_scalar_torque_planet_1(self):
         torq = self.d.fluids["dust1"].get("scalar", "torque planet 1")
-        T = np.sqrt((5.2 * 1.49597871e13)**3 * u.cm**3 / (const.G.cgs * 1.9891e+33 * u.g)).to(u.s)
+        T = np.sqrt((5.2 * 1.49597871e13)**3 * u.cm**3 /
+                    (const.G.cgs * 1.9891e+33 * u.g)).to(u.s)
         L = 5.2 * 1.49597871e13 * u.cm
         M = 1.9891e+33 * u.g
-        self.assertTrue(close(torq.data[3].decompose().cgs, -8.46861771884e-11*M*L**2/T**2))
-        self.assertTrue(close(torq.time[3].decompose().cgs, 2.51327412288*T))
+        self.assertTrue(
+            close(torq.data[3].decompose().cgs,
+                  -8.46861771884e-11 * M * L**2 / T**2))
+        self.assertTrue(close(torq.time[3].decompose().cgs, 2.51327412288 * T))
 
     def test_1d_torque_planet_1(self):
         torq = self.d.fluids["dust2"].get("1d", "torque planet 1", 1)
-        T = np.sqrt((5.2 * 1.49597871e13)**3 * u.cm**3 / (const.G.cgs * 1.9891e+33 * u.g)).to(u.s)
+        T = np.sqrt((5.2 * 1.49597871e13)**3 * u.cm**3 /
+                    (const.G.cgs * 1.9891e+33 * u.g)).to(u.s)
         L = 5.2 * 1.49597871e13 * u.cm
         M = 1.9891e+33 * u.g
-        self.assertTrue(close(torq.data[15].decompose().cgs, -8.30347786497707e-19*M*L**2/T**2))
-
+        self.assertTrue(
+            close(torq.data[15].decompose().cgs,
+                  -8.30347786497707e-19 * M * L**2 / T**2))
 
     # def test_multidim_scalar(self):
     #     ekin = self.d.fluids["gas"].get("scalar", "kinetic energy")
@@ -130,7 +151,9 @@ class TestFargo3DMultifluidLoader(unittest.TestCase):
     def test_planet(self):
         x = self.d.planets[0].get("x")
         #self.assertEqual( x , None)
-        self.assertTrue( close(x[1].decompose(), 9.22999995481561974* 5.2 * 1.49597871e13 * u.cm ))
+        self.assertTrue(
+            close(x[1].decompose(),
+                  9.22999995481561974 * 5.2 * 1.49597871e13 * u.cm))
 
     # def test_planet_multi_axes(self):
     #     pos = self.d.planets[0].get("position")
@@ -138,8 +161,9 @@ class TestFargo3DMultifluidLoader(unittest.TestCase):
     #     self.assertEqual( pos[1,0].decompose(), 0.600009762159255167*7.7790892764000000e+13*u.cm )
 
 
-def close(x,y):
-    return np.abs(x-y)<np.abs(1e-5*x)
+def close(x, y):
+    return np.abs(x - y) < np.abs(1e-5 * x)
+
 
 if __name__ == '__main__':
     unittest.main()

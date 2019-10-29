@@ -1,7 +1,8 @@
-code_info = ( "exmaple_code", "0.1", "test")
+code_info = ("exmaple_code", "0.1", "test")
 
 import os
 from . import interface
+
 
 def identify(path):
     try:
@@ -12,6 +13,7 @@ def identify(path):
             return False
     except FileNotFoundError:
         return False
+
 
 class Loader(interface.Interface):
     pass
