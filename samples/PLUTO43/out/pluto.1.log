@@ -1,0 +1,382 @@
+
+
+   ___  __   __  ____________   
+  / _ \/ /  / / / /_  __/ __ \ 
+ / ___/ /__/ /_/ / / / / /_/ /  
+/_/  /____/\____/ /_/  \____/   
+=============================    v. 4.3  
+
+> System:
+
+  USER:             alex
+  SYSTEM_NAME:      Linux
+  NODE_NAME:        SquirtlePC
+  ARCH:             x86_64
+  BYTE_ORDER:       little
+
+  - Basic data type:
+    o sizeof (char)     = 1
+    o sizeof (uchar)    = 1
+    o sizeof (short)    = 2
+    o sizeof (ushort)   = 2
+    o sizeof (int)      = 4
+    o sizeof (long)     = 8
+    o sizeof (*int)     = 8
+    o sizeof (float)    = 4
+    o sizeof (double)   = 8
+    o sizeof (*double)  = 8
+
+  - Structure data type:
+    o sizeof (CMD_LINE)   = 60
+    o sizeof (Data)       = 272
+    o sizeof (Grid)       = 1048
+    o sizeof (FLOAT_VECT) = 12
+    o sizeof (IMAGE)      = 856
+    o sizeof (OUTPUT)     = 1768
+    o sizeof (RGB)        = 3
+    o sizeof (RUNTIME)    = 46944
+    o sizeof (RESTART)    = 128
+    o sizeof (TIME_STEP)  = 128
+    o sizeof (RBOX)       = 112
+    o sizeof (State)      = 128
+    o sizeof (Sweep)      = 512
+
+> Local time:       Thu Oct 31 19:52:06 2019
+
+> Cmd line args:    
+
+> Header configuration:
+
+  PHYSICS:          HD
+  DIMENSIONS:       3
+  COMPONENTS:       3
+  GEOMETRY:         Spherical
+  BODY_FORCE:       EXPLICIT
+  RECONSTRUCTION:   Linear TVD (Primitive lim)
+  TRACERS:          0
+  VARIABLES:        5
+  ENTROPY_SWITCH:   NO
+  LOADED MODULES:
+
+  o [FARGO]
+     - Order:         3
+     - Average Speed: YES
+     - Av. Frequency: 10
+
+  ROTATION:         YES
+  EOS:              Ideal
+  TIME STEPPING:    Runga-Kutta II
+  DIM. SPLITTING:   No
+
+> Runtime configuration (pluto.ini):
+
+  +----------------------------------------------------------
+  | [Grid]
+  | 
+  | X1-grid    1    0.4            128    u    2.5 
+  | X2-grid    1    1.448623279     8    u    1.570796327
+  | X3-grid    1    0.0            80    u    6.283185307
+  | 
+  | [Chombo Refinement]
+  | 
+  | Levels           4
+  | Ref_ratio        2 2 2 2 2 
+  | Regrid_interval  2 2 2 2 
+  | Refine_thresh    0.3
+  | Tag_buffer_size  3
+  | Block_factor     8
+  | Max_grid_size    64
+  | Fill_ratio       0.75
+  | 
+  | [Time]
+  | 
+  | CFL              0.25
+  | CFL_max_var      1.1
+  | tstop            5.0
+  | first_dt         1.e-4
+  | 
+  | [Solver]
+  | 
+  | Solver         hllc
+  | 
+  | [Boundary]
+  | 
+  | X1-beg        userdef
+  | X1-end        userdef
+  | X2-beg        reflective
+  | X2-end        eqtsymmetric
+  | X3-beg        periodic
+  | X3-end        periodic
+  | 
+  | [Static Grid Output]
+  | 
+  | output_dir ./out
+  | uservar    0
+  | dbl        5.0  -200   single_file
+  | flt       -1.0  -1   single_file
+  | vtk       -1.0  -1   single_file
+  | tab       -1.0  -1   
+  | ppm       -1.0  -1   
+  | png       -1.0  -1
+  | log        10
+  | analysis  1.0  -100
+  | 
+  | [Chombo HDF5 output]
+  | 
+  | Checkpoint_interval  -1.0  0
+  | Plot_interval         1.0  0 
+  | 
+  | [Parameters]
+  | 
+  | Mstar                       1.0  
+  | Mdisk                       0.01  
+  | Mplanet                     320.0  
+  | Viscosity                   1.e15  
+  +---------------------------------------------------------
+
+> Generating grid...
+
+  Global grid:
+  X1: [   0.4000,   2.5000],    128 point(s), 3 ghosts
+  X2: [   1.4486,   1.5708],      8 point(s), 3 ghosts
+  X3: [   0.0000,   6.2832],     80 point(s), 3 ghosts
+
+  Local grid:
+  X1: [   1.4500,   2.5000],     64 point(s); 3 ghosts; Active zones = [3, 66]
+  X2: [   1.4486,   1.5708],      8 point(s); 3 ghosts; Active zones = [3, 10]
+  X3: [   0.0000,   6.2832],     80 point(s); 3 ghosts; Active zones = [3, 82]
+
+> Memory allocation
+> Assigning initial conditions (Startup) ...
+> Normalization Units:
+
+  [Density]:      4.249e-09 (gr/cm^3), 2.540e+15 (1/cm^3)
+  [Pressure]:     1.846e+02 (dyne/cm^2)
+  [Velocity]:     2.085e+05 (cm/s)
+  [Length]:       7.779e+13 (cm)
+  [Temperature]:  5.226e+02 X (p/rho*mu) (K)
+  [Time]:         3.732e+08 (sec), 1.183e+01 (yrs) 
+ 
+> Number of processors: 2
+> Proc size:            64 X 8 X 80
+> Parallel Directions:  X1/X2/X3
+> Writing file #0 (dbl) to disk...
+> Starting computation... 
+
+step:0; t = 0.0000e+00; dt = 1.0000e-04; 0.0 %
+        [Mach = 0.007644]
+step:10; t = 1.5937e-03; dt = 2.5937e-04; 0.0 %
+         [Mach = 0.140779]
+step:20; t = 5.7275e-03; dt = 6.7275e-04; 0.1 %
+         [Mach = 0.474947]
+step:30; t = 1.6449e-02; dt = 1.7449e-03; 0.3 %
+         [Mach = 1.213635]
+step:40; t = 4.4259e-02; dt = 4.5259e-03; 0.9 %
+         [Mach = 2.112854]
+step:50; t = 9.3537e-02; dt = 4.9844e-03; 1.9 %
+         [Mach = 2.318052]
+step:60; t = 1.4360e-01; dt = 5.0200e-03; 2.9 %
+         [Mach = 3.162861]
+step:70; t = 1.9350e-01; dt = 4.9484e-03; 3.9 %
+         [Mach = 3.417694]
+step:80; t = 2.4280e-01; dt = 4.9223e-03; 4.9 %
+         [Mach = 3.550094]
+step:90; t = 2.9234e-01; dt = 4.9825e-03; 5.8 %
+         [Mach = 3.151469]
+step:100; t = 3.4227e-01; dt = 5.0023e-03; 6.8 %
+          [Mach = 3.817569]
+step:110; t = 3.9242e-01; dt = 5.0200e-03; 7.8 %
+          [Mach = 3.970351]
+step:120; t = 4.4266e-01; dt = 5.0186e-03; 8.9 %
+          [Mach = 4.086138]
+step:130; t = 4.9251e-01; dt = 4.9370e-03; 9.9 %
+          [Mach = 4.096727]
+step:140; t = 5.4167e-01; dt = 4.9029e-03; 10.8 %
+          [Mach = 3.995235]
+step:150; t = 5.9090e-01; dt = 4.9523e-03; 11.8 %
+          [Mach = 3.728566]
+step:160; t = 6.4074e-01; dt = 4.9988e-03; 12.8 %
+          [Mach = 3.581674]
+step:170; t = 6.9077e-01; dt = 5.0097e-03; 13.8 %
+          [Mach = 3.514123]
+step:180; t = 7.4098e-01; dt = 5.0250e-03; 14.8 %
+          [Mach = 3.445302]
+step:190; t = 7.9125e-01; dt = 5.0015e-03; 15.8 %
+          [Mach = 3.353636]
+step:200; t = 8.4086e-01; dt = 4.9133e-03; 16.8 %
+          [Mach = 3.271268]
+step:210; t = 8.8983e-01; dt = 4.8877e-03; 17.8 %
+          [Mach = 3.264645]
+step:220; t = 9.3899e-01; dt = 4.9467e-03; 18.8 %
+          [Mach = 3.273878]
+step:230; t = 9.8878e-01; dt = 4.9929e-03; 19.8 %
+          [Mach = 3.265450]
+step:240; t = 1.0388e+00; dt = 4.9968e-03; 20.8 %
+          [Mach = 3.233100]
+step:250; t = 1.0887e+00; dt = 4.9880e-03; 21.8 %
+          [Mach = 3.235953]
+step:260; t = 1.1386e+00; dt = 4.9804e-03; 22.8 %
+          [Mach = 3.332578]
+step:270; t = 1.1880e+00; dt = 4.8893e-03; 23.8 %
+          [Mach = 3.566681]
+step:280; t = 1.2366e+00; dt = 4.8186e-03; 24.7 %
+          [Mach = 3.677452]
+step:290; t = 1.2848e+00; dt = 4.8406e-03; 25.7 %
+          [Mach = 3.722164]
+step:300; t = 1.3337e+00; dt = 4.9404e-03; 26.7 %
+          [Mach = 3.732494]
+step:310; t = 1.3832e+00; dt = 4.9519e-03; 27.7 %
+          [Mach = 3.581133]
+step:320; t = 1.4327e+00; dt = 4.9520e-03; 28.7 %
+          [Mach = 3.414989]
+step:330; t = 1.4823e+00; dt = 4.9546e-03; 29.6 %
+          [Mach = 3.248496]
+step:340; t = 1.5316e+00; dt = 4.8870e-03; 30.6 %
+          [Mach = 3.236823]
+step:350; t = 1.5802e+00; dt = 4.8328e-03; 31.6 %
+          [Mach = 3.246408]
+step:360; t = 1.6285e+00; dt = 4.8346e-03; 32.6 %
+          [Mach = 3.283455]
+step:370; t = 1.6771e+00; dt = 4.8859e-03; 33.5 %
+          [Mach = 3.308097]
+step:380; t = 1.7262e+00; dt = 4.9316e-03; 34.5 %
+          [Mach = 3.266634]
+step:390; t = 1.7757e+00; dt = 4.9664e-03; 35.5 %
+          [Mach = 3.357936]
+step:400; t = 1.8253e+00; dt = 4.9631e-03; 36.5 %
+          [Mach = 3.458224]
+step:410; t = 1.8748e+00; dt = 4.9307e-03; 37.5 %
+          [Mach = 3.502454]
+step:420; t = 1.9240e+00; dt = 4.9036e-03; 38.5 %
+          [Mach = 3.563342]
+step:430; t = 1.9730e+00; dt = 4.9093e-03; 39.5 %
+          [Mach = 3.596509]
+step:440; t = 2.0222e+00; dt = 4.9142e-03; 40.4 %
+          [Mach = 3.587602]
+step:450; t = 2.0713e+00; dt = 4.9195e-03; 41.4 %
+          [Mach = 3.511808]
+step:460; t = 2.1205e+00; dt = 4.9062e-03; 42.4 %
+          [Mach = 3.443743]
+step:470; t = 2.1694e+00; dt = 4.8697e-03; 43.4 %
+          [Mach = 3.395571]
+step:480; t = 2.2180e+00; dt = 4.8510e-03; 44.4 %
+          [Mach = 3.367018]
+step:490; t = 2.2665e+00; dt = 4.8672e-03; 45.3 %
+          [Mach = 3.307479]
+step:500; t = 2.3154e+00; dt = 4.9115e-03; 46.3 %
+          [Mach = 3.259118]
+step:510; t = 2.3647e+00; dt = 4.9548e-03; 47.3 %
+          [Mach = 3.256799]
+step:520; t = 2.4144e+00; dt = 4.9731e-03; 48.3 %
+          [Mach = 3.312659]
+step:530; t = 2.4641e+00; dt = 4.9491e-03; 49.3 %
+          [Mach = 3.381226]
+step:540; t = 2.5133e+00; dt = 4.9075e-03; 50.3 %
+          [Mach = 3.470509]
+step:550; t = 2.5623e+00; dt = 4.8776e-03; 51.2 %
+          [Mach = 3.545918]
+step:560; t = 2.6110e+00; dt = 4.8712e-03; 52.2 %
+          [Mach = 3.583679]
+step:570; t = 2.6598e+00; dt = 4.8912e-03; 53.2 %
+          [Mach = 3.504507]
+step:580; t = 2.7089e+00; dt = 4.9211e-03; 54.2 %
+          [Mach = 3.416093]
+step:590; t = 2.7582e+00; dt = 4.9452e-03; 55.2 %
+          [Mach = 3.351391]
+step:600; t = 2.8076e+00; dt = 4.9488e-03; 56.2 %
+          [Mach = 3.308666]
+step:610; t = 2.8570e+00; dt = 4.9336e-03; 57.1 %
+          [Mach = 3.284412]
+step:620; t = 2.9062e+00; dt = 4.8962e-03; 58.1 %
+          [Mach = 3.267120]
+step:630; t = 2.9550e+00; dt = 4.8708e-03; 59.1 %
+          [Mach = 3.263081]
+step:640; t = 3.0037e+00; dt = 4.8691e-03; 60.1 %
+          [Mach = 3.275413]
+step:650; t = 3.0526e+00; dt = 4.8922e-03; 61.1 %
+          [Mach = 3.305267]
+step:660; t = 3.1014e+00; dt = 4.8962e-03; 62.0 %
+          [Mach = 3.341178]
+step:670; t = 3.1503e+00; dt = 4.8798e-03; 63.0 %
+          [Mach = 3.352010]
+step:680; t = 3.1991e+00; dt = 4.8669e-03; 64.0 %
+          [Mach = 3.328538]
+step:690; t = 3.2477e+00; dt = 4.8604e-03; 65.0 %
+          [Mach = 3.280053]
+step:700; t = 3.2964e+00; dt = 4.8741e-03; 65.9 %
+          [Mach = 3.217947]
+step:710; t = 3.3453e+00; dt = 4.9166e-03; 66.9 %
+          [Mach = 3.165883]
+step:720; t = 3.3948e+00; dt = 4.9594e-03; 67.9 %
+          [Mach = 3.157770]
+step:730; t = 3.4445e+00; dt = 4.9698e-03; 68.9 %
+          [Mach = 3.202398]
+step:740; t = 3.4942e+00; dt = 4.9635e-03; 69.9 %
+          [Mach = 3.257582]
+step:750; t = 3.5437e+00; dt = 4.9383e-03; 70.9 %
+          [Mach = 3.292020]
+step:760; t = 3.5928e+00; dt = 4.9031e-03; 71.9 %
+          [Mach = 3.309335]
+step:770; t = 3.6419e+00; dt = 4.9033e-03; 72.8 %
+          [Mach = 3.311026]
+step:780; t = 3.6909e+00; dt = 4.9178e-03; 73.8 %
+          [Mach = 3.302504]
+step:790; t = 3.7402e+00; dt = 4.9485e-03; 74.8 %
+          [Mach = 3.264867]
+step:800; t = 3.7897e+00; dt = 4.9671e-03; 75.8 %
+          [Mach = 3.239188]
+step:810; t = 3.8393e+00; dt = 4.9545e-03; 76.8 %
+          [Mach = 3.253624]
+step:820; t = 3.8889e+00; dt = 4.9517e-03; 77.8 %
+          [Mach = 3.316281]
+step:830; t = 3.9384e+00; dt = 4.9343e-03; 78.8 %
+          [Mach = 3.389028]
+step:840; t = 3.9877e+00; dt = 4.9332e-03; 79.8 %
+          [Mach = 3.435618]
+step:850; t = 4.0370e+00; dt = 4.9377e-03; 80.7 %
+          [Mach = 3.463621]
+step:860; t = 4.0864e+00; dt = 4.9402e-03; 81.7 %
+          [Mach = 3.485404]
+step:870; t = 4.1359e+00; dt = 4.9593e-03; 82.7 %
+          [Mach = 3.492413]
+step:880; t = 4.1854e+00; dt = 4.9290e-03; 83.7 %
+          [Mach = 3.488722]
+step:890; t = 4.2346e+00; dt = 4.9498e-03; 84.7 %
+          [Mach = 3.480019]
+step:900; t = 4.2841e+00; dt = 4.9451e-03; 85.7 %
+          [Mach = 3.470022]
+step:910; t = 4.3335e+00; dt = 4.9341e-03; 86.7 %
+          [Mach = 3.463953]
+step:920; t = 4.3830e+00; dt = 4.9601e-03; 87.7 %
+          [Mach = 3.461843]
+step:930; t = 4.4327e+00; dt = 4.9878e-03; 88.7 %
+          [Mach = 3.460705]
+step:940; t = 4.4826e+00; dt = 4.9760e-03; 89.7 %
+          [Mach = 3.452424]
+step:950; t = 4.5322e+00; dt = 4.9340e-03; 90.6 %
+          [Mach = 3.434993]
+step:960; t = 4.5816e+00; dt = 4.9393e-03; 91.6 %
+          [Mach = 3.416419]
+step:970; t = 4.6307e+00; dt = 4.8978e-03; 92.6 %
+          [Mach = 3.407678]
+step:980; t = 4.6798e+00; dt = 4.9189e-03; 93.6 %
+          [Mach = 3.408724]
+step:990; t = 4.7291e+00; dt = 4.9397e-03; 94.6 %
+          [Mach = 3.403373]
+step:1000; t = 4.7784e+00; dt = 4.9325e-03; 95.6 %
+           [Mach = 3.388548]
+step:1010; t = 4.8278e+00; dt = 4.9469e-03; 96.6 %
+           [Mach = 3.362199]
+step:1020; t = 4.8774e+00; dt = 4.9497e-03; 97.5 %
+           [Mach = 3.324768]
+step:1030; t = 4.9267e+00; dt = 4.9355e-03; 98.5 %
+           [Mach = 3.268098]
+step:1040; t = 4.9763e+00; dt = 4.9577e-03; 99.5 %
+           [Mach = 3.198504]
+> Writing file #1 (dbl) to disk...
+
+> Total allocated memory   14.64 Mb (proc #1)
+> Elapsed time              0d:0h:1m:38s
+> Average time/step         9.38e-02  (sec)  
+> Local time                Thu Oct 31 19:53:44 2019
+> Done

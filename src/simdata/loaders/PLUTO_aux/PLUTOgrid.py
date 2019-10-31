@@ -1,4 +1,6 @@
 import numpy as np
+import astropy.units as u
+from ... import grid
 
 class Grid:
     """grid structure
@@ -93,3 +95,37 @@ def resolve_geometry(origin='.'):
         else: raise NotImplementedError("I don't understand this geometry: DIMENSIONS = %d, GEOMETRY = %s."%(dimensions, geometry))
 
     return [dimensions, geometry, coords.split()]
+
+
+def loadGrid(dataDir, length_unit=None, angle_unit=None):
+    """returns a simdata.grid structure in relevant coordinates."""
+
+    if not length_unit: length_unit = u.cm
+    if not angle_unit: angle_unit = u.radian
+
+    g = [Grid(DIR=i, origin=dataDir) for i in [0, 1, 2]]
+    dimensions, geometry, coordinates = resolve_geometry(origin=dataDir)
+
+    if geometry == 'CARTESIAN':
+        x_i = g[0].xi * length_unit
+        y_i = g[1].xi * length_unit
+        z_i = g[2].xi * length_unit
+        return grid.CartesianGrid(x_i=x_i, y_i=y_i, z_i=z_i, active_interfaces=[])
+    elif geometry == 'SPHERICAL':
+        r_i   = g[0].xi * length_unit
+        theta_i = g[1].xi * angle_unit
+        phi_i = g[2].xi * angle_unit
+        return grid.SphericalGrid(r_i=r_i, theta_i=theta_i, phi_i=phi_i, active_interfaces=[])
+    elif geometry == 'POLAR':
+        r_i   = g[0].xi * length_unit
+        phi_i = g[1].xi * angle_unit
+        z_i = g[2].xi * length_unit
+        return grid.CylindricalGrid(r_i=r_i, phi_i=phi_i, z_i=z_i, active_interfaces=[])
+    elif geometry == 'CYLINDRICAL':
+        raise Warning('Cannot handle CYLINDRICAL (r,z) grids yet. Using a POLAR grid.')
+        r_i   = g[0].xi * length_unit
+        z_i = g[1].xi * length_unit
+        phi_i = np.array([-1, 1], dtype=float)
+        return grid.CylindricalGrid(r_i=r_i, phi_i=phi_i, z_i=z_i, active_interfaces=[])
+    else:
+        raise ValueError('Impossible error. geometry = %s, dimensions = %s'%(self.loader.geometry, self.loader.dimensions))

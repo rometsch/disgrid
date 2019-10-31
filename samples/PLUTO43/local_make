@@ -1,0 +1,1 @@
+CFLAGS += -Wno-unused-result -Wno-format-contains-nul -Wno-format-security -Wno-format

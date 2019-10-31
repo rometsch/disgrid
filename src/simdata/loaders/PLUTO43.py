@@ -1,4 +1,4 @@
-code_info = ( "PLUTO", "4.2", "vanilla")
+code_info = ( "PLUTO", "4.3", "vanilla")
 scalar_filename = "info.dat"
 
 import os
@@ -179,6 +179,7 @@ def var_in_files(varpattern, files):
 def load_scalar(file, var):
     return [1,1]
 
+
 def get_data_dir(path):
     rv = None
     ptrn = re.compile("grid.out")
@@ -196,11 +197,12 @@ def get_data_dir(path):
         version_line = gridfile.readline()
 
     for item in version_line.split():
-        if item == '4.2':
+        if item == '4.3':
             return rv
-
+            
     #raise EOFError("Could not find PLUTO version in file 'grid.out'") #this error type causes a crash (?)
     raise FileNotFoundError("Could not find PLUTO version in file 'grid.out'")
+
 
 def get_unit_from_powers(unitpowers, units):
     unit = 1.0
@@ -303,7 +305,7 @@ class Loader(interface.Interface):
             vars_2d["vz"]["pattern"] = "vx2.{}.dbl"
             vars_2d["vz"]["shorthand"] = "vx2"
 
-        #hotfix because the loader test does not reload the entire Data structure, causing repeated unit editing
+        #hotfix because the loader test does not reload the entire Data structure, causing repeated unit editing 
         if self.dimensions == 3:
             vars_2d["mass density"]["unitpowers"]["length"] = -3
             vars_2d["pressure"]["unitpowers"]["length"] = -1
