@@ -217,7 +217,7 @@ class Loader(interface.Interface):
                 loader = FieldLoader1dTorq(varname, info, self)
                 gas.register_variable(varname, "1d", loader)
         if "gasMassFlow1D.info" in files:
-            varname = "mass flow".format(n)
+            varname = "mass flow"
             info = {}
             loader = FieldLoader1dMassFlow(varname, info, self)
             gas.register_variable(varname, "1d", loader)
