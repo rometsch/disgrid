@@ -518,9 +518,12 @@ def loadCoarseOutputTimes(dataDir, unit):
     return timestamps*unit
     
 def loadFineOutputTimes(dataDir, unit):
-    timestamps = np.genfromtxt(dataDir+'/'+scalar_filename, usecols=(0), unpack=True, skip_header=1, dtype=float)
-
-    return timestamps*unit
+    try:
+        timestamps = np.genfromtxt(dataDir+'/'+scalar_filename, usecols=(0), unpack=True, skip_header=1, dtype=float)
+        return timestamps*unit
+    except:
+        print('%s/%s was not found.'%(dataDir, scalar_filename))
+        return np.array([], dtype=float)
 
 def loadGrid(dataDir):
     """see documentation in PLUTOgrid.py"""
