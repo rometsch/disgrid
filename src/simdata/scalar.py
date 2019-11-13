@@ -1,7 +1,6 @@
 # scalar quantities and time series
 # data is stored as Ntimes x Ndata
-import numpy as np
-import astropy.units as u
+from .time_access import get_indices_time_interval, get_index_closest_time, ensure_unit
 
 
 class Scalar:
@@ -10,15 +9,19 @@ class Scalar:
         self.data = data
         self.name = name
         for v in [time, data]:
-            if not isinstance(v, u.Quantity):
-                raise TypeError(
-                    "'{}' is a physical value but not an astropy quantity!".
-                    format(v))
+            ensure_unit(v)
 
     def __getitem__(self, key):
         return self.get(key)
 
-    def get(self, key=None, t=None, tmin=None, tmax=None, return_time=False,):
+    def get(
+            self,
+            key=None,
+            t=None,
+            tmin=None,
+            tmax=None,
+            return_time=False,
+    ):
         """ Extract a range of data.
 
         How data is extracted depends on which keyword is set.
@@ -52,26 +55,19 @@ class Scalar:
             rv = rv[key]
             time = time[key]
         if tmin is not None and tmax is not None:
-            inds = self.get_time_interval_inds(tmin, tmax)
+            inds = get_indices_time_interval(tmin, tmax, time)
             rv = rv[inds]
             time = time[inds]
         if t is not None:
-            ind = self.get_closest_time_ind(t, time=time)
+            ind = get_index_closest_time(t, time)
             rv = rv[ind]
             time = time[ind]
         if return_time:
             rv = (time, rv)
         return rv
 
-    def get_time_interval_inds(self, tmin, tmax):
-        for t in [tmin, tmax]:
-            ensure_unit(t)
-        mask = np.logical_and(tmin <= self.time, tmax >= self.time)
-        inds = np.arange(len(mask))[mask]
-        return inds
-
     def get_time_interval(self, tmin, tmax, **kwargs):
-        inds = self.get_time_interval_inds(tmin, tmax)
+        inds = get_indices_time_interval(tmin, tmax, self.time)
         return self.get(inds, **kwargs)
 
     def get_closest_to_time(self, t, **kwargs):
@@ -86,32 +82,5 @@ class Scalar:
         :obj:`astropy.units.Quantity`
             Datapoint for which time is closes to t.
         """
-        ind = self.get_closest_time_ind(t)
+        ind = get_index_closest_time(t, self.time)
         return self.get(key=ind, **kwargs)
-
-    def get_closest_time_ind(self, t, time=None):
-        """ Find the index for the point in time thats closest to t.
-
-        Parameters
-        ----------
-        t : :obj:`astropy.units.quantity.Quantity`
-            Time for which to find the index
-        time : :obj:`astropy.units.quantity.Quantity` or None
-            Time array to be used if not None. Otherwise self.time is used.
-
-        Returns
-        -------
-        integer
-            Index of the closest point in time.
-        """
-        if time is None:
-            time = self.time
-        else:
-            ensure_unit(time)
-        ensure_unit(t)
-        ind = np.argmin(np.abs(time - t))
-        return ind
-
-def ensure_unit(x):
-    if not isinstance(x, u.Quantity):
-        raise TypeError("'{}' does not have a unit!".format(x))
