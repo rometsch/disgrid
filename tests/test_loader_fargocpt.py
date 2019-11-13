@@ -58,6 +58,15 @@ class TestFargocptLoader(unittest.TestCase):
         self.assertEqual(energy.time.decompose(),
                          12.5663706200000007 * 5.9551995752415031e+07 * u.s)
 
+    def test_get_by_time(self):
+        target_time = 12.5663706200000007 * 5.9551995752415031e+07 * u.s
+        energy = self.d.fluids["gas"].get("2d", "energy", 5)
+        energy_by_time = self.d.fluids["gas"].get("2d",
+                                                  "energy",
+                                                  t=target_time)
+        self.assertEqual(energy.time.decompose(),
+                         energy_by_time.time.decompose())
+
     def test_scalar_mass(self):
         mass = self.d.fluids["gas"].get("scalar", "mass")
         self.assertEqual(mass.data[2].decompose(),
