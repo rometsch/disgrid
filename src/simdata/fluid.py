@@ -32,8 +32,9 @@ class Fluid:
         elif geometry in supported_geometries:
             if num_output is None:
                 raise TypeError(
-                    "get() missing 1 required optional argument: 'num_output' for geometry={}"
-                    .format(", ".join(supported_geometries[:-1])))
+                    "get() missing 1 required optional argument:",
+                    " 'num_output' for geometry={}".format(", ".join(
+                        supported_geometries[:-1])))
             return loader(num_output, *args, **kwargs)
 
     def _get_loader(self, geometry, name):
