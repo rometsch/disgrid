@@ -10,6 +10,7 @@ from .. import field
 from .. import grid
 from .. import scalar
 from .. import particles
+from .fargocpt_aux.order import order
 
 
 def identify(path):
@@ -132,7 +133,10 @@ def load_text_data_file(filepath, varname):
     col = variables[varname][0]
     unit = u.Unit(variables[varname][1])
     data = np.genfromtxt(filepath, usecols=int(col)) * unit
-    return data
+    time_col = variables["physical time"][0]
+    time = np.genfromtxt(filepath, usecols=int(time_col))
+    inds = order(time, fullind=True)
+    return data[inds]
 
 
 class Loader(interface.Interface):
