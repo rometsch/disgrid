@@ -52,6 +52,11 @@ class TestDataMethods(unittest.TestCase):
         with self.assertRaises(TypeError):
             self.v.get(t=0.75, return_time=True)
 
+    def test_get_by_time_out_of_interval(self):
+        t, v = self.v.get(t=4.5001 * u.s, return_time=True)
+        self.assertTrue(t == self.t[-1])
+        with self.assertRaises(ValueError):
+            self.v.get(t=5*u.s, return_time=True)
 
 if __name__ == '__main__':
     unittest.main()
