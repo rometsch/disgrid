@@ -40,6 +40,20 @@ class TestDataMethods(unittest.TestCase):
         with self.assertRaises(TypeError):
             self.v.get_time_interval(0.75, 3.9 * u.s, return_time=True)
 
+    def test_get_time_interval_via_get(self):
+        t, v = self.v.get(tmin=0.75 * u.s,
+                          tmax=3.9 * u.s,
+                          return_time=True)
+        self.assertTrue(all(t == self.t[2:8]))
+        with self.assertRaises(TypeError):
+            self.v.get(tmin=0.75, tmax=3.9 * u.s, return_time=True)
+
+    def test_get_time_closest_via_get(self):
+        t, v = self.v.get(t=0.75 * u.s,
+                          return_time=True)
+        self.assertTrue(t == self.t[1])
+        with self.assertRaises(TypeError):
+            self.v.get(t=0.75, return_time=True)
 
 if __name__ == '__main__':
     unittest.main()
