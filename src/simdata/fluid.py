@@ -1,4 +1,5 @@
 from .alias import Alias
+from .time_access import get_index_closest_time
 supported_geometries = ["3d", "2d", "1d", "scalar"]
 
 
@@ -24,17 +25,20 @@ class Fluid:
                 geometry, name))
         self.variable_loaders[geometry][name] = loader_function
 
-    def get(self, geometry, name, num_output=None, *args, **kwargs):
+    def get(self, geometry, name, num_output=None, t=None, *args, **kwargs):
         name = self.alias(name)
         loader = self._get_loader(geometry, name)
         if geometry == "scalar":
             return loader(*args, **kwargs)
         elif geometry in supported_geometries:
-            if num_output is None:
+            if num_output is None and t is not None:
+                time = self.get_time(geometry, name)
+                num_output = get_index_closest_time(t, time)
+            if num_output is None and t is None:
                 raise TypeError(
                     "get() missing 1 required optional argument:",
-                    " 'num_output' for geometry={}".format(", ".join(
-                        supported_geometries[:-1])))
+                    " either 'num_output' or 't' for geometry={}".format(
+                        ", ".join(supported_geometries[:-1])))
             return loader(num_output, *args, **kwargs)
 
     def _get_loader(self, geometry, name):
