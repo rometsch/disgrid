@@ -41,8 +41,39 @@ for name in os.listdir(os.path.dirname(os.path.abspath(__file__))):
                   file=sys.stderr)
             raise
 
+def call_wrapper( tup ):
+    """ A wrapper to call a function passed inside a tuple.
+
+    Parameters
+    ----------
+    tup : tuple
+        Tuple containing a callable as first item
+        and the single argument as second item.
+    """
+    func = tup[0]
+    arg = tup[1]
+    return func(arg)
 
 def identify_code(path):
+    """ Determine the type of code by calling identify functions in parallel. """
+    from multiprocessing.pool import ThreadPool as Pool
+
+    loaders_names = [ key for key in available ]
+    call_args = [ ( loader_module.identify, path ) for loader_module in available.values() ]
+    with Pool(4) as p:
+        res = p.map( call_wrapper, call_args)
+    code_list = [ key for key, is_valid_loader in zip(loaders_names, res) if is_valid_loader ]
+    if len(code_list) == 0:
+        raise UnknownCodeError(
+            "No known code matches data in '{}'".format(path))
+    elif len(code_list) > 1:
+        raise MultipleCodeError(
+            "Multiple codes identified the data in '{}' which where '{}'".
+            format(path, code_list))
+    return code_list[0]
+
+
+def identify_code_sequential(path):
     code_list = []
     for key, mod in available.items():
         if mod.identify(path):
