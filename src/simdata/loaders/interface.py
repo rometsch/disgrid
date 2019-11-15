@@ -33,9 +33,9 @@ class FieldLoader:
         self.info = info
         self.name = name
 
-    def __call__(self, n, stride=1):
+    def __call__(self, n, *args, **kwargs):
         f = field.Field(self.load_grid(n), self.load_data(n),
-                        self.load_time(n, stride=stride), self.name)
+                        self.load_time(n, *args, **kwargs), self.name)
         return f
 
     def load_time(self, n):
