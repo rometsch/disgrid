@@ -569,11 +569,12 @@ class Loader(interface.Interface):
 
 
 class FieldLoader2d(interface.FieldLoader):
-    def load_time(self, n):
+    def load_time(self, n, stride=1):
         if n is None:
             rv = self.loader.output_times
         else:
-            rv = self.loader.get_output_time(n)
+            n /= stride
+            rv = self.loader.get_output_time(int(n))
         return rv
 
     def load_data(self, n):

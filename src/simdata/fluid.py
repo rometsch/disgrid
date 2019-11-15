@@ -25,7 +25,7 @@ class Fluid:
                 geometry, name))
         self.variable_loaders[geometry][name] = loader_function
 
-    def get(self, geometry, name, num_output=None, t=None, *args, **kwargs):
+    def get(self, geometry, name, num_output=None, t=None, stride=1, *args, **kwargs):
         name = self.alias(name)
         loader = self._get_loader(geometry, name)
         if geometry == "scalar":
@@ -39,7 +39,7 @@ class Fluid:
                     "get() missing 1 required optional argument:",
                     " either 'num_output' or 't' for geometry={}".format(
                         ", ".join(supported_geometries[:-1])))
-            return loader(num_output, *args, **kwargs)
+            return loader(num_output, stride=stride, *args, **kwargs)
 
     def _get_loader(self, geometry, name):
         if geometry in supported_geometries:
