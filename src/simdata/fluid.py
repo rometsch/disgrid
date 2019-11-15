@@ -25,7 +25,7 @@ class Fluid:
                 geometry, name))
         self.variable_loaders[geometry][name] = loader_function
 
-    def get(self, geometry, name, num_output=None, t=None, stride=1, *args, **kwargs):
+    def get(self, geometry, name, num_output=None, t=None, *args, **kwargs):
         name = self.alias(name)
         loader = self._get_loader(geometry, name)
         if geometry == "scalar":
