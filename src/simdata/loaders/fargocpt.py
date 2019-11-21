@@ -136,6 +136,8 @@ def load_text_data_file(filepath, varname):
     time_col = variables["physical time"][0]
     time = np.genfromtxt(filepath, usecols=int(time_col))
     inds = order(time, fullind=True)
+    if data.isscalar:
+        data = u.quantity.Quantity([data])
     return data[inds]
 
 
