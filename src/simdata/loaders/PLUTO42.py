@@ -254,10 +254,10 @@ class Loader(interface.Interface):
         self.fluids['gas'] = fluid.Fluid('gas') # hack
 
     def set_parameters(self, mean_mol_weight=2.353, mass_sys=1.0):
-        self.fluids['gas'].mean_mol_weight = mean_mol_weight *u.g/u.mol
+        self.fluids['gas'].mean_mol_weight = mean_mol_weight
         self.mass_sys = mass_sys * self.units['mass'].cgs
         self.GM = (mass_sys * self.units['mass'] * const.G).decompose().cgs
-        self.fluids['gas'].mu_R = (self.fluids['gas'].mean_mol_weight/const.R).decompose().cgs
+        self.fluids['gas'].mu_R = (self.fluids['gas'].mean_mol_weight/const.k_B*1.0*u.Dalton).decompose().cgs
 
     def set_EOS(self):
         if vars_2d['pressure']["numvar"] >= 0:
@@ -381,6 +381,11 @@ class Loader(interface.Interface):
                 for varname, info in vars_scalar.items():
                     fl.register_variable(varname, "scalar", ScalarLoader(varname, datafile, info, self))
 
+
+    def load_grid(self, n=0):
+        """Returns a simdata.grid structure in relevant coordinates."""
+        return PGrid.loadGrid(self.data_dir, length_unit=self.units["length"], angle_unit=u.radian)
+
     def load_times(self):
         self.output_times = loadCoarseOutputTimes(self.data_dir, self.units["time"])
         self.fine_output_times = loadFineOutputTimes(self.data_dir, self.units["time"])
@@ -467,6 +472,7 @@ class FieldLoader2d(interface.FieldLoader):
             mu_R = self.loader.fluids['gas'].mu_R
             prs = self.read_data(n, 'pressure')
             dens = self.read_data(n, 'mass density')
+            print(mu_R)
             rv = ( prs/dens * mu_R ).decompose().cgs
 
         elif name == 'pressure scale height':
@@ -522,7 +528,7 @@ def loadFineOutputTimes(dataDir, unit):
         timestamps = np.genfromtxt(dataDir+'/'+scalar_filename, usecols=(0), unpack=True, skip_header=1, dtype=float)
         return timestamps*unit
     except:
-        print('%s/%s was not found.'%(dataDir, scalar_filename))
+        #print('%s/%s was not found.'%(dataDir, scalar_filename))
         return np.array([], dtype=float)
 
 def loadGrid(dataDir):

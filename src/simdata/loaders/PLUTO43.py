@@ -256,10 +256,10 @@ class Loader(interface.Interface):
         self.fluids['gas'] = fluid.Fluid('gas') # hack
 
     def set_parameters(self, mean_mol_weight=2.353, mass_sys=1.0):
-        self.fluids['gas'].mean_mol_weight = mean_mol_weight *u.g/u.mol
+        self.fluids['gas'].mean_mol_weight = mean_mol_weight
         self.mass_sys = mass_sys * self.units['mass'].cgs
         self.GM = (mass_sys * self.units['mass'] * const.G).decompose().cgs
-        self.fluids['gas'].mu_R = (self.fluids['gas'].mean_mol_weight/const.R).decompose().cgs
+        self.fluids['gas'].mu_R = (self.fluids['gas'].mean_mol_weight/const.k_B*1.0*u.Dalton).decompose().cgs
 
     def set_EOS(self):
         if vars_2d['pressure']["numvar"] >= 0:
@@ -525,7 +525,7 @@ def loadFineOutputTimes(dataDir, unit):
         timestamps = np.genfromtxt(dataDir+'/'+scalar_filename, usecols=(0), unpack=True, skip_header=1, dtype=float)
         return timestamps*unit
     except:
-        print('%s/%s was not found.'%(dataDir, scalar_filename))
+        #print('%s/%s was not found.'%(dataDir, scalar_filename))
         return np.array([], dtype=float)
 
 def loadGrid(dataDir):
