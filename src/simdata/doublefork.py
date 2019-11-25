@@ -1,6 +1,7 @@
 from multiprocessing import Process
 import os
 
+
 # from https://stackoverflow.com/questions/49123439/python-how-to-run-process-in-detached-mode
 def detachify(func):
     """Decorate a function so that its calls are async in a detached process.
@@ -19,6 +20,7 @@ def detachify(func):
             f('Async and detached!!!')
 
     """
+
     # create a process fork and run the function
     def forkify(*args, **kwargs):
         if os.fork() != 0:
