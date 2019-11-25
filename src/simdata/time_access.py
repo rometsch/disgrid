@@ -54,6 +54,7 @@ def ensure_unit(x):
     if not isinstance(x, u.Quantity):
         raise TypeError("'{}' does not have a unit!".format(x))
 
+
 def ensure_in_time_interval(t, time, delta=0.001):
     """ Ensure that t is in the time interval of time.
 
@@ -74,9 +75,9 @@ def ensure_in_time_interval(t, time, delta=0.001):
     ValueError
         If t is not inside time interval + tolerance.
     """
-    tmin = time[0] - delta*(time[-1] - time[0])
-    tmax = time[-1] + delta*(time[-1] - time[0])
+    tmin = time[0] - delta * (time[-1] - time[0])
+    tmax = time[-1] + delta * (time[-1] - time[0])
     if t > tmax or t < tmin:
-        raise ValueError("t={} is not inside time interval [{}, {}]"
-                         .format(t, tmin, tmax), ", delta = {}".format(delta))
-
+        raise ValueError(
+            "t={} is not inside time interval [{}, {}]".format(t, tmin, tmax),
+            ", delta = {}".format(delta))

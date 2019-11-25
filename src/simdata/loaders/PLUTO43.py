@@ -1,4 +1,4 @@
-code_info = ("PLUTO", "4.2", "vanilla")
+code_info = ("PLUTO", "4.3", "vanilla")
 scalar_filename = "info.dat"
 
 import os
@@ -253,7 +253,7 @@ def get_data_dir(path):
         version_line = gridfile.readline()
 
     for item in version_line.split():
-        if item == '4.2':
+        if item == '4.3':
             return rv
 
     #raise EOFError("Could not find PLUTO version in file 'grid.out'") #this error type causes a crash (?)
@@ -445,12 +445,6 @@ class Loader(interface.Interface):
                     fl.register_variable(
                         varname, "scalar",
                         ScalarLoader(varname, datafile, info, self))
-
-    def load_grid(self, n=0):
-        """Returns a simdata.grid structure in relevant coordinates."""
-        return PGrid.loadGrid(self.data_dir,
-                              length_unit=self.units["length"],
-                              angle_unit=u.radian)
 
     def load_times(self):
         self.output_times = loadCoarseOutputTimes(self.data_dir,

@@ -56,7 +56,8 @@ class TestDataMethods(unittest.TestCase):
         t, v = self.v.get(t=4.5001 * u.s, return_time=True)
         self.assertTrue(t == self.t[-1])
         with self.assertRaises(ValueError):
-            self.v.get(t=5*u.s, return_time=True)
+            self.v.get(t=5 * u.s, return_time=True)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -136,6 +136,8 @@ def load_text_data_file(filepath, varname):
     time_col = variables["physical time"][0]
     time = np.genfromtxt(filepath, usecols=int(time_col))
     inds = order(time, fullind=True)
+    if data.isscalar:
+        data = u.quantity.Quantity([data])
     return data[inds]
 
 
@@ -241,7 +243,7 @@ class Loader(interface.Interface):
                 loader = FieldLoader1dTorq(varname, info, self)
                 gas.register_variable(varname, "1d", loader)
         if "gasMassFlow1D.info" in files:
-            varname = "mass flow".format(n)
+            varname = "mass flow"
             info = {}
             loader = FieldLoader1dMassFlow(varname, info, self)
             gas.register_variable(varname, "1d", loader)
