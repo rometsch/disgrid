@@ -1,5 +1,6 @@
 import os
 from astropy import units as u
+from subprocess import run, PIPE
 
 log_file_options = ['pluto.log', '../log.log', 'pluto.0.log']
 
@@ -17,19 +18,25 @@ def loadUnits(dataDir, dimensions):
     if not use_log_file:
         raise NotImplementedError('Cannot find PLUTO log file. If compiled in PLUTO 4.3 serial mode, it will be implemented differently.')
 
-    with open(os.path.join(dataDir,use_log_file)) as f:
-        for line in f:
-            line = line.strip()
-            if line == "> Normalization Units:":
-                in_unit_block = True
+    grep_res = run([
+        "grep", "-C", "7", "Normalization\ Units",
+        os.path.join(dataDir, use_log_file)
+    ],
+                   stdout=PIPE)
+    lines = grep_res.stdout.decode("utf-8").splitlines()[-8:]
+
+    for line in lines:
+        line = line.strip()
+        if line == "> Normalization Units:":
+            in_unit_block = True
+            continue
+        if in_unit_block:
+            if line == "":
                 continue
-            if in_unit_block:
-                if line == "":
-                    continue
-                elif line[0] == ">":
-                    break
-                else:
-                    unit_lines.append(line)
+            elif line[0] == ">":
+                break
+            else:
+                unit_lines.append(line)
     # parse lines into units dict
     units = {}
     for line in unit_lines:
