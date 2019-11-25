@@ -472,7 +472,6 @@ class FieldLoader2d(interface.FieldLoader):
             mu_R = self.loader.fluids['gas'].mu_R
             prs = self.read_data(n, 'pressure')
             dens = self.read_data(n, 'mass density')
-            print(mu_R)
             rv = ( prs/dens * mu_R ).decompose().cgs
 
         elif name == 'pressure scale height':
