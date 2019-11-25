@@ -569,10 +569,13 @@ class Loader(interface.Interface):
 
 
 class FieldLoader2d(interface.FieldLoader):
-    def load_time(self, n):
+    def load_time(self, n, *args, **kwargs):
         if n is None:
             rv = self.loader.output_times
         else:
+            if "stride" in kwargs.keys():
+                n /= kwargs["stride"]
+                n = int(n)
             rv = self.loader.get_output_time(n)
         return rv
 
