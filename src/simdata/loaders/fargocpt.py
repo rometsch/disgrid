@@ -167,7 +167,7 @@ class Loader(interface.Interface):
     def load_grid(self):
         self.r_i = np.genfromtxt(self.data_dir +
                                  "/used_rad.dat") * self.units["length"]
-        self.phi_i = np.linspace(-np.pi, np.pi, self.Nphi + 1) * u.Unit(1)
+        self.phi_i = np.linspace(-np.pi, np.pi, self.Nphi + 1) * u.rad
 
     def load_times(self):
         self.output_times = load_text_data_file(
