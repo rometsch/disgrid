@@ -530,7 +530,7 @@ class FieldLoader2d(interface.FieldLoader):
         else:
             rv = np.fromfile(filename).reshape(*file_format)
 
-        rv *= unit
+        rv = rv * unit
         
         return rv.decompose().cgs
 
