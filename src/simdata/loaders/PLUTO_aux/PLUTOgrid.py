@@ -123,25 +123,25 @@ def loadGrid(dataDir, length_unit=None, angle_unit=None):
         x_i = g[0].xi * length_unit
         y_i = g[1].xi * length_unit
         z_i = g[2].xi * length_unit
-        return grid.CartesianGrid(x_i=x_i,
-                                  y_i=y_i,
-                                  z_i=z_i,
+        return grid.CartesianGrid(x_i=x_i.decompose().cgs,
+                                  y_i=y_i.decompose().cgs,
+                                  z_i=z_i.decompose().cgs,
                                   active_interfaces=[])
     elif geometry == 'SPHERICAL':
         r_i = g[0].xi * length_unit
         theta_i = g[1].xi * angle_unit
         phi_i = g[2].xi * angle_unit
-        return grid.SphericalGrid(r_i=r_i,
-                                  theta_i=theta_i,
-                                  phi_i=phi_i,
+        return grid.SphericalGrid(r_i=r_i.decompose().cgs,
+                                  theta_i=theta_i.decompose().cgs,
+                                  phi_i=phi_i.decompose().cgs,
                                   active_interfaces=[])
     elif geometry == 'POLAR':
         r_i = g[0].xi * length_unit
         phi_i = g[1].xi * angle_unit
         z_i = g[2].xi * length_unit
-        return grid.CylindricalGrid(r_i=r_i,
-                                    phi_i=phi_i,
-                                    z_i=z_i,
+        return grid.CylindricalGrid(r_i=r_i.decompose().cgs,
+                                    phi_i=phi_i.decompose().cgs,
+                                    z_i=z_i.decompose().cgs,
                                     active_interfaces=[])
     elif geometry == 'CYLINDRICAL':
         raise Warning(
@@ -149,9 +149,9 @@ def loadGrid(dataDir, length_unit=None, angle_unit=None):
         r_i = g[0].xi * length_unit
         z_i = g[1].xi * length_unit
         phi_i = np.array([-1, 1], dtype=float)
-        return grid.CylindricalGrid(r_i=r_i,
-                                    phi_i=phi_i,
-                                    z_i=z_i,
+        return grid.CylindricalGrid(r_i=r_i.decompose().cgs,
+                                    phi_i=phi_i.decompose().cgs,
+                                    z_i=z_i.decompose().cgs,
                                     active_interfaces=[])
     else:
         raise ValueError('Impossible error. geometry = %s, dimensions = %s' %

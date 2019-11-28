@@ -527,12 +527,12 @@ class FieldLoader2d(interface.FieldLoader):
                                dtype=float,
                                shape=(self.loader.NVAR, *file_format))
             rv = np.array(memmap[qty_info["numvar"]], dtype=float)
-            rv = (rv * unit).decompose().cgs
         else:
             rv = np.fromfile(filename).reshape(*file_format)
-            rv = (rv * unit).decompose().cgs
 
-        return rv
+        rv *= unit
+        
+        return rv.decompose().cgs
 
     def convert_data(self, n, qty=None):
         """Given a requested field (e.g. "temperature"), calculates said field using existing data.
