@@ -436,3 +436,32 @@ code_info = ('code_name', 'version_str', 'further_name')
 #+end_example
 
 
+
+* Caching of remote data
+
+Using the remotedata.Data class, paths on the network are transparently mounted in the background via sshfs.
+
+In the case of iteratively producing plots on a local workstation (as I like to do), most of the data only needs to be downloaded once.
+If the simulation is finished, the data doesn't even change at all, so files could be cached indefinitely.
+
+By default, sshfs caches data for 20 seconds.
+Right now, the =-o kernel_cache= option is also used to let the kernel cache files.
+This seems to work rather well, lowering the time needed to create a remotedata.Data object from 3-5 seconds on the first run, to 1-2 seconds on subsequent runs.
+
+Other sshfs options to try out are
+
+#+begin_src bash
+$ sshfs --help
+...
+-o cache=BOOL          enable caching {yes,no} (default: yes)
+    -o cache_max_size=N    sets the maximum size of the cache (default: 10000)
+    -o cache_timeout=N     sets timeout for caches in seconds (default: 20)
+    -o cache_X_timeout=N   sets timeout for {stat,dir,link} cache
+    -o cache_clean_interval=N
+                           sets the interval for automatic cleaning of the
+                           cache (default: 60)
+    -o cache_min_clean_interval=N
+                           sets the interval for forced cleaning of the
+                           cache if full (default: 5)
+...
+#+end_src
