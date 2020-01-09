@@ -83,7 +83,9 @@ class Mount:
 
 def mount_sshfs(remote, local, remove=True):
     # mount a remote location to a local directory using sshfs
-    run(["sshfs", "-o", "ro", remote, local])
+    run(["sshfs", "-o", "ro",
+         "-o", "kernel_cache",
+         remote, local])
 
 
 def find_existing_mount(path):
