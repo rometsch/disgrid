@@ -73,14 +73,16 @@ def get_loader(path, loader, **kwargs):
         Loader object to access data.
     """
     code = None
-    if loader is None:
-        choices = available
+    choices = available
     # check for direct specification of code
-    elif isinstance(loader, (tuple, list)):
-        for key, val in available.items():
-            if key == loader:
+    if isinstance(loader, (tuple, list)):
+        for key, mod in available.items():
+            if key == tuple(loader):
                 code = key
-                loader = val
+                try:
+                    loader = mod.Loader(path, **kwargs)
+                except Exception:
+                    code = None
                 break
     # check for simulation code names hints
     elif isinstance(loader, str):
