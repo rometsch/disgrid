@@ -57,7 +57,38 @@ def identify_code(path, choices=available):
 
 
 def get_loader(path, loader, **kwargs):
-    if loader:
+    """
+    Get a loader for the simulation data inside path.
+
+    Parameters
+    ----------
+    path : str
+        Path to the data.
+    loader : str or :obj:`simdata.loaders.interface.Interface`
+        None or hint (str) or acutal loader for the data.
+
+    Returns
+    -------
+    simdata.loaders.interface.Interface
+        Loader object to access data.
+    """
+    code = None
+    if loader is None:
+        choices = available
+    # check for direct specification of code
+    elif isinstance(loader, (tuple, list)):
+        for key, val in available.items():
+            if key == loader:
+                code = key
+                loader = val
+                break
+    # check for simulation code names hints
+    elif isinstance(loader, str):
+        choices = { key : available[key] for key in available if loader in key[0] }
+        if len(choices) == 0:
+            choices = available
+    # handle loader objects/classes
+    elif loader is not None:
         if "Loader" in dir(loader):
             # assume its a module
             code = loader.code_info
@@ -66,7 +97,8 @@ def get_loader(path, loader, **kwargs):
             # assume its a loader object
             loader = loader
             code = type(loader).code_info
-    else:
-        code = identify_code(path)
+    # if no hints or loader was given, test all available
+    if code is None:
+        code = identify_code(path, choices)
         loader = available[code].Loader(path, **kwargs)
     return code, loader
