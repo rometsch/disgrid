@@ -19,8 +19,8 @@ def identify(path):
     seen_ids = 0
     for root, dirs, files in os.walk(path):
         seen_ids += len([1 for s in identifiers if s in files])
-    if seen_ids >= 2:
-        return True
+        if seen_ids >= 2:
+            return True
     return False
 
 
