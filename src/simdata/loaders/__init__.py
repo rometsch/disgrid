@@ -41,10 +41,9 @@ for name in os.listdir(os.path.dirname(os.path.abspath(__file__))):
                   file=sys.stderr)
             raise
 
-
-def identify_code(path):
+def identify_code(path, choices=available):
     code_list = []
-    for key, mod in available.items():
+    for key, mod in choices.items():
         if mod.identify(path):
             code_list.append(key)
     if len(code_list) == 0:
