@@ -19,8 +19,8 @@ def identify(path):
     seen_ids = 0
     for root, dirs, files in os.walk(path):
         seen_ids += len([1 for s in identifiers if s in files])
-    if seen_ids >= 2:
-        return True
+        if seen_ids >= 2:
+            return True
     return False
 
 
@@ -96,10 +96,18 @@ def load_scalar(file, var):
 
 def get_data_dir(path):
     rv = None
-    for root, dirs, files in os.walk(path):
-        if "misc.dat" in files:
-            rv = root
-            break
+    # guess first
+    for guess in ["outputs", "output", "out"]:
+        guess_dir = os.path.join(path, guess)
+        if os.path.isfile(os.path.join(guess_dir, "misc.dat")):
+           rv = guess_dir
+           break
+    # now search whole dir tree
+    if rv is None:
+        for root, dirs, files in os.walk(path):
+            if "misc.dat" in files:
+                rv = root
+                break
     if rv is None:
         raise FileNotFoundError(
             "Could not find identifier file 'misc.dat' in any subfolder of '{}'"

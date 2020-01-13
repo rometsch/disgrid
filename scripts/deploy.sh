@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-if [[ "$#" == 1 ]]; then
+if [[ "$#" == 0 ]]; then
+	HOST="localhost"
+elif [[ "$#" == 1 ]]; then
 	HOST=$1
 else
 	echo "Wrong syntax! Usage: deploy.sh 'hostname'"
@@ -17,7 +19,14 @@ UUID="$(uuidgen)"
 REMOTE_TMP_DIR="/tmp/$UUID-install-$CODENAME"
 
 echo "Deploying '$CODENAME' on '$HOST'"
-# copy files
-rsync -r --exclude "src/*.egg-info" src setup.py $HOST:$REMOTE_TMP_DIR
-# install and clean up
-ssh $HOST "cd $REMOTE_TMP_DIR; python3 setup.py install --user; cd -; rm -rf $REMOTE_TMP_DIR" 1>/dev/null
+if [[ "$HOST" == "localhost" ]]; then
+	# copy files
+	rsync -r --exclude "src/*.egg-info" src setup.py $REMOTE_TMP_DIR
+	# install and clean up
+	sh -c "cd $REMOTE_TMP_DIR; python3 setup.py install --user; cd -; rm -rf $REMOTE_TMP_DIR" 1>/dev/null
+else
+	# copy files
+	rsync -r --exclude "src/*.egg-info" src setup.py $HOST:$REMOTE_TMP_DIR
+	# install and clean up
+	ssh $HOST "cd $REMOTE_TMP_DIR; python3 setup.py install --user; cd -; rm -rf $REMOTE_TMP_DIR" 1>/dev/null
+fi
