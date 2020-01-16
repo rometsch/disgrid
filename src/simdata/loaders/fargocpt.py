@@ -100,8 +100,8 @@ def get_data_dir(path):
     for guess in ["outputs", "output", "out"]:
         guess_dir = os.path.join(path, guess)
         if os.path.isfile(os.path.join(guess_dir, "misc.dat")):
-           rv = guess_dir
-           break
+            rv = guess_dir
+            break
     # now search whole dir tree
     if rv is None:
         for root, dirs, files in os.walk(path):

@@ -41,6 +41,7 @@ for name in os.listdir(os.path.dirname(os.path.abspath(__file__))):
                   file=sys.stderr)
             raise
 
+
 def identify_code(path, choices=available):
     code_list = []
     for key, mod in choices.items():
@@ -86,7 +87,10 @@ def get_loader(path, loader, **kwargs):
                 break
     # check for simulation code names hints
     elif isinstance(loader, str):
-        choices = { key : available[key] for key in available if loader in key[0] }
+        choices = {
+            key: available[key]
+            for key in available if loader in key[0]
+        }
         if len(choices) == 0:
             choices = available
     # handle loader objects/classes
