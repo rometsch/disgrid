@@ -139,7 +139,9 @@ def load_text_data_file(filepath, varname):
     # get data
     variables = load_text_data_variables(filepath)
     col = variables[varname][0]
-    unit = u.Unit(variables[varname][1])
+    unit_str = variables[varname][1]
+    unit_str = unit_str.replace("1/s", "s-1")
+    unit = u.Unit(unit_str)
     data = np.genfromtxt(filepath, usecols=int(col)) * unit
     time_col = variables["physical time"][0]
     time = np.genfromtxt(filepath, usecols=int(time_col))
