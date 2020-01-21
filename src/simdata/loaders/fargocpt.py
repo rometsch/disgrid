@@ -38,7 +38,7 @@ vars2d = {
         "unit": u.cm / u.s,
         "interfaces": ["r"]
     },
-    "vazimuth": {
+    "vtheta": {
         "pattern": "gasvtheta{}.dat",
         "unit": u.cm / u.s,
         "interfaces": ["phi"]
@@ -48,8 +48,8 @@ vars2d = {
 alias_fields = {
     "mass density": "dens",
     "velocity radial": "vrad",
-    "velocity azimuthal": "vazimuth",
-    "total energy density": "energy"
+    "velocity azimuthal": "vtheta",
+    "energy density": "energy"
 }
 
 alias_reduced = {
@@ -369,14 +369,17 @@ class FieldLoader1d(interface.FieldLoader):
 
 class FieldLoader1dTorq(interface.FieldLoader):
     def load_time(self, n):
-        rv = self.loader.get_output_time(n)
+        if n is None:
+            rv = self.loader.output_times
+        else:
+            rv = self.loader.get_output_time(n)
         return rv
 
     def load_data(self, n):
         datafile = self.info["pattern"].format(n)
         data = np.fromfile(datafile, dtype=float)
-        v = data[1::2] * u.Unit("cm^2 g / s^2")
-        return data
+        rv = data[1::2] * u.Unit("cm^2 g / s^2")
+        return rv
 
     def load_grid(self, n):
         g = grid.PolarGrid(r_i=self.loader.r_i)
@@ -410,11 +413,14 @@ def load1dMassFlow(n, dataDir):
 
 class FieldLoader1dMassFlow(interface.FieldLoader):
     def load_time(self, n):
-        rv = self.loader.get_fine_output_time(n)
+        if n is None:
+            rv = self.loader.fine_output_times
+        else:
+            rv = self.loader.get_fine_output_time(n)
         return rv
 
     def load_data(self, n):
-        rv = load1dMassFlow(n, self.data_dir)
+        rv = load1dMassFlow(n, self.loader.data_dir)
         return rv
 
     def load_grid(self, n):
