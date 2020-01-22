@@ -135,7 +135,7 @@ def load_text_data_variables(filepath):
     return found_variables
 
 
-def load_text_data_file(filepath, varname):
+def load_text_data_file(filepath, varname, Nmax=np.inf):
     # get data
     variables = load_text_data_variables(filepath)
     col = variables[varname][0]
@@ -145,6 +145,9 @@ def load_text_data_file(filepath, varname):
     data = np.genfromtxt(filepath, usecols=int(col)) * unit
     time_col = variables["physical time"][0]
     time = np.genfromtxt(filepath, usecols=int(time_col))
+    N = min(len(data), len(time), Nmax)
+    data = data[:N]
+    time = time[:N]
     inds = order(time, fullind=True)
     if data.isscalar:
         data = u.quantity.Quantity([data])
@@ -443,11 +446,15 @@ class ScalarLoader:
         return f
 
     def load_data(self):
-        rv = load_text_data_file(self.datafile, self.name)
+        rv = load_text_data_file(self.datafile,
+                                 self.name,
+                                 Nmax=len(self.loader.fine_output_times))
         return rv
 
     def load_time(self):
-        rv = load_text_data_file(self.datafile, "physical time")
+        rv = load_text_data_file(self.datafile,
+                                 "physical time",
+                                 Nmax=len(self.loader.fine_output_times))
         return rv
 
 
