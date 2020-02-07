@@ -12,7 +12,6 @@ class Interface:
         self.particlegroups = {}
         self.planets = {}
         self.parameters = {}
-        self.meta = {}
 
     def scout(self):
         # find all variables

@@ -17,7 +17,6 @@ class Data:
         self.particlegroups = self.loader.particlegroups
         self.planets = self.loader.planets
         self.parameters = self.loader.parameters
-        self.meta = self.loader.meta
 
     def get_fluid(self, name):
         return self.fluids[name]
