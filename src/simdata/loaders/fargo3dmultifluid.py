@@ -105,12 +105,21 @@ vars_1d = {
         }
     },
     'velocity radial': {
-        'pattern': 'torq_1d_Y_raw_planet_{}.dat',
+        'pattern': '{}vy{}.dat',
         'directions': ["r"],
         'unitpowers': {
-            "mass": 1,
-            "length": 2,
-            "time": -2
+            "mass": 0,
+            "length": 1,
+            "time": -1
+        }
+    },
+    'velocity azimuthal': {
+        'pattern': '{}vx{}.dat',
+        'directions': ["r"],
+        'unitpowers': {
+            "mass": 0,
+            "length": 1,
+            "time": -1
         }
     },
 }
@@ -515,8 +524,14 @@ class Loader(interface.Interface):
             monitor_files = os.listdir(monitor_dir)
             for name_pattern, info in vars_1d.items():
                 for n in range(len(self.planets)):
-                    datafile = os.path.join(monitor_dir,
-                                            info["pattern"].format(n))
+                    try:
+                        filename = info["pattern"].format(n)
+                    except IndexError:
+                        filename = info["pattern"].format(fluid_name, n)
+
+                    datafile = os.path.join(monitor_dir, filename)
+                    if not os.path.exists(datafile):
+                        datafile = os.path.join(self.data_dir, filename)
                     varname = name_pattern.format(n)
                     if os.path.exists(datafile):
                         info_formatted = copy.deepcopy(info)
