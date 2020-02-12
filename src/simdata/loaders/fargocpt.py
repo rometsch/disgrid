@@ -1,4 +1,4 @@
-code_info = ("fargocpt", "0.1", "testloader")
+code_info = ("fargocpt", "0.1", "legacy_output")
 
 import os
 import re
