@@ -485,10 +485,10 @@ class Loader(interface.Interface):
         # add variables to planets
         for pid, planet in zip(planet_ids, self.planets):
             for varname in planet_vars_scalar:
+                info = planet_vars_scalar[varname]
                 datafile = os.path.join(self.data_dir,
-                                        "bigplanet{}.dat".format(pid))
-                loader = ScalarLoader(varname, datafile,
-                                      planet_vars_scalar[varname], self)
+                                        info["file"].format(pid))
+                loader = ScalarLoader(varname, datafile, info, self)
                 planet.register_variable(varname, loader)
 
     def get_fluids(self):
