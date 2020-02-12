@@ -37,7 +37,7 @@ vars_2d = {
             "time": -2
         }
     },
-    "vrad": {
+    "velocity radial": {
         "pattern": "{}vy{}.dat",
         "unitpowers": {
             "length": 1,
@@ -45,7 +45,7 @@ vars_2d = {
         },
         "interfaces": ["r"],
     },
-    "vazimuth": {
+    "velocity azimuthal": {
         "pattern": "{}vx{}.dat",
         "unitpowers": {
             "length": 1,
@@ -610,7 +610,7 @@ class FieldLoader2d(interface.FieldLoader):
         if "interfaces" in self.info and "r" in self.info["interfaces"]:
             r_i = r_i[:-1]
         phi_i = np.genfromtxt(self.loader.data_dir +
-                              "/domain_x.dat") * u.Unit(1)
+                              "/domain_x.dat") * u.Unit("rad")
         active_interfaces = self.info[
             "interfaces"] if "interfaces" in self.info else []
         g = grid.PolarGrid(r_i=r_i,
@@ -650,7 +650,7 @@ class FieldLoader1d(interface.FieldLoader):
         if "interfaces" in self.info and "r" in self.info["interfaces"]:
             r_i = r_i[:-1]
         phi_i = np.genfromtxt(self.loader.data_dir +
-                              "/domain_x.dat") * u.Unit(1)
+                              "/domain_x.dat") * u.Unit("rad")
         active_interfaces = self.info[
             "interfaces"] if "interfaces" in self.info else []
         kwargs = {}

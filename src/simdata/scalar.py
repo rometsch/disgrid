@@ -15,12 +15,12 @@ class Scalar:
         return self.get(key)
 
     def get(
-            self,
-            key=None,
-            t=None,
-            tmin=None,
-            tmax=None,
-            return_time=False,
+        self,
+        key=None,
+        t=None,
+        tmin=None,
+        tmax=None,
+        return_time=False,
     ):
         """ Extract a range of data.
 
