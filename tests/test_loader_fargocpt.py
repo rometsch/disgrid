@@ -15,7 +15,7 @@ class TestFargocptLoader(unittest.TestCase):
 
     def test_identify_code_via_data(self):
         d = data.Data(code_sample_path)
-        self.assertEqual(d.loader.code_info, ("fargocpt", "0.1", "testloader"))
+        self.assertEqual(d.loader.code_info, ("fargocpt", "0.1", "legacy_output"))
 
     def test_identify_code_directly(self):
         self.assertTrue(fargocpt.identify(code_sample_path))
