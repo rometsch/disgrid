@@ -145,13 +145,16 @@ def load_text_data_file(filepath, varname, Nmax=np.inf):
     data = np.genfromtxt(filepath, usecols=int(col)) * unit
     time_col = variables["physical time"][0]
     time = np.genfromtxt(filepath, usecols=int(time_col))
-    N = min(len(data), len(time), Nmax)
+    N = min(len(data), len(time))
     data = data[:N]
     time = time[:N]
     inds = order(time, fullind=True)
     if data.isscalar:
         data = u.quantity.Quantity([data])
-    return data[inds]
+    data = data[inds]
+    N = min(len(data), Nmax)
+    data = data[:N]
+    return data
 
 
 class Loader(interface.Interface):
