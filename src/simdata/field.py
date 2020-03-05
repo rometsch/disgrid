@@ -35,4 +35,5 @@ class Field:
 def ensure_is_astropy_quantity(x, name="variable"):
     # ensure data and time have astropy unit=
     if not (isinstance(x, u.Quantity) or isinstance(x, u.Unit)):
-        raise TypeError("{} (type={}) doesn't have a unit".format(n, type(x)))
+        raise TypeError("{} (type={}) doesn't have a unit: {}".format(
+            name, type(x), x))
