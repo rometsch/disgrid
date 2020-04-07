@@ -170,6 +170,7 @@ class Loader(interface.Interface):
     def scout(self):
         self.get_units()
         self.get_domain_size()
+        self.get_parameters()
         self.load_grid()
         self.load_times()
         self.get_fluids()
@@ -179,6 +180,26 @@ class Loader(interface.Interface):
         self.get_scalars()
         self.get_nbodysystems()
         self.register_alias()
+
+    def get_parameters(self):
+        self.parameters = {}
+        with open(os.path.join(self.data_dir, "../setup/in.par")) as f:
+            for line in f:
+                line = line.strip()
+                
+                if line == "" or line[0] in ["#", "="]:
+                    continue
+
+                parts = [s.strip() for s in line.split()]
+                try:
+                    val = int(parts[1])
+                except ValueError:
+                    try:
+                        val = float(parts[1])
+                    except ValueError:
+                        val = parts[1]
+                self.parameters[parts[0].lower()] = val
+
 
     def load_grid(self):
         self.r_i = np.genfromtxt(self.data_dir +
