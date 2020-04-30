@@ -824,7 +824,7 @@ def loadUnits(dataDir):
             ptrn = "(?<=MSTAR = \()\d+.\d+"
             m = re.search(ptrn, infile.read())
             if m:
-                units["mass"] *= float(m.group()[0])
+                units["mass"] *= float(m.group())
 
         with open(first_summary, 'r') as infile:
             ptrn = r"STEFANK =.*\*pow\(\(\d+\.\d+\)\/\((\d+\.*\d*\*\d+\.\d*\w+\d*)\),-0\.5"
