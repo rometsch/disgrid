@@ -24,27 +24,11 @@ def identify(path):
     """ Identifies a directory to be a fargo3d simulation dir.
 
     Parameters
-    -------def import_loader(module_str):
-    try:
-        module = importlib.import_module(module_str)
-        missing_functions = [
-            fname for fname in required_functions
-            if fname not in dir(module)
-        ]
-        if len(missing_functions) > 0:
-            print(
-                "Warning: module '{}' doesn't supply some require function ({}), ignoring this module"
-                .format(module_name, missing_functions),
-                file=sys.stderr)
-            return None
-        else:
-            return module
-    except ImportError:
-        print("Warning: module '{}' couldn't be imported".format(
-            module_name),
-              file=sys.stderr)
-        raise
+    ----------
+    path: str
+        Path of directory to be checked.
     
+    Returns
     -------
     bool
         True if dir is a fargo3d dir, False if not.
