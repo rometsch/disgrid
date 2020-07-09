@@ -17,30 +17,45 @@ required_functions = ["identify"]
 # store all available loader modules
 available = {}
 
-for name in os.listdir(os.path.dirname(os.path.abspath(__file__))):
+_loader_src_dir = os.path.dirname(os.path.abspath(__file__))
+
+def import_loader(module_str):
+    try:
+        module = importlib.import_module(module_str)
+        missing_functions = [
+            fname for fname in required_functions
+            if fname not in dir(module)
+        ]
+        if len(missing_functions) > 0:
+            print(
+                "Warning: module '{}' doesn't supply some require function ({}), ignoring this module"
+                .format(module_name, missing_functions),
+                file=sys.stderr)
+            return None
+        else:
+            return module
+    except ImportError:
+        print("Warning: module '{}' couldn't be imported".format(
+            module_name),
+              file=sys.stderr)
+        raise
+
+for name in os.listdir(_loader_src_dir):
     if name.endswith(".py"):
         if name in ["__init__.py", "interface.py"]:
             continue
         module_name = name[:-3]
-        try:
-            module = importlib.import_module(__package__ + "." + module_name)
-            missing_functions = [
-                fname for fname in required_functions
-                if fname not in dir(module)
-            ]
-            if len(missing_functions) > 0:
-                print(
-                    "Warning: module '{}' doesn't supply some require function ({}), ignoring this module"
-                    .format(module_name, missing_functions),
-                    file=sys.stderr)
-            else:
-                available[module.code_info] = module
-        except ImportError:
-            print("Warning: module '{}' couldn't be imported".format(
-                module_name),
-                  file=sys.stderr)
-            raise
-
+        module_str = __package__ + "." + module_name
+        mod = import_loader(module_str)
+        if mod is not None:
+            available[mod.code_info] = mod
+    abs_path = os.path.join(_loader_src_dir, name)
+    if os.path.isdir(abs_path):
+        if "loader.py" in os.listdir(abs_path):
+            module_str = __package__ + "." + name
+            mod = import_loader(module_str)
+            if mod is not None:
+                available[mod.code_info] = mod
 
 def identify_code(path, choices=available):
     code_list = []
