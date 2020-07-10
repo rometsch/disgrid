@@ -11,6 +11,7 @@ from simdata.loaders import interface
 from . import defs
 from . import load1d
 from . import load2d
+from . import load3d
 from . import loadparams
 from . import loadtime
 from . import loadunits
@@ -94,8 +95,9 @@ class Loader(interface.Interface):
         self.fine_output_times = np.array([])
 
     def scout(self):
-        self.get_domain_size()
         self.get_parameters()
+        self.get_domain_size()
+        self.calc_dimension()
         self.get_units()
         self.apply_units()
         self.load_times()
@@ -111,7 +113,7 @@ class Loader(interface.Interface):
             self.data_dir, loadparams.find_first_summary_number(self.data_dir))
 
     def apply_units(self):
-        for vardict in [defs.planet_vars_scalar, defs.vars_2d, defs.vars_1d, defs.vars_scalar]:
+        for vardict in [defs.planet_vars_scalar, defs.vars_maxdim, defs.vars_1d, defs.vars_scalar]:
             for info in vardict.values():
                 info["unit"] = get_unit_from_powers(info["unitpowers"],
                                                     self.units)
@@ -160,13 +162,28 @@ class Loader(interface.Interface):
             self.fluids[name] = fluid.Fluid(name)
 
     def get_fields(self):
-        self.get_fields_2d()
+        if self.dim == 3:
+            self.get_fields_3d()
+        elif self.dim == 2:
+            self.get_fields_2d()
         self.get_fields_1d()
+
+    def get_fields_3d(self):
+        files = os.listdir(self.data_dir)
+        for fluidname in self.fluids.keys():
+            for varname, info in defs.vars_maxdim.items():
+                info_formatted = copy.deepcopy(info)
+                info_formatted["pattern"] = info_formatted["pattern"].format(
+                    fluidname, "{}")
+                if var_in_files(info_formatted["pattern"], files):
+                    fieldLoader = load3d.FieldLoader3d(varname, info_formatted, self)
+                    self.fluids[fluidname].register_variable(
+                        varname, "3d", fieldLoader)
 
     def get_fields_2d(self):
         files = os.listdir(self.data_dir)
         for fluidname in self.fluids.keys():
-            for varname, info in defs.vars_2d.items():
+            for varname, info in defs.vars_maxdim.items():
                 info_formatted = copy.deepcopy(info)
                 info_formatted["pattern"] = info_formatted["pattern"].format(
                     fluidname, "{}")
@@ -220,7 +237,16 @@ class Loader(interface.Interface):
                         break
 
     def get_domain_size(self):
-        self.Nphi, self.Nr = loadgrid.loadNcells(self.data_dir)
+        self.Nphi, self.Nr, self.Ntheta = loadgrid.loadNcells(self.data_dir)
+
+    def calc_dimension(self):
+        """ Determine the dimension of the output data from the number of cells."""
+        if self.Nphi > 2 and self.Nr > 2 and self.Ntheta > 2:
+            self.dim = 3
+        elif self.Nphi > 2 and self.Nr > 2:
+            self.dim = 2
+        else:
+            self.dim = 1
 
     def load_times(self):
         self.output_times = loadtime.loadCoarseOutputTimes(self.data_dir,

@@ -44,4 +44,5 @@ def loadNcells(dataDir):
     # Nphi, Nr = np.genfromtxt(os.path.join(dataDir, 'dimensions.dat'), usecols=(6,7), dtype=int)
     Nphi = int(loadparams.getParamFromSummary(dataDir, "Nx"))
     Nr = int(loadparams.getParamFromSummary(dataDir, "Ny"))
-    return (Nphi, Nr)
+    Ntheta = int(loadparams.getParamFromSummary(dataDir, "Nz"))
+    return (Nphi, Nr, Ntheta)

@@ -2,7 +2,7 @@
 
 This file contains dicts defining the output variables of fargo3d, their naming patterns and units.
 """
-vars_2d = {
+vars_maxdim = {
     "mass density": {
         "pattern": "{}dens{}.dat",
         "unitpowers": {
