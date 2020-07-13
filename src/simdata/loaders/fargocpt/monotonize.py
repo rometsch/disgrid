@@ -1,16 +1,32 @@
 #!/usr/bin/env python3
-# Remove doublicate intervals from a column based output file.
+""" Remove doublicate intervals from a column based output file. """
 
 import numpy as np
 import argparse
 import os
 
 
-def order(x, bound=np.inf, fullind=True):
-    # Return an array of indecis, such that values which are monotonically growing are selected from x.
-    #print("ordering {} with bound {}".format(x, bound))
-    # go from right to left and detect the first occurence, where the values don't grow monotonically
-    # only use values that are smaller than the give bound
+def monotonize(x, bound=np.inf, fullind=True):
+    """ Return an array of indices, such that values which are monotonically growing are selected from x.
+
+    Go from right to left and detect the first occurrence, where the values don't grow monotonically
+    only use values that are smaller than the give bound.
+
+    Parameters
+    ----------
+    x: array like
+        Array containing elements which can be compared.
+    bound: type of array elements
+        Upper bound for the elements. Defaults to np.inf.
+    fullind: boll
+        Return a full list of indices for the selected elements in correct order if true.
+
+    Returns
+    -------
+    list
+        A list of tuples of int specifying the ranges of the intervals if fullind==False.
+        If fullind==True a list of integers is returned specifying all indices in the correct order.
+    """
     x = x[x < bound]
     #print("X with bound applied {}".format(x))
     up = len(x) - 1
@@ -30,8 +46,6 @@ def order(x, bound=np.inf, fullind=True):
                 low = n
                 break
 
-        #print("found interval ({}, {})".format(low, up))
-
         if low == 0:  # if we traversed the list without any non-monotonic entry, return a tuple with the full array length
             if fullind:
                 return [i for i in range(0, up + 1)]
@@ -39,15 +53,15 @@ def order(x, bound=np.inf, fullind=True):
                 return [(0, up + 1)]
         else:  # else repeat for the part of x left to the non-monotonic entry, and return a list of indices tuples
             if fullind:
-                return order(x[:low],
-                             bound=x[low]) + [i for i in range(low, up + 1)]
+                return monotonize(x[:low],
+                                  bound=x[low]) + [i for i in range(low, up + 1)]
             else:
-                return order(x[:low], bound=x[low]) + [(low, up + 1)]
+                return monotonize(x[:low], bound=x[low]) + [(low, up + 1)]
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("datafile", help="Datafile to order")
+    parser.add_argument("datafile", help="Datafile to monotonize")
     parser.add_argument("timecol",
                         type=int,
                         help="Column in which the time is stored")
@@ -71,11 +85,11 @@ def main():
     time = np.genfromtxt(args.datafile,
                          usecols=args.timecol,
                          comments=comment_char)
-    inds = order(time)
+    inds = monotonize(time)
 
     if len(inds) == len(time):
         if args.verbose:
-            print("File already in order, nothing to be done.")
+            print("File already in monotonized, nothing to be done.")
     else:
         if args.verbose:
             print("Backup file as {}.bak".format(args.datafile))
