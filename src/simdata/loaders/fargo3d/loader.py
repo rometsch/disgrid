@@ -77,9 +77,13 @@ def get_data_dir(path):
     return rv
 
 
-def get_unit_from_powers(unitpowers, units):
+def get_unit_from_powers(unitpowers, units, dim):
     unit = 1.0
     for k, p in unitpowers.items():
+        if p == "maxdim":
+            p = dim
+        elif p =="-maxdim":
+            p = -dim
         unit = unit * units[k]**p
     return unit
 
@@ -116,7 +120,7 @@ class Loader(interface.Interface):
         for vardict in [defs.planet_vars_scalar, defs.vars_maxdim, defs.vars_1d, defs.vars_scalar]:
             for info in vardict.values():
                 info["unit"] = get_unit_from_powers(info["unitpowers"],
-                                                    self.units)
+                                                    self.units, self.dim)
 
     def register_alias(self):
         for particlegroup in self.particlegroups:
