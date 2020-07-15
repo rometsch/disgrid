@@ -6,7 +6,7 @@ import astropy.units as u
 import numpy as np
 from simdata import scalar
 
-from . import monotonize
+from simdata.monotonize import monotonize
 
 
 def load_text_data_variables(filepath):
@@ -42,7 +42,7 @@ def load_text_data_file(filepath, varname, Nmax=np.inf):
     N = min(len(data), len(time))
     data = data[:N]
     time = time[:N]
-    inds = monotonize.monotonize(time, fullind=True)
+    inds = monotonize(time, fullind=True)
     if data.isscalar:
         data = u.quantity.Quantity([data])
     data = data[inds]
