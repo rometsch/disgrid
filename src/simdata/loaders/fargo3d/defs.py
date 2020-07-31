@@ -14,7 +14,8 @@ vars_maxdim = {
         "pattern": "{}energy{}.dat",
         "unitpowers": {
             "mass": 1,
-            "time": "-maxdim"
+            "time" : -2,
+            "length": ["-maxdim", 2]
         }
     },
     "velocity radial": {

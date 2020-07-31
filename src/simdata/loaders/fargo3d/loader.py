@@ -76,15 +76,27 @@ def get_data_dir(path):
             .format(path))
     return rv
 
-
-def get_unit_from_powers(unitpowers, units, dim):
-    unit = 1.0
-    for k, p in unitpowers.items():
+def parse_power_def(unit_def, dim):
+    exponent = 0
+    if isinstance(unit_def, str):
+        unit_def = [unit_def]
+    try:
+        iter(unit_def)
+    except TypeError:
+        unit_def = [unit_def]
+    for p in unit_def:
         if p == "maxdim":
             p = dim
         elif p =="-maxdim":
             p = -dim
-        unit = unit * units[k]**p
+        exponent += p
+    return exponent
+
+def get_unit_from_powers(unitpowers, units, dim):
+    unit = 1.0
+    for k, p in unitpowers.items():
+        expo = parse_power_def(p, dim)
+        unit = unit * units[k]**expo
     return unit
 
 
