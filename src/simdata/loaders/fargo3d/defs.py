@@ -33,7 +33,7 @@ vars_maxdim = {
         },
         "interfaces": ["phi"],
     },
-    "vpolar": {
+    "velocity polar": {
         "pattern": "{}vz{}.dat",
         "unitpowers": {
             "length": 1,
