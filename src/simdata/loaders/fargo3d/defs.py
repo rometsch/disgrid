@@ -239,7 +239,9 @@ planet_vars_scalar = {
         'file': 'bigplanet{}.dat',
         'datacol': 0,
         'timecol': 8,
-        'unitpowers': {}
+        'unitpowers': {
+            "time" : 1
+        }
     },
     'physical time': {
         'file': 'bigplanet{}.dat',
@@ -263,7 +265,7 @@ planet_vars_scalar = {
         'file': 'orbit{}.dat',
         'datacol': 1,
         'timecol': 0,
-        'unitpowers': {}
+        'unit' : 1
     },
     'semi-major axis': {
         'file': 'orbit{}.dat',
@@ -277,43 +279,43 @@ planet_vars_scalar = {
         'file': 'orbit{}.dat',
         'datacol': 3,
         'timecol': 0,
-        'unitpowers': {}
+        'unit' : 1
     },
     'true anomaly': {
         'file': 'orbit{}.dat',
         'datacol': 4,
         'timecol': 0,
-        'unitpowers': {}
+        'unit' : 1
     },
     'argument of periapsis': {
         'file': 'orbit{}.dat',
         'datacol': 5,
         'timecol': 0,
-        'unitpowers': {}
+        'unit' : 1
     },
     'x-axis rotation angle': {
         'file': 'orbit{}.dat',
         'datacol': 6,
         'timecol': 0,
-        'unitpowers': {}
+        'unit' : 1
     },
     'inclination': {
         'file': 'orbit{}.dat',
         'datacol': 7,
         'timecol': 0,
-        'unitpowers': {}
+        'unit' : 1
     },
     'ascending node': {
         'file': 'orbit{}.dat',
         'datacol': 8,
         'timecol': 0,
-        'unitpowers': {}
+        'unit' : 1
     },
     'longitude of periapsis': {
         'file': 'orbit{}.dat',
         'datacol': 9,
         'timecol': 0,
-        'unitpowers': {}
+        'unit' : 1
     },
 }
 

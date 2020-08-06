@@ -131,7 +131,10 @@ class Loader(interface.Interface):
     def apply_units(self):
         for vardict in [defs.planet_vars_scalar, defs.vars_maxdim, defs.vars_1d, defs.vars_scalar]:
             for info in vardict.values():
-                info["unit"] = get_unit_from_powers(info["unitpowers"],
+                if "unit" in info:
+                    info["unit"] = u.Unit(info["unit"])
+                else:
+                    info["unit"] = get_unit_from_powers(info["unitpowers"],
                                                     self.units, self.dim)
 
     def register_alias(self):
