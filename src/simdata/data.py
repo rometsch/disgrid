@@ -17,6 +17,15 @@ class Data:
         self.particlegroups = self.loader.particlegroups
         self.planets = self.loader.planets
         self.parameters = self.loader.parameters
+        self.register_postprocessor()
 
     def get_fluid(self, name):
         return self.fluids[name]
+
+    def register_postprocessor(self):
+        """ Add new loaders to calculate derived quantities. """
+        try:
+            from simprocess import register
+            register(self)
+        except ImportError:
+            pass
