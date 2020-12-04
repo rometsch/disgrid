@@ -27,8 +27,10 @@ class RemoteData(simdata.data.Data):
         super().__init__(self.path, **kwargs)
 
     def mount(self, cache_timeout=None):
-        self.mount_point = Mount(self.remote_path, cache_timeout=cache_timeout)
-        local_path = self.mount_point.get_path()
+        remote_path_root = self.remote_path.split(":")[0] + ":/"
+        remote_path_child = self.remote_path.split(":")[1].lstrip("/")
+        self.mount_point = Mount(remote_path_root, cache_timeout=cache_timeout)
+        local_path = os.path.join(self.mount_point.get_path(), remote_path_child)
         return local_path
 
 
