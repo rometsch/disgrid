@@ -1,6 +1,6 @@
 import unittest
 from simdata import data
-from simdata.loaders import fargo3dmultifluid
+from simdata.loaders import fargo3d
 import astropy.units as u
 import astropy.constants as const
 import numpy as np
@@ -8,7 +8,7 @@ import os
 
 from run import get_repo_abspath
 code_sample_path = os.path.join(get_repo_abspath(),
-                                "samples/fargo3dmultifluid")
+                                "samples/fargo3d")
 
 
 class TestFargo3DMultifluidLoader(unittest.TestCase):
@@ -17,10 +17,10 @@ class TestFargo3DMultifluidLoader(unittest.TestCase):
 
     def test_identify_code_via_data(self):
         self.assertEqual(self.d.loader.code_info,
-                         ("fargo3d", "2.0", "multifluid"))
+                         ("fargo3d", "2.0", "public"))
 
     def test_identify_code_directly(self):
-        self.assertTrue(fargo3dmultifluid.identify(code_sample_path))
+        self.assertTrue(fargo3d.identify(code_sample_path))
 
     def test_units(self):
         self.assertEqual(self.d.loader.units['length'],
@@ -70,7 +70,7 @@ class TestFargo3DMultifluidLoader(unittest.TestCase):
         self.assertAlmostEqual(rho.data[1, 1].value, 9.190435006078763e-07)
 
     def test_gasvrad(self):
-        vrad = self.d.fluids["gas"].get("2d", "vrad", 2)
+        vrad = self.d.fluids["gas"].get("2d", "velocity radial", 2)
         self.assertEqual(vrad.data.shape, (64, 32))
         self.assertEqual(len(vrad.grid.get_coordinates("r")), 64)
         self.assertEqual(vrad.data.shape,
