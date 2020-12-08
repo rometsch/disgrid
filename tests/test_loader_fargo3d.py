@@ -11,7 +11,7 @@ code_sample_path = os.path.join(get_repo_abspath(),
                                 "samples/fargo3d")
 
 
-class TestFargo3DMultifluidLoader(unittest.TestCase):
+class TestFargo3DLoader(unittest.TestCase):
     def setUp(self):
         self.d = data.Data(code_sample_path)
 
@@ -67,7 +67,7 @@ class TestFargo3DMultifluidLoader(unittest.TestCase):
     def test_dustdens(self):
         rho = self.d.fluids["dust1"].get("2d", "mass density", 2)
         self.assertEqual(rho.data.shape, (64, 32))
-        self.assertAlmostEqual(rho.data[1, 1].value, 9.190435006078763e-07)
+        self.assertAlmostEqual(rho.data[1, 1].to_value("g/cm2"), 9.190435006078763e-07)
 
     def test_gasvrad(self):
         vrad = self.d.fluids["gas"].get("2d", "velocity radial", 2)

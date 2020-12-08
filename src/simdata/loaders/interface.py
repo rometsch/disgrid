@@ -9,6 +9,7 @@ class Interface:
         self.path = path
         self.fluids = {}
         self.scalar = {}
+        self.particles = {}
         self.particlegroups = {}
         self.planets = {}
         self.parameters = {}

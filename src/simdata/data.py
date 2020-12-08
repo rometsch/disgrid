@@ -14,7 +14,8 @@ class Data:
         self.code, self.loader = loaders.get_loader(path, loader, **kwargs)
         self.loader.scout()
         self.fluids = self.loader.fluids
-        self.particlegroups = self.loader.particlegroups
+        self.particles = self.loader.particles
+        self.particlegroups = {"particles" : self.particles}
         self.planets = self.loader.planets
         self.parameters = self.loader.parameters
         self.register_postprocessor()

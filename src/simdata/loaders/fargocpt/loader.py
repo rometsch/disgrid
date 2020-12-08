@@ -6,7 +6,7 @@ import numpy as np
 from simdata import fluid, particles
 from simdata.loaders import interface
 
-from . import defs, load1d, load2d, loadparams, loadscalar
+from . import defs, load1d, load2d, loadparams, loadscalar, loadparticles
 
 code_info = ("fargocpt", "0.1", "legacy_output")
 
@@ -68,15 +68,17 @@ class Loader(interface.Interface):
         self.load_times()
         self.get_fluids()
         self.get_planets()
-        self.get_nbodysystems()
+        self.get_particles()
         self.get_fields()
         self.get_scalars()
-        self.get_nbodysystems()
         self.register_alias()
 
     def get_parameters(self):
-        param_file = os.path.join(self.data_dir, "../setup/in.par")
-        self.parameters = loadparams.get_parameters(param_file)
+        try:
+            param_file = os.path.join(self.data_dir, "../setup/in.par")
+            self.parameters = loadparams.get_parameters(param_file)
+        except FileNotFoundError:
+            pass
 
     def get_domain_size(self):
         self.Nr, self.Nphi = np.genfromtxt(os.path.join(
@@ -118,8 +120,18 @@ class Loader(interface.Interface):
         self.fluids["gas"].alias.register_dict(defs.alias_fields)
         self.fluids["gas"].alias.register_dict(defs.alias_reduced)
 
-    def get_nbodysystems(self):
-        pass
+    def get_particles(self):
+        p = re.compile(r"particles([\d]+).dat")
+        timesteps = []
+        for s in os.listdir(self.data_dir):
+            m = re.match(p, s)
+            if m:
+                timesteps.append(int(m.groups()[0]))
+        timesteps.sort()
+        times = u.Quantity([self.output_times[i] for i in timesteps])
+        datafile_pattern = os.path.join(self.data_dir, "particles{}.dat")
+        self.particles = loadparticles.ParticleLoader(
+            "dust", datafile_pattern, times, timesteps, self)
 
     def get_planets(self):
         planet_ids = []
