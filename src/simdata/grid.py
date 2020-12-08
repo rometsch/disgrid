@@ -172,3 +172,14 @@ class PolarGrid(RegularGrid):
         super().__init__(**coordinate_args(locals(), names),
                          **kwargs,
                          names=names)
+
+class RadialGrid(RegularGrid):
+    def __init__(self,
+                 r_c=None,
+                 r_i=None,
+                 r_d=None,
+                 **kwargs):
+        names = ["r"]
+        super().__init__(**coordinate_args(locals(), names),
+                         **kwargs,
+                         names=names)

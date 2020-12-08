@@ -21,7 +21,7 @@ from test_grid import *
 from test_scalar import *
 from test_alias import *
 from test_loader_fargocpt import *
-from test_loader_fargo3dmultifluid import *
+from test_loader_fargo3d import *
 from test_loader_PLUTO42 import *
 from test_loader_PLUTO43 import *
 
