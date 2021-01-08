@@ -1,5 +1,6 @@
 import copy
 import os
+import glob
 import re
 
 import astropy.constants as const
@@ -64,12 +65,14 @@ def var_in_files(varpattern, files):
 def get_data_dir(path):
     rv = None
     ptrn = re.compile(r"summary\d+.dat")
-    for root, dirs, files in os.walk(path):
-        for f in files:
+    for glob_pattern in ["*", "*/*", "*/*/*", "*/*/*/*", "**"]:
+        for f in glob.iglob(os.path.join(path, glob_pattern)):
             m = re.search(ptrn, f)
             if m:
-                rv = root
+                rv = os.path.dirname(f)
                 break
+        if rv is not None:
+            break
     if rv is None:
         raise FileNotFoundError(
             r"Could not find identifier file 'summary\d+.dat' in any subfolder of '{}'"
