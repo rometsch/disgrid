@@ -184,35 +184,36 @@ class Loader(interface.Interface):
             self.fluids[name] = fluid.Fluid(name)
 
     def get_fields(self):
+        with open(os.path.join(self.data_dir, "outputgas.dat"), "r") as in_file:
+            self.mpiio_vars = [line.strip().split()[1][3:] for line in in_file]
         if self.dim == 3:
-            self.get_fields_3d()
+            self.get_fields_multidim("3d", load3d.FieldLoader3d)
         elif self.dim == 2:
-            self.get_fields_2d()
+            self.get_fields_multidim("2d", load3d.FieldLoader2d)
         self.get_fields_1d()
 
-    def get_fields_3d(self):
+    def get_fields_multidim(self, dim, loader_class):
         files = os.listdir(self.data_dir)
         for fluidname in self.fluids.keys():
             for varname, info in defs.vars_maxdim.items():
                 info_formatted = copy.deepcopy(info)
                 info_formatted["pattern"] = info_formatted["pattern"].format(
                     fluidname, "{}")
+                info_formatted["varname"] = varname
                 if var_in_files(info_formatted["pattern"], files):
-                    fieldLoader = load3d.FieldLoader3d(varname, info_formatted, self)
+                    fieldLoader = loader_class(varname, info_formatted, self)
                     self.fluids[fluidname].register_variable(
-                        varname, "3d", fieldLoader)
-
-    def get_fields_2d(self):
-        files = os.listdir(self.data_dir)
-        for fluidname in self.fluids.keys():
-            for varname, info in defs.vars_maxdim.items():
-                info_formatted = copy.deepcopy(info)
-                info_formatted["pattern"] = info_formatted["pattern"].format(
+                        varname, dim, fieldLoader)
+            for varname in self.mpiio_vars:
+                pretty_name = defs.mpiio_vars[varname]
+                info_formatted = copy.deepcopy(
+                    defs.vars_maxdim[pretty_name])
+                info_formatted["pattern"] = "{}_{}.mpiio".format(
                     fluidname, "{}")
-                if var_in_files(info_formatted["pattern"], files):
-                    fieldLoader = load2d.FieldLoader2d(varname, info_formatted, self)
-                    self.fluids[fluidname].register_variable(
-                        varname, "2d", fieldLoader)
+                info_formatted["varname"] = varname
+                fieldLoader = loader_class(pretty_name, info_formatted, self)
+                self.fluids[fluidname].register_variable(
+                    pretty_name, dim, fieldLoader)
 
     def get_fields_1d(self):
         for fluid_name in self.fluids:

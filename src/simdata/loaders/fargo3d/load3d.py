@@ -6,6 +6,7 @@ import astropy.units as u
 from simdata import grid
 from simdata.loaders import interface
 
+from .loadbinary import load_data
 
 class FieldLoader3d(interface.FieldLoader):
     def load_time(self, n, *args, **kwargs):
@@ -26,7 +27,8 @@ class FieldLoader3d(interface.FieldLoader):
         Nphi = self.loader.Nphi
         Ntheta = self.loader.Ntheta
         file_path = self.loader.data_dir + "/" + self.info["pattern"].format(n)
-        rv = np.fromfile(file_path).reshape(Ntheta, Nr, Nphi)
+        rv = load_data(file_path, self.info["varname"], n)
+        rv = rv.reshape(Ntheta, Nr, Nphi)
         rv = np.swapaxes(rv, 0, 2)
         rv = np.swapaxes(rv, 0, 1)
         return rv *unit
