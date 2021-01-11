@@ -49,8 +49,11 @@ def loadCoarseOutputTimesFromPlanet(planet_file, unit):
         Time corresponding to the full outputs.
     """
     time = np.genfromtxt(planet_file, usecols=8)
-    inds = monotonize(time)
-    time = time[inds]
+    try:
+        inds = monotonize(time)
+        time = time[inds]
+    except IndexError:
+        time = np.array([time])
     return time * unit
 
 def loadCoarseOutputTimesFromSummary(dataDir, unit):
