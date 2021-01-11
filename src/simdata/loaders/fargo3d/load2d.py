@@ -6,6 +6,7 @@ import astropy.units as u
 from simdata import grid
 from simdata.loaders import interface
 
+from .loadbinary import load_data
 
 class FieldLoader2d(interface.FieldLoader):
     def load_time(self, n, *args, **kwargs):
@@ -24,9 +25,9 @@ class FieldLoader2d(interface.FieldLoader):
         Nr = self.loader.Nr
         # + (1 if "interfaces" in self.info and "phi" in self.info["interfaces"] else 0)
         Nphi = self.loader.Nphi
-        rv = np.fromfile(self.loader.data_dir +
-                         "/" + self.info["pattern"].format(n)).reshape(
-                             Nr, Nphi) * unit
+        file_path = self.loader.data_dir + "/" + self.info["pattern"].format(n)
+        rv = load_data(file_path, self.info["varname"], n)
+        rv = rv.reshape(Nr, Nphi) * unit
         return rv
 
     def load_grid(self, n):

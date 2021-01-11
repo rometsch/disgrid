@@ -351,3 +351,11 @@ alias_particle = {
     "eccentricity": "eccentricity",
     "semi-major axis": "semi-major axis"
 }
+
+mpiio_vars = {
+    "dens" : "mass density",
+    "energy" : "energy density",
+    "vx" : "velocity azimuthal",
+    "vy" : "velocity radial",
+    "vz" : "velocity polar"
+}
