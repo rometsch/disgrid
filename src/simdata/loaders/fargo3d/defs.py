@@ -42,6 +42,13 @@ vars_maxdim = {
         },
         "interfaces": ["theta"],
     },
+    "column radial": {
+        "pattern": "{}column_radial{}.dat",
+        "unitpowers": {
+            "mass": 1,
+            "length": -2
+        },
+    },
     "grainsize": {
         "pattern": "{}grainsize{}.dat",
         "unitpowers": {
