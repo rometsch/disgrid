@@ -246,8 +246,8 @@ def get_data_dir(path):
                 if os.path.isfile(os.path.join(root, d, "grid.out")):
                     rv = os.path.join(root, d)
                     break
-        if rv is not None:
-            break
+            if rv is not None:
+                break
     if rv is None:
         raise FileNotFoundError(
             "Could not find identifier file 'grid.out' in any subfolder of '{}'"
