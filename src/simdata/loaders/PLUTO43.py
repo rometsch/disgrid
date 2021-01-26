@@ -237,18 +237,23 @@ def load_scalar(file, var):
 def get_data_dir(path):
     rv = None
     ptrn = re.compile("grid.out")
-    for root, dirs, files in os.walk(path):
-        for f in files:
-            m = re.search(ptrn, f)
-            if m:
-                rv = root
-                break
+    # is path already data dir?
+    if os.path.isfile(os.path.join(path, "grid.out")):
+        rv = path
+    else:
+        for root, dirs, files in os.walk(path, followlinks=True):
+            for d in dirs:
+                if os.path.isfile(os.path.join(root, d, "grid.out")):
+                    rv = os.path.join(root, d)
+                    break
+        if rv is not None:
+            break
     if rv is None:
         raise FileNotFoundError(
             "Could not find identifier file 'grid.out' in any subfolder of '{}'"
             .format(path))
 
-    with open(root + '/' + f, 'r') as gridfile:
+    with open(rv + '/' + 'grid.out', 'r') as gridfile:
         _ = gridfile.readline()
         version_line = gridfile.readline()
 
@@ -466,7 +471,10 @@ class Loader(interface.Interface):
 
 class FieldLoader2d(interface.FieldLoader):
     def load_time(self, n):
-        rv = self.loader.get_output_time(n)
+        if n is None:
+            rv = self.loader.output_times
+        else:
+            rv = self.loader.get_output_time(n)
         return rv
 
     def load_data(self, n):
@@ -519,7 +527,8 @@ class FieldLoader2d(interface.FieldLoader):
         if self.loader.output_format == 'single_file':
             memmap = np.memmap(filename,
                                dtype=float,
-                               shape=(self.loader.NVAR, *file_format))
+                               shape=(self.loader.NVAR, *file_format),
+                               mode="r")
             rv = np.array(memmap[qty_info["numvar"]], dtype=float)
             rv = (rv * unit).decompose().cgs
         else:
@@ -587,7 +596,7 @@ class ScalarLoader:
 
 def loadCoarseOutputTimes(dataDir, unit):
     timestamps = np.genfromtxt(dataDir + '/dbl.out',
-                               usecols=(1),
+                               usecols=1,
                                unpack=True,
                                dtype=float)
 
@@ -597,7 +606,7 @@ def loadCoarseOutputTimes(dataDir, unit):
 def loadFineOutputTimes(dataDir, unit):
     try:
         timestamps = np.genfromtxt(dataDir + '/' + scalar_filename,
-                                   usecols=(0),
+                                   usecols=0,
                                    unpack=True,
                                    skip_header=1,
                                    dtype=float)
