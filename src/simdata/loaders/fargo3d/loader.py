@@ -260,9 +260,9 @@ class Loader(interface.Interface):
 
     def calc_dimension(self):
         """ Determine the dimension of the output data from the number of cells."""
-        if self.Nphi > 2 and self.Nr > 2 and self.Ntheta > 2:
+        if (self.Nphi > 2 and self.Nr > 2 and self.Ntheta > 2) or (self.Nr > 2 and self.Ntheta > 2):
             self.dim = 3
-        elif (self.Nphi > 2 and self.Nr > 2) or (self.Nr > 2 and self.Ntheta > 2):
+        elif self.Nphi > 2 and self.Nr > 2:
             self.dim = 2
         else:
             self.dim = 1

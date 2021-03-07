@@ -2,6 +2,8 @@
 
 This file contains dicts defining the output variables of fargo3d, their naming patterns and units.
 """
+import numpy as np
+
 vars_maxdim = {
     "mass density": {
         "pattern": "{}dens{}.dat",
@@ -42,12 +44,73 @@ vars_maxdim = {
         },
         "interfaces": ["theta"],
     },
+    "magnetic field polar": {
+        "pattern": "{}bz{}.dat",
+        "interfaces": ["theta"],
+        "unitpowers": {
+            "length": -0.5,
+            "time": -1,
+            "mass": 0.5
+        },
+    },
+    "magnetic field radial": {
+        "pattern": "{}by{}.dat",
+        "interfaces": ["theta"],
+        "unitpowers": {
+            "length": -0.5,
+            "time": -1,
+            "mass": 0.5
+        },
+    },
+    "magnetic field azimuthal": {
+        "pattern": "{}bx{}.dat",
+        "interfaces": ["theta"],
+        "unitpowers": {
+            "length": -0.5,
+            "time": -1,
+            "mass": 0.5
+        },
+    },
+    "divB": {
+        "pattern": "{}divb{}.dat",
+        "unitpowers": {
+            "length": 1,
+            "time": -1
+        },
+        "interfaces": ["theta"],
+    },
     "column radial": {
         "pattern": "{}column_radial{}.dat",
         "unitpowers": {
             "mass": 1,
             "length": -2
         },
+    },
+    "column vertical top": {
+        "pattern": "{}column_vertical_top{}.dat",
+        "unitpowers": {
+            "mass": 1,
+            "length": -2
+        },
+    },
+    "column vertical bottom": {
+        "pattern": "{}column_vertical_bottom{}.dat",
+        "unitpowers": {
+            "mass": 1,
+            "length": -2
+        },
+    },
+    "electron fraction": {
+        "pattern": "{}electron_fraction{}.dat",
+        "unit": 1,
+    },
+    "ion fraction": {
+        "pattern": "{}ion_fraction{}.dat",
+        "unit": 1,
+    },
+    "ionization rate": {
+        "pattern": "{}ion_rate{}.dat",
+        "unit": 1,
     },
     "grainsize": {
         "pattern": "{}grainsize{}.dat",

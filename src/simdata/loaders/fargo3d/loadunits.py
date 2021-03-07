@@ -54,11 +54,12 @@ def loadUnits(dataDir):
                     components[1]) * u.cm
 
         with open(first_summary, 'r') as infile:
-            ptrn = r"STEFANK =.*\*pow\(\(\d+\.\d*\)\/(\d+\.\d*\w+\d*),-1\.5\)\*"
+            ptrn = r"STEFANK =.*\*pow*\(\(\d+\.\d*\)\/(\d+\.\d*\w+\d*),-1\.5\)"
             m = re.search(ptrn, infile.read())
             if m:
                 components = m.group(1).split('*')
                 units["mass"] *= float(m.group(1)) * u.g
+
         units["time"] = (np.sqrt(units["length"]**3 /
                                  (const.G.cgs * units["mass"]))).to(u.s)
 
