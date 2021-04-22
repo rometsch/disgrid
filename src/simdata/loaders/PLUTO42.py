@@ -236,21 +236,23 @@ def load_scalar(file, var):
 
 def get_data_dir(path):
     rv = None
-    ptrn = re.compile("grid.out")
-    for root, dirs, files in os.walk(path, followlinks=True):
-        for f in files:
-            m = re.search(ptrn, f)
-            if m:
-                rv = root
+    # is path already data dir?
+    if os.path.exists(os.path.join(path, "grid.out")):
+        rv = path
+    else:
+        for root, dirs, files in os.walk(path, followlinks=True):
+            for d in dirs:
+                if os.path.exists(os.path.join(root, d, "grid.out")):
+                    rv = os.path.join(root, d)
+                    break
+            if rv is not None:
                 break
-        if rv is not None:
-            break
     if rv is None:
         raise FileNotFoundError(
             "Could not find identifier file 'grid.out' in any subfolder of '{}'"
             .format(path))
 
-    with open(root + '/' + f, 'r') as gridfile:
+    with open(rv + '/' + 'grid.out', 'r') as gridfile:
         _ = gridfile.readline()
         version_line = gridfile.readline()
 

@@ -236,14 +236,13 @@ def load_scalar(file, var):
 
 def get_data_dir(path):
     rv = None
-    ptrn = re.compile("grid.out")
     # is path already data dir?
-    if os.path.isfile(os.path.join(path, "grid.out")):
+    if os.path.exists(os.path.join(path, "grid.out")):
         rv = path
     else:
         for root, dirs, files in os.walk(path, followlinks=True):
             for d in dirs:
-                if os.path.isfile(os.path.join(root, d, "grid.out")):
+                if os.path.exists(os.path.join(root, d, "grid.out")):
                     rv = os.path.join(root, d)
                     break
             if rv is not None:
