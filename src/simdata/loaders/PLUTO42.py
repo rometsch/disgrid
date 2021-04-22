@@ -237,12 +237,14 @@ def load_scalar(file, var):
 def get_data_dir(path):
     rv = None
     ptrn = re.compile("grid.out")
-    for root, dirs, files in os.walk(path):
+    for root, dirs, files in os.walk(path, followlinks=True):
         for f in files:
             m = re.search(ptrn, f)
             if m:
                 rv = root
                 break
+        if rv is not None:
+            break
     if rv is None:
         raise FileNotFoundError(
             "Could not find identifier file 'grid.out' in any subfolder of '{}'"
@@ -472,7 +474,10 @@ class Loader(interface.Interface):
 
 class FieldLoader2d(interface.FieldLoader):
     def load_time(self, n):
-        rv = self.loader.get_output_time(n)
+        if n is None:
+            rv = self.loader.output_times
+        else:
+            rv = self.loader.get_output_time(n)
         return rv
 
     def load_data(self, n):
@@ -525,11 +530,11 @@ class FieldLoader2d(interface.FieldLoader):
         if self.loader.output_format == 'single_file':
             memmap = np.memmap(filename,
                                dtype=float,
-                               shape=(self.loader.NVAR, *file_format))
+                               shape=(self.loader.NVAR, *file_format),
+                               mode="r")
             rv = np.array(memmap[qty_info["numvar"]], dtype=float)
         else:
             rv = np.fromfile(filename).reshape(*file_format)
-
         rv = rv * unit
         
         return rv.decompose().cgs
@@ -593,18 +598,15 @@ class ScalarLoader:
 
 def loadCoarseOutputTimes(dataDir, unit):
     timestamps = np.genfromtxt(dataDir + '/dbl.out',
-                               usecols=(1),
-                               unpack=True,
+                               usecols=1,
                                dtype=float)
-
     return timestamps * unit
 
 
 def loadFineOutputTimes(dataDir, unit):
     try:
         timestamps = np.genfromtxt(dataDir + '/' + scalar_filename,
-                                   usecols=(0),
-                                   unpack=True,
+                                   usecols=0,
                                    skip_header=1,
                                    dtype=float)
         return timestamps * unit

@@ -34,7 +34,6 @@ def load_data(filename, varname, n):
     """
     file_ext = filename.split(".")[-1]
     if file_ext == "mpiio":
-        print(f"loading {varname} from mpiio datafile {filename} at output {n}")
         directory = os.path.dirname(filename)
         fluidname = os.path.basename(filename).split("_")[0]
         data = Fields(directory, fluidname, n).get_field(varname)
