@@ -30,7 +30,8 @@ class RemoteData(simdata.data.Data):
         super().__init__(path, **kwargs)
 
     def init(self):
-        self.mount()
+        if self.path is None:
+            self.mount()
         super().init()
 
     def mount(self, cache_timeout=None):
