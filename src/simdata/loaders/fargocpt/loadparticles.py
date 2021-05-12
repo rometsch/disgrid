@@ -1,7 +1,5 @@
 """ Functions to load particle data from fargocpt output files.
 """
-import os
-
 import astropy.units as u
 import numpy as np
 
@@ -29,14 +27,14 @@ def load_particle_data(datafile, units):
 
     particles = {
         "id": ids,
-        "r": vals[:, 0]*units["length"],
+        "r": vals[:, 0]*u.Unit(units["length"]),
         "phi": vals[:, 1]*u.rad,
-        "r dot": vals[:, 2]*units["length"]/units["time"],
-        "phi dot": vals[:, 3]*u.rad/units["time"],
-        "r ddot": vals[:, 4]*units["length"]/units["time"]**2,
-        "phi ddot": vals[:, 5]*u.rad/units["time"]**2,
-        "mass": vals[:, 6]*units["mass"],
-        "size": vals[:, 7]*units["length"],
+        "r dot": vals[:, 2]*u.Unit(units["length"])/u.Unit(units["time"]),
+        "phi dot": vals[:, 3]*u.rad/u.Unit(units["time"]),
+        "r ddot": vals[:, 4]*u.Unit(units["length"])/u.Unit(units["time"])**2,
+        "phi ddot": vals[:, 5]*u.rad/u.Unit(units["time"])**2,
+        "mass": vals[:, 6]*u.Unit(units["mass"]),
+        "size": vals[:, 7]*u.Unit(units["length"]),
         "stokes number": vals[:, 10]
     }
     return particles
@@ -57,8 +55,9 @@ class ParticleLoader:
         return data, time
 
     def load_data(self, N):
+        filepath = self.loader.filepath(self.datafile_pattern.format(N))
         rv = load_particle_data(
-            self.datafile_pattern.format(N), self.loader.units)
+            filepath, self.loader.units)
         return rv
 
     def load_time(self, N):

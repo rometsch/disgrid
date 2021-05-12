@@ -1,6 +1,7 @@
 """ Functions to load 2d data from fargocpt output files.
 """
 import numpy as np
+from astropy import units as u
 from simdata import grid
 from simdata.loaders import interface
 
@@ -15,11 +16,11 @@ class FieldLoader2d(interface.FieldLoader):
 
     def load_data(self, n):
         if "unit" in self.info:
-            unit = self.info["unit"]
+            unit = u.Unit(self.info["unit"])
         else:
             unit = 1
             for baseunit, power in self.info["unitpowers"].items():
-                unit = unit * baseunit**power
+                unit = unit * u.Unit(baseunit)**power
         Nr = self.loader.Nr + (1 if "interfaces" in self.info
                                and "r" in self.info["interfaces"] else 0)
         Nphi = self.loader.Nphi  #+ (1 if "interfaces" in self.info and "phi" in self.info["interfaces"] else 0)

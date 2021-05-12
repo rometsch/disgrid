@@ -3,25 +3,23 @@
 This file contains dicts defining the output variables of fargocpt, their naming patterns and units.
 """
 
-import astropy.units as u
-
 vars2d = {
     "dens": {
         "pattern": "gasdens{}.dat",
-        "unit": u.g / u.cm**2
+        "unit": "g cm-2"
     },
     "energy": {
         "pattern": "gasenergy{}.dat",
-        "unit": u.erg
+        "unit": "erg"
     },
     "vrad": {
         "pattern": "gasvrad{}.dat",
-        "unit": u.cm / u.s,
+        "unit": "cm s-1",
         "interfaces": ["r"]
     },
     "vtheta": {
         "pattern": "gasvtheta{}.dat",
-        "unit": u.cm / u.s,
+        "unit": "cm s-1",
         "interfaces": ["phi"]
     }
 }

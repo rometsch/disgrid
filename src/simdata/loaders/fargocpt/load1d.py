@@ -59,14 +59,16 @@ def parse_1d_info_file(fname):
             if parts[0] == "Nr":
                 Nr = int(parts[1])
             elif parts[0] == "unit":
-                unit = u.Unit(parts[1])
+                unit = parts[1]
     return {"unit": unit, "Nr": Nr, "pattern": pattern}
 
 
 class FieldLoader1d(interface.FieldLoader):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fileinfo = parse_1d_info_file(self.info["infofile"])
+        self.fileinfo = parse_1d_info_file(
+            self.loader.filepath(self.info["infofile"])
+            )
 
     def load_time(self, n):
         if n is None:
@@ -76,8 +78,8 @@ class FieldLoader1d(interface.FieldLoader):
         return rv
 
     def load_data(self, n):
-        unit = self.fileinfo["unit"]
-        pattern = self.fileinfo["pattern"]
+        unit = u.Unit(self.fileinfo["unit"])
+        pattern = self.loader.filepath(self.fileinfo["pattern"])
         rv = load1dRadial(n, pattern, unit)
         return rv
 
@@ -100,7 +102,7 @@ class FieldLoader1dTorq(interface.FieldLoader):
         return rv
 
     def load_data(self, n):
-        datafile = self.info["pattern"].format(n)
+        datafile = self.loader.filepath(self.info["pattern"].format(n))
         data = np.fromfile(datafile, dtype=float)
         rv = data[1::2] * u.Unit("cm^2 g / s^2")
         return rv
@@ -124,6 +126,6 @@ class FieldLoader1dMassFlow(interface.FieldLoader):
 
     def load_grid(self, n):
         r_i = np.genfromtxt(self.loader.data_dir +
-                            "/used_rad.dat") * self.loader.units["length"]
+                            "/used_rad.dat") * u.Units(self.loader.units["length"])
         g = grid.PolarGrid(r_i=r_i, active_interfaces=["r"])
         return g
