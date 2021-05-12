@@ -5,7 +5,6 @@ import re
 import numpy as np
 import astropy.units as u
 
-from simdata.monotonize import monotonize
 from . import loadparams
 
 
@@ -49,11 +48,6 @@ def loadCoarseOutputTimesFromPlanet(planet_file, unit):
         Time corresponding to the full outputs.
     """
     time = np.genfromtxt(planet_file, usecols=8)
-    try:
-        inds = monotonize(time)
-        time = time[inds]
-    except IndexError:
-        time = np.array([time])
     return time * unit
 
 def loadCoarseOutputTimesFromSummary(dataDir, unit):

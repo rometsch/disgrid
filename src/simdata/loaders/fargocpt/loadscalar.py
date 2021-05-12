@@ -1,14 +1,13 @@
 """ Functions to scalar time data from fargo3d output files.
 """
 import os
+from functools import lru_cache
 
 import astropy.units as u
 import numpy as np
 from simdata import scalar
 
-from simdata.monotonize import monotonize
-
-
+@lru_cache
 def load_text_data_variables(filepath):
     # load all variable definitions from a text file
     # which contains the variable names and colums in its header.
@@ -28,24 +27,26 @@ def load_text_data_variables(filepath):
                 found_variables[name] = (col, unitstr)
     return found_variables
 
+@lru_cache
+def load_data(filepath):
+    return np.genfromtxt(filepath).T
 
 def load_text_data_file(filepath, varname, Nmax=np.inf):
     # get data
     variables = load_text_data_variables(filepath)
-    col = variables[varname][0]
+    col = int(variables[varname][0])
     unit_str = variables[varname][1]
     unit_str = unit_str.replace("1/s", "s-1")
     unit = u.Unit(unit_str)
-    data = np.genfromtxt(filepath, usecols=int(col)) * unit
-    time_col = variables["physical time"][0]
-    time = np.genfromtxt(filepath, usecols=int(time_col))
+    file_data = load_data(filepath)
+    data = file_data[col] * unit
+    time_col = int(variables["physical time"][0])
+    time = file_data[time_col]
     N = min(len(data), len(time))
     data = data[:N]
     time = time[:N]
-    inds = monotonize(time, fullind=True)
     if data.isscalar:
         data = u.quantity.Quantity([data])
-    data = data[inds]
     N = min(len(data), Nmax)
     data = data[:N]
     return data
