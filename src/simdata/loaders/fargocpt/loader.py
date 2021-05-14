@@ -272,7 +272,7 @@ class Loader(interface.Interface):
         self.get_fields_1d()
 
     def get_fields_2d(self):
-        if "fluids" in self.spec:
+        if "fluids" in self.spec and all(("2d" in fspec for fspec in self.spec["fluids"].values())):
             for name, fspec in self.spec["fluids"].items():
                 fl = self.fluids[name]
                 for varname, vspec in fspec["2d"].items():
@@ -290,7 +290,7 @@ class Loader(interface.Interface):
                     "name": varname, "info": info}
 
     def get_fields_1d(self):
-        if "fluids" in self.spec:
+        if "fluids" in self.spec and all(("1d" in fspec for fspec in self.spec["fluids"].values())):
             for name, fspec in self.spec["fluids"].items():
                 fl = self.fluids[name]
                 for varname, vspec in fspec["1d"].items():
@@ -330,7 +330,7 @@ class Loader(interface.Interface):
                     "varname": varname, "info": info}
 
     def get_scalars(self):
-        if "fluids" in self.spec:
+        if "fluids" in self.spec and all(("scalar" in fspec for fspec in self.spec["fluids"].values())):
             for name, fspec in self.spec["fluids"].items():
                 fl = self.fluids[name]
                 if "scalar" in fspec:
