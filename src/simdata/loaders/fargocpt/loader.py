@@ -29,6 +29,17 @@ def var_in_files(varpattern, files):
     return False
 
 
+def quantity_from_spec(spec):
+    """ Generate a astropy quantity object from a (value, unit string) tuple.
+
+    Parameters
+    ----------
+    spec : (array, str)
+        Tuple storing the values and the unit string.
+    """
+    return np.array(spec[0])*u.Unit(spec[1])
+
+
 def get_data_dir(path):
     rv = None
     # guess first
@@ -56,11 +67,28 @@ class Loader(interface.Interface):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        if "spec" in kwargs:
+            self.spec = kwargs["spec"].copy()
+            self.data_dir = os.path.join(self.path, self.spec["data_dir"])
+            return
         self.data_dir = get_data_dir(self.path)
         self.output_times = []
         self.fine_output_times = []
         self.spec = {"data_dir": os.path.relpath(
-            self.data_dir, start=self.path)}
+            self.data_dir, start=self.path),
+            "dim": "2d"}
+
+    def get(self, key=None, dim=None, planet=None, fluid=None):
+        if dim is None:
+            dim = self.spec["dim"]
+        if fluid is None:
+            fluid = "gas"
+
+        if dim == "scalar":
+            spec = self.spec["fluids"][fluid][dim][key]
+            loader = loadscalar.ScalarLoader(
+                spec["varname"], spec["datafile"], self)
+            return loader()
 
     def filepath(self, filename):
         return os.path.join(self.data_dir, filename)
@@ -89,6 +117,9 @@ class Loader(interface.Interface):
         self.spec["mtime"] = self.mtime
 
     def get_parameters(self):
+        if "paramters" in self.spec:
+            self.parameters = self.spec["parameters"].copy()
+            return
         try:
             param_file = os.path.join(self.data_dir, "../setup/in.par")
             self.parameters = loadparams.get_parameters(param_file)
@@ -97,12 +128,21 @@ class Loader(interface.Interface):
             pass
 
     def get_domain_size(self):
+        if all([key in self.spec for key in ["Nr", "Nphi"]]):
+            self.Nr = self.spec["Nr"]
+            self.Nphi = self.spec["Nphi"]
+            return
         self.Nr, self.Nphi = np.genfromtxt(os.path.join(
             self.data_dir, "dimensions.dat"),
             usecols=(4, 5),
             dtype=int)
+        self.spec["Nr"] = self.Nr
+        self.spec["Nphi"] = self.Nphi
 
     def get_units(self):
+        if "units" in self.spec:
+            self.units = self.spec["units"].copy()
+            return
         with open(os.path.join(self.data_dir, 'units.dat'), 'r') as f:
             self.units = {
                 l[0]: l[1] + " " + l[2]
@@ -114,6 +154,11 @@ class Loader(interface.Interface):
         self.spec["units"] = self.units.copy()
 
     def load_grid(self):
+        if all([key in self.spec for key in ["r_i", "phi_i"]]):
+            self.r_i = quantity_from_spec(self.spec["r_i"])
+            self.phi_i = quantity_from_spec(self.spec["phi_i"])
+            return
+
         self.r_i = np.genfromtxt(self.data_dir +
                                  "/used_rad.dat") * u.Unit(self.units["length"])
         self.phi_i = np.linspace(0, 2 * np.pi, self.Nphi + 1) * u.rad
@@ -123,6 +168,12 @@ class Loader(interface.Interface):
         }
 
     def load_times(self):
+        if all([key in self.spec for key in ["output_times", "fine_output_times"]]):
+            self.output_times = quantity_from_spec(self.spec["output_times"])
+            self.fine_output_times = quantity_from_spec(
+                self.spec["fine_output_times"])
+            return
+
         self.output_times = loadscalar.load_text_data_file(
             os.path.join(self.data_dir, "misc.dat"), "physical time")
         self.fine_output_times = loadscalar.load_text_data_file(
@@ -146,6 +197,14 @@ class Loader(interface.Interface):
         self.fluids["gas"].alias.register_dict(defs.alias_reduced)
 
     def get_particles(self):
+        if "particles" in self.spec:
+            pspec = self.spec["particles"]
+            self.particles = loadparticles.ParticleLoader(
+                pspec["name"],
+                pspec["datafile_pattern"],
+                quantity_from_spec(pspec["times"]),
+                pspec["timesteps"], self)
+            return
         p = re.compile(r"particles([\d]+).dat")
         timesteps = []
         for s in os.listdir(self.data_dir):
@@ -165,6 +224,15 @@ class Loader(interface.Interface):
         }
 
     def get_planets(self):
+        if "planets" in self.spec:
+            for val in self.spec["planets"].values():
+                planet = particles.Planet(val["name"], val["pid"])
+                for varname in val["variables"]:
+                    datafile = val["variables"][varname]["datafile"]
+                    loader = loadscalar.ScalarLoader(varname, datafile, self)
+                    planet.register_variable(varname, loader)
+                self.planets.append(planet)
+            return
         self.spec["planets"] = {}
         planet_ids = []
         p = re.compile(r"bigplanet(\d).dat")
@@ -191,6 +259,11 @@ class Loader(interface.Interface):
                     "datafile": datafile}
 
     def get_fluids(self):
+        if "fluids" in self.spec:
+            for fname in self.spec["fluids"]:
+                self.fluids[fname] = fluid.Fluid(fname)
+            return
+
         self.fluids["gas"] = fluid.Fluid("gas")
         self.spec["fluids"] = {"gas": {}}
 
@@ -199,6 +272,13 @@ class Loader(interface.Interface):
         self.get_fields_1d()
 
     def get_fields_2d(self):
+        if "fluids" in self.spec:
+            for name, fspec in self.spec["fluids"].items():
+                fl = self.fluids[name]
+                for varname, vspec in fspec["2d"].items():
+                    loader = load2d.FieldLoader2d(varname, vspec["info"], self)
+                    fl.register_variable(varname, "2d", loader)
+            return
         self.spec["fluids"]["gas"]["2d"] = {}
         gas = self.fluids["gas"]
         files = os.listdir(self.data_dir)
@@ -210,6 +290,13 @@ class Loader(interface.Interface):
                     "name": varname, "info": info}
 
     def get_fields_1d(self):
+        if "fluids" in self.spec:
+            for name, fspec in self.spec["fluids"].items():
+                fl = self.fluids[name]
+                for varname, vspec in fspec["1d"].items():
+                    loader = load1d.FieldLoader1d(varname, vspec["info"], self)
+                    fl.register_variable(varname, "1d", loader)
+            return
         self.spec["fluids"]["gas"]["1d"] = {}
         gas = self.fluids["gas"]
         files = os.listdir(self.data_dir)
@@ -243,6 +330,17 @@ class Loader(interface.Interface):
                     "varname": varname, "info": info}
 
     def get_scalars(self):
+        if "fluids" in self.spec:
+            for name, fspec in self.spec["fluids"].items():
+                fl = self.fluids[name]
+                if "scalar" in fspec:
+                    sspec = fspec["scalar"]
+                    for varname, vspec in sspec.items():
+                        loader = loadscalar.ScalarLoader(
+                            varname, vspec["datafile"], self)
+                        fl.register_variable(varname, "scalar", loader)
+            return
+
         self.spec["fluids"]["gas"]["scalar"] = {}
         gas = self.fluids["gas"]
         datafile = "Quantities.dat"

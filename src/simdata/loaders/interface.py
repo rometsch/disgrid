@@ -5,13 +5,13 @@ from .. import field
 
 
 class Interface:
-    def __init__(self, path):
+    def __init__(self, path, **kwargs):
         self.path = path
         self.fluids = {}
         self.scalar = {}
         self.particles = {}
         self.particlegroups = {}
-        self.planets = {}
+        self.planets = []
         self.parameters = {}
 
     def scout(self):
