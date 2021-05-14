@@ -3,8 +3,8 @@
 import numpy as np
 import astropy.units as u
 
-from simdata import grid
-from simdata.loaders import interface
+from ... import grid
+from .. import interface
 
 
 class FieldLoader1d(interface.FieldLoader):
