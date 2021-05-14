@@ -113,8 +113,8 @@ class Loader(interface.Interface):
         Access stats of the Quantities.dat file for the modified date.
         """
         file_path = os.path.join(self.data_dir, "Quantities.dat")
-        self.mtime = os.path.getmtime(file_path)
-        self.spec["mtime"] = self.mtime
+        self.timestamp = os.path.getmtime(file_path)
+        self.spec["timestamp"] = self.timestamp
 
     def get_parameters(self):
         if "paramters" in self.spec:
@@ -163,8 +163,8 @@ class Loader(interface.Interface):
                                  "/used_rad.dat") * u.Unit(self.units["length"])
         self.phi_i = np.linspace(0, 2 * np.pi, self.Nphi + 1) * u.rad
         self.spec["grid"] = {
-            "r_i": (list(self.r_i.value), self.r_i.unit.to_string()),
-            "phi_i": (list(self.phi_i.value), self.phi_i.unit.to_string())
+            "r_i": (self.r_i.value, self.r_i.unit.to_string()),
+            "phi_i": (self.phi_i.value, self.phi_i.unit.to_string())
         }
 
     def load_times(self):
@@ -179,9 +179,9 @@ class Loader(interface.Interface):
         self.fine_output_times = loadscalar.load_text_data_file(
             os.path.join(self.data_dir, "Quantities.dat"), "physical time")
         self.spec["output_times"] = (
-            list(self.output_times.value), self.output_times.unit.to_string())
+            self.output_times.value, self.output_times.unit.to_string())
         self.spec["fine_output_times"] = (
-            list(self.fine_output_times.value), self.fine_output_times.unit.to_string())
+            self.fine_output_times.value, self.fine_output_times.unit.to_string())
 
     def get_output_time(self, n):
         return self.output_times[n]
@@ -219,7 +219,7 @@ class Loader(interface.Interface):
         self.spec["particles"] = {
             "name": "dust",
             "datafile_pattern": datafile_pattern,
-            "times": (list(times.value), times.unit.to_string()),
+            "times": (times.value, times.unit.to_string()),
             "timesteps": timesteps
         }
 

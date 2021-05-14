@@ -5,8 +5,10 @@
 # looking up simulation dir paths.
 
 import os
+import pickle
 
 from . import data
+from .config import Config
 from smurf.cache import LocalSimCache, get_cache_by_id, CacheMiss
 from smurf.info import Info
 from smurf.mount import Mount
@@ -58,12 +60,54 @@ class SmurfData(RemoteData):
         elif "simcode" in self.sim:
             kwargs["loader"] = self.sim["simcode"]
         self.simid = simid
-        super().__init__(path, init_hooks=[self.register_code], **kwargs)
+        self.config = Config()
+        spec = self.search_spec()
+        if spec is not None:
+            kwargs["spec"] = spec
+        super().__init__(path, init_hooks=[self.register_code, self.save_spec], **kwargs)
 
     def register_code(self):
         self.sim["simdata_code"] = self.code
         c = get_cache_by_id(self.sim["uuid"])
         c.insert(self.sim["uuid"], self.sim)
+
+    def search_spec(self):
+        spec = None
+        simid = self.sim["uuid"]
+        if "specdir" in self.config.data:
+            specdir = self.config.data["specdir"]
+        elif "cachedir" in self.config.data["cachedir"]:
+            specdir = self.config.data["cachedir"]
+        else:
+            spec = None
+        specfile = os.path.join(specdir, f"{simid}.spec.pickle")
+        if os.path.exists(specfile):
+            try:
+                with open(specfile, "rb") as in_file:
+                    spec = pickle.load(in_file)
+                    if "timestamp" in spec:
+                        self._old_spec_timestamp = spec["timestamp"]
+            except EOFError:
+                pass
+        return spec
+
+    def save_spec(self):
+        if hasattr(self, "_old_spec_timestamp") and hasattr(self.loader, "spec"):
+            if "timestamp" in self.loader.spec:
+                if self.loader.spec["timestamp"] <= self._old_spec_timestamp:
+                    return
+        simid = self.sim["uuid"]
+        print(self.config.data)
+        if "specdir" in self.config.data:
+            specdir = self.config.data["specdir"]
+        elif "cachedir" in self.config.data["cachedir"]:
+            specdir = self.config.data["cachedir"]
+        else:
+            return
+        if hasattr(self.loader, "spec"):
+            specfile = os.path.join(specdir, f"{simid}.spec.pickle")
+            with open(specfile, "wb") as out_file:
+                pickle.dump(self.loader.spec, out_file)
 
 
 def insert_local_sim_to_cache(path):
