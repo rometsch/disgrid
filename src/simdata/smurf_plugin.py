@@ -6,14 +6,14 @@
 
 import os
 
-import simdata.data
+from . import data
 from smurf.cache import LocalSimCache, get_cache_by_id, CacheMiss
 from smurf.info import Info
 from smurf.mount import Mount
 from smurf.search import remote_path, search
 
 
-class RemoteData(simdata.data.Data):
+class RemoteData(data.Data):
     """ Data interface for simulations on remote hosts.
     Simdirs on remote hosts are mounted using sshfs. 
     Use user@host:path as the remote_path argument. The syntax of the remote path is equivalent to the arguments of scp."""
