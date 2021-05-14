@@ -70,17 +70,24 @@ class Loader(interface.Interface):
         if "spec" in kwargs:
             self.spec = kwargs["spec"].copy()
             self.data_dir = os.path.join(self.path, self.spec["data_dir"])
-            return
+            try:
+                self.get_last_activity()
+                if self.verify_spec():
+                    return
+            except FileNotFoundError:
+                pass
         self.data_dir = get_data_dir(self.path)
         self.output_times = []
         self.fine_output_times = []
+        self.get_last_activity()
         self.spec = {"data_dir": os.path.relpath(
             self.data_dir, start=self.path),
-            "dim": "2d"}
+            "maxdim": "2d",
+            "timestamp": self.timestamp}
 
     def get(self, key=None, dim=None, planet=None, fluid=None):
         if dim is None:
-            dim = self.spec["dim"]
+            dim = self.spec["maxdim"]
         if fluid is None:
             fluid = "gas"
 
@@ -94,7 +101,6 @@ class Loader(interface.Interface):
         return os.path.join(self.data_dir, filename)
 
     def scout(self):
-        self.get_last_activity()
         self.get_units()
         self.get_domain_size()
         self.get_parameters()
@@ -111,10 +117,32 @@ class Loader(interface.Interface):
         """ Get the last time the simulation was updated.
 
         Access stats of the Quantities.dat file for the modified date.
+
+        Raises
+        ------
+        FileNotFoundError
+            If the proxy file does not exist.
         """
         file_path = os.path.join(self.data_dir, "Quantities.dat")
         self.timestamp = os.path.getmtime(file_path)
-        self.spec["timestamp"] = self.timestamp
+
+    def verify_spec(self):
+        """ Make sure the spec applies to the current simulation.
+
+        Check for the last modified time and compare to timestamp in spec.
+
+        Returns
+        -------
+        bool
+            True when spec is up to date, False otherwise.
+        """
+        try:
+            if self.timestamp > self.spec["timestamp"]:
+                return False
+            else:
+                return True
+        except KeyError:
+            return False
 
     def get_parameters(self):
         if "paramters" in self.spec:
