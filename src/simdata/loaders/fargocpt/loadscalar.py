@@ -5,7 +5,7 @@ from functools import lru_cache
 
 import astropy.units as u
 import numpy as np
-from simdata import scalar
+from ... import scalar
 
 @lru_cache
 def load_text_data_variables(filepath):

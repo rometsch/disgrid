@@ -4,8 +4,8 @@ import os
 
 import astropy.units as u
 import numpy as np
-from simdata import grid
-from simdata.loaders import interface
+from ... import grid
+from .. import interface
 
 
 def load1dRadial(n, dataFilePattern, unit, lengthunit=None):

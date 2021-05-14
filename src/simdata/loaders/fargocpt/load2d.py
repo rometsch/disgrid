@@ -2,8 +2,8 @@
 """
 import numpy as np
 from astropy import units as u
-from simdata import grid
-from simdata.loaders import interface
+from ... import grid
+from .. import interface
 
 
 class FieldLoader2d(interface.FieldLoader):

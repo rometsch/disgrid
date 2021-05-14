@@ -3,8 +3,8 @@ import re
 
 import astropy.units as u
 import numpy as np
-from simdata import fluid, particles
-from simdata.loaders import interface
+from ... import fluid, particles
+from .. import interface
 
 from . import defs, load1d, load2d, loadparams, loadscalar, loadparticles
 
