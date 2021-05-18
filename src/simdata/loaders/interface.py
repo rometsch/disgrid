@@ -20,6 +20,7 @@ class Interface:
         self.parameters = {}
         self.owner = owner
         self.file_caching = file_caching
+        self.cached_files = []
 
     def scout(self):
         # find all variables
@@ -41,30 +42,41 @@ class Interface:
             if os.path.commonpath([os.path.abspath(self.data_dir), os.path.abspath(filename)]) == self.data_dir:
                 filename = os.path.relpath(filename, self.data_dir)
 
+        # don't reuse an old changing file
+        if changing and not hasattr(self, "uptodate") and not filename in self.cached_files:
+            use_cache = False
+        # be aware of the uptodate flag
+        elif changing and not self.uptodate and not filename in self.cached_files:
+            use_cache = False
+        else:
+            use_cache = True
+
         data_dir = self.data_dir
 
-        if not hasattr(self, "uptodate") or (changing and not self.uptodate):
-            return os.path.join(data_dir, filename)
-
-        try:
-            simid = self.owner.sim["uuid"]
-            if os.path.exists(self.owner.sim["path"]):
-                raise AttributeError()  # its a local path so step out of try
-            cachedir_base = self.owner.config["cachedir"]
-            cachedir = os.path.join(cachedir_base, simid)
-            os.makedirs(cachedir, exist_ok=True)
-            filepath_in_src = os.path.join(self.data_dir, filename)
-            if ".." in filename:
-                filename = filename.replace("..", "__subdir__")
-            filepath_in_cache = os.path.join(cachedir, filename)
-            if not os.path.exists(filepath_in_cache):
-                os.makedirs(os.path.dirname(filepath_in_cache), exist_ok=True)
-                shutil.copy2(filepath_in_src, filepath_in_cache)
-            data_dir = cachedir
-        except (KeyError, AttributeError):
-            pass
-
-        return os.path.join(data_dir, filename)
+        if use_cache:
+            try:
+                simid = self.owner.sim["uuid"]
+                if os.path.exists(self.owner.sim["path"]):
+                    raise AttributeError()  # its a local path so step out of try
+                cachedir_base = self.owner.config["cachedir"]
+                cachedir = os.path.join(cachedir_base, simid)
+                os.makedirs(cachedir, exist_ok=True)
+                filepath_in_src = os.path.join(self.data_dir, filename)
+                old_filename = filename
+                if ".." in filename:
+                    filename = filename.replace("..", "__subdir__")
+                filepath_in_cache = os.path.join(cachedir, filename)
+                if not os.path.exists(filepath_in_cache):
+                    os.makedirs(os.path.dirname(
+                        filepath_in_cache), exist_ok=True)
+                    shutil.copy2(filepath_in_src, filepath_in_cache)
+                data_dir = cachedir
+                self.cached_files.append(old_filename)
+            except (KeyError, AttributeError):
+                pass
+        
+        filepath = os.path.join(data_dir, filename)
+        return filepath
 
 
 class FieldLoader:
