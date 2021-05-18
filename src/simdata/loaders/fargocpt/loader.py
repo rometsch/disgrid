@@ -106,6 +106,8 @@ class Loader(interface.Interface):
             return os.path.join(data_dir, filename)
         try:
             simid = self.owner.sim["uuid"]
+            if os.path.exists(self.owner.sim["path"]):
+                raise AttributeError() # its a local path so step out of try
             cachedir_base = self.owner.config["cachedir"]
             cachedir = os.path.join(cachedir_base, simid)
             os.makedirs(cachedir, exist_ok=True)
