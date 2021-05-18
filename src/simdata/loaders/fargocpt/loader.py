@@ -116,7 +116,7 @@ class Loader(interface.Interface):
                 filename = filename.replace("..", "__subdir__")
             filepath_in_cache = os.path.join(cachedir, filename)
             if not os.path.exists(filepath_in_cache):
-                os.makedirs(os.path.dirname(filepath_in_cache))
+                os.makedirs(os.path.dirname(filepath_in_cache), exist_ok=True)
                 shutil.copy2(filepath_in_src, filepath_in_cache)
             data_dir = cachedir
         except (KeyError, AttributeError):
