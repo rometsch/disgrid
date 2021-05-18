@@ -55,7 +55,7 @@ class ParticleLoader:
         return data, time
 
     def load_data(self, N):
-        filepath = self.loader.filepath(self.datafile_pattern.format(N))
+        filepath = self.loader.cached(self.datafile_pattern.format(N))
         rv = load_particle_data(
             filepath, self.loader.units)
         return rv

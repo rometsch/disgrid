@@ -33,7 +33,7 @@ class Interface:
     def get_output_time(self, n):
         pass
 
-    def filepath(self, filename, changing=False):
+    def cached(self, filename, changing=False):
         if not self.file_caching:
             return os.path.join(self.data_dir, filename)
 
