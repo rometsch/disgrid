@@ -5,7 +5,7 @@ from .. import field
 
 
 class Interface:
-    def __init__(self, path, **kwargs):
+    def __init__(self, path, owner=None, **kwargs):
         self.path = path
         self.fluids = {}
         self.scalar = {}
@@ -13,6 +13,7 @@ class Interface:
         self.particlegroups = {}
         self.planets = []
         self.parameters = {}
+        self.owner = owner
 
     def scout(self):
         # find all variables

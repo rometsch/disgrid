@@ -8,9 +8,9 @@ from ... import grid
 from .. import interface
 
 
-def load1dRadial(n, dataFilePattern, unit, lengthunit=None):
-    data = np.fromfile(dataFilePattern.format(n), dtype=float)
-    if 'torque_planet' in dataFilePattern:
+def load1dRadial(dataFile, unit, lengthunit=None):
+    data = np.fromfile(dataFile, dtype=float)
+    if 'torque_planet' in dataFile:
         v = data[1::2] * unit
         r = data[::2]
     else:
@@ -49,9 +49,8 @@ def load1dMassFlow(n, dataDir):
 
 
 def parse_1d_info_file(fname):
-    data_dir = os.path.dirname(os.path.abspath(fname))
     stem = os.path.basename(os.path.abspath(fname))[:-7]
-    pattern = os.path.join(data_dir, "{}1D{}.dat".format(stem, "{}"))
+    pattern = "{}1D{}.dat".format(stem, "{}")
     with open(fname, "r") as infofile:
         for line in infofile:
             line = line.strip()
@@ -68,7 +67,7 @@ class FieldLoader1d(interface.FieldLoader):
         super().__init__(*args, **kwargs)
         self.fileinfo = parse_1d_info_file(
             self.loader.filepath(self.info["infofile"])
-            )
+        )
 
     def load_time(self, n):
         if n is None:
@@ -79,8 +78,8 @@ class FieldLoader1d(interface.FieldLoader):
 
     def load_data(self, n):
         unit = u.Unit(self.fileinfo["unit"])
-        pattern = self.loader.filepath(self.fileinfo["pattern"])
-        rv = load1dRadial(n, pattern, unit)
+        datafile = self.loader.filepath(self.fileinfo["pattern"].format(n))
+        rv = load1dRadial(datafile, unit)
         return rv
 
     def load_grid(self, n):

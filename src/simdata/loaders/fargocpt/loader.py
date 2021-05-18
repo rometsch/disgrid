@@ -1,5 +1,6 @@
 import os
 import re
+import shutil
 
 import astropy.units as u
 import numpy as np
@@ -67,15 +68,17 @@ class Loader(interface.Interface):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if "spec" in kwargs:
+        if "spec" in kwargs and kwargs["spec"] is not None:
             self.spec = kwargs["spec"].copy()
             self.data_dir = os.path.join(self.path, self.spec["data_dir"])
             try:
                 self.get_last_activity()
                 if self.verify_spec():
+                    self.uptodate = True
                     return
             except FileNotFoundError:
                 pass
+        self.uptodate = False
         self.data_dir = get_data_dir(self.path)
         self.output_times = []
         self.fine_output_times = []
@@ -97,8 +100,26 @@ class Loader(interface.Interface):
                 spec["varname"], spec["datafile"], self)
             return loader()
 
-    def filepath(self, filename):
-        return os.path.join(self.data_dir, filename)
+    def filepath(self, filename, changing=False):
+        data_dir = self.data_dir
+        if changing and not self.uptodate:
+            return os.path.join(data_dir, filename)
+        try:
+            simid = self.owner.sim["uuid"]
+            cachedir_base = self.owner.config["cachedir"]
+            cachedir = os.path.join(cachedir_base, simid)
+            os.makedirs(cachedir, exist_ok=True)
+            filepath_in_src = os.path.join(self.data_dir, filename)
+            if ".." in filename:
+                filename = filename.replace("..", "__subdir__")
+            filepath_in_cache = os.path.join(cachedir, filename)
+            if not os.path.exists(filepath_in_cache):
+                os.makedirs(os.path.dirname(filepath_in_cache))
+                shutil.copy2(filepath_in_src, filepath_in_cache)
+            data_dir = cachedir
+        except (KeyError, AttributeError):
+            pass
+        return os.path.join(data_dir, filename)
 
     def scout(self):
         self.get_units()
@@ -203,9 +224,9 @@ class Loader(interface.Interface):
             return
 
         self.output_times = loadscalar.load_text_data_file(
-            self.filepath("misc.dat"), "physical time")
+            self.filepath("misc.dat", changing=True), "physical time")
         self.fine_output_times = loadscalar.load_text_data_file(
-            self.filepath("Quantities.dat"), "physical time")
+            self.filepath("Quantities.dat", changing=True), "physical time")
         self.spec["output_times"] = (
             self.output_times.value, self.output_times.unit.to_string())
         self.spec["fine_output_times"] = (
@@ -278,7 +299,7 @@ class Loader(interface.Interface):
         # add variables to planets
         for pid, planet in zip(planet_ids, self.planets):
             planet_variables = loadscalar.load_text_data_variables(
-                self.filepath("bigplanet{}.dat".format(pid)))
+                self.filepath("bigplanet{}.dat".format(pid), changing=True))
             for varname in planet_variables:
                 datafile = "bigplanet{}.dat".format(pid)
                 loader = loadscalar.ScalarLoader(varname, datafile, self)
@@ -373,7 +394,7 @@ class Loader(interface.Interface):
         gas = self.fluids["gas"]
         datafile = "Quantities.dat"
         variables = loadscalar.load_text_data_variables(
-            self.filepath(datafile))
+            self.filepath(datafile, changing=True))
         for varname, _ in variables.items():
             loader = loadscalar.ScalarLoader(varname, datafile, self)
             gas.register_variable(varname, "scalar", loader)

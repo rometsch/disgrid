@@ -7,6 +7,7 @@ import astropy.units as u
 import numpy as np
 from ... import scalar
 
+
 @lru_cache
 def load_text_data_variables(filepath):
     # load all variable definitions from a text file
@@ -27,9 +28,11 @@ def load_text_data_variables(filepath):
                 found_variables[name] = (col, unitstr)
     return found_variables
 
+
 @lru_cache
 def load_data(filepath):
     return np.genfromtxt(filepath).T
+
 
 def load_text_data_file(filepath, varname, Nmax=np.inf):
     # get data
@@ -65,14 +68,14 @@ class ScalarLoader:
         return f
 
     def load_data(self):
-        datafile = self.loader.filepath(self.datafile)
+        datafile = self.loader.filepath(self.datafile, changing=True)
         rv = load_text_data_file(datafile,
                                  self.name,
                                  Nmax=len(self.loader.fine_output_times))
         return rv
 
     def load_time(self):
-        datafile = self.loader.filepath(self.datafile)
+        datafile = self.loader.filepath(self.datafile, changing=True)
         rv = load_text_data_file(datafile,
                                  "physical time",
                                  Nmax=len(self.loader.fine_output_times))
