@@ -205,10 +205,13 @@ class Loader(interface.Interface):
         self.spec["units"] = self.units.copy()
 
     def load_grid(self):
-        if all([key in self.spec for key in ["r_i", "phi_i"]]):
-            self.r_i = quantity_from_spec(self.spec["r_i"])
-            self.phi_i = quantity_from_spec(self.spec["phi_i"])
-            return
+        try:
+            if all([key in self.spec["grid"] for key in ["r_i", "phi_i"]]):
+                self.r_i = quantity_from_spec(self.spec["grid"]["r_i"])
+                self.phi_i = quantity_from_spec(self.spec["grid"]["phi_i"])
+                return
+        except KeyError:
+            pass
 
         self.r_i = np.genfromtxt(self.data_dir +
                                  "/used_rad.dat") * u.Unit(self.units["length"])
