@@ -62,11 +62,14 @@ class SmurfData(RemoteData):
             kwargs["loader"] = self.sim["simcode"]
         self.simid = simid
         self.config = Config()
-        spec = self.search_spec()
+        if "spec" in kwargs:
+            spec = kwargs["spec"]
+        else:
+            spec = self.search_spec()
         if spec is not None:
             kwargs["spec"] = spec
         super().__init__(path, init_hooks=[
-            self.register_code, self.save_spec], **kwargs)
+            self.register_code, self.save_spec], owner=self, **kwargs)
 
     def register_code(self):
         self.sim["simdata_code"] = self.code
@@ -98,7 +101,6 @@ class SmurfData(RemoteData):
                 if self.loader.spec["timestamp"] <= self._old_spec_timestamp:
                     return
         simid = self.sim["uuid"]
-        print(self.config.data)
         if "specdir" in self.config.data:
             specdir = self.config.data["specdir"]
         elif "cachedir" in self.config.data["cachedir"]:
