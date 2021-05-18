@@ -14,7 +14,7 @@ def load_text_data_variables(filepath):
     # each variable is indicated by
     # "#variable: {column number} | {variable name} | {unit}"
     found_variables = {}
-    with open(os.path.join(filepath)) as f:
+    with open(filepath) as f:
         for line in f:
             line = line.strip()
             if line[0] != "#":

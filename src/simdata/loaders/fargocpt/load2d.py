@@ -24,9 +24,8 @@ class FieldLoader2d(interface.FieldLoader):
         Nr = self.loader.Nr + (1 if "interfaces" in self.info
                                and "r" in self.info["interfaces"] else 0)
         Nphi = self.loader.Nphi  #+ (1 if "interfaces" in self.info and "phi" in self.info["interfaces"] else 0)
-        rv = np.fromfile(self.loader.data_dir +
-                         "/" + self.info["pattern"].format(n)).reshape(
-                             Nr, Nphi) * unit
+        filepath = self.loader.filepath(self.info["pattern"].format(n))
+        rv = np.fromfile(filepath).reshape(Nr, Nphi) * unit
         return rv
 
     def load_grid(self, n):
