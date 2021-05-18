@@ -5,14 +5,14 @@ from subprocess import run, PIPE
 log_file_options = ['pluto.log', '../log.log', 'pluto.0.log']
 
 
-def loadUnits(dataDir, dimensions):
+def loadUnits(dataDir, dimensions, filecache=None):
     # extract lines for units from pluto log file (specify at top of file!)
     unit_lines = []
     in_unit_block = False
 
     use_log_file = None
     for log_file in log_file_options:
-        if os.path.isfile(os.path.join(dataDir, log_file)):
+        if os.path.exists(os.path.join(dataDir, log_file)):
             use_log_file = log_file
             break
 
@@ -21,9 +21,12 @@ def loadUnits(dataDir, dimensions):
             'Cannot find PLUTO log file. If compiled in PLUTO 4.3 serial mode, it will be implemented differently.'
         )
 
+    log_file_path = os.path.join(dataDir, use_log_file)
+    if filecache is not None:
+        log_file_path = filecache(log_file_path)
     grep_res = run([
         "grep", "-C", "7", "Normalization\ Units",
-        os.path.join(dataDir, use_log_file)
+        log_file_path
     ],
                    stdout=PIPE)
     lines = grep_res.stdout.decode("utf-8").splitlines()[-8:]

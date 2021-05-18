@@ -29,17 +29,17 @@ class Grid:
 
     credit goes to sdoetsch for inspiration on improving the file-reading part: https://gitlab.mpcdf.mpg.de/sdoetsch/plutoplot.git
     """
-    def __init__(self, DIR=0, origin='.'):
-        filename = "%s/grid.out" % origin
+    def __init__(self, gridfile, DIR=0):
+        gridfile = gridfile
         try:
-            file = open(filename)
+            file = open(gridfile)
             file.close()
         except:
             raise FileNotFoundError(
-                'PLUTO dependencies: No such file: \'%s\'' % filename)
+                'PLUTO dependencies: No such file: \'%s\'' % gridfile)
 
         dim_counter = -1
-        with open(filename, 'r') as f:
+        with open(gridfile, 'r') as f:
             while True:
                 line = f.readline()
                 if line[0] == '#': continue  #ignore comments
@@ -60,7 +60,7 @@ class Grid:
                     return
 
 
-def resolve_geometry(origin='.'):
+def resolve_geometry(gridfile):
     """looks inside a directory containing PLUTO data (specifically a grid.out file)
     and extracts information about the geometry of the problem
         Input
@@ -71,7 +71,7 @@ def resolve_geometry(origin='.'):
             coords:     PLUTO is a bit ambiguous about its coord system at first glance. Detailed info on the coord system is included here.
     """
     dimensions, geometry = -1, "NONE"  #defaults
-    with open(origin + '/grid.out', 'r') as f:
+    with open(gridfile, 'r') as f:
         while True:
             l = f.readline()
             if l.startswith('# DIMENSIONS'):
@@ -110,14 +110,14 @@ def resolve_geometry(origin='.'):
     return [dimensions, geometry, coords.split()]
 
 
-def loadGrid(dataDir, length_unit=None, angle_unit=None):
+def loadGrid(gridfile, length_unit=None, angle_unit=None):
     """returns a simdata.grid structure in relevant coordinates."""
 
     if not length_unit: length_unit = u.cm
     if not angle_unit: angle_unit = u.radian
 
-    g = [Grid(DIR=i, origin=dataDir) for i in [0, 1, 2]]
-    dimensions, geometry, coordinates = resolve_geometry(origin=dataDir)
+    g = [Grid(gridfile, DIR=i) for i in [0, 1, 2]]
+    dimensions, geometry, coordinates = resolve_geometry(gridfile)
 
     if geometry == 'CARTESIAN':
         x_i = g[0].xi * length_unit

@@ -341,17 +341,17 @@ class Loader(interface.Interface):
         self.get_fields_1d()
 
     def get_domain_size(self):
-        grid = [PGrid.Grid(DIR=i, origin=self.data_dir) for i in [0, 1, 2]]
+        grid = [PGrid.Grid(self.cached("grid.out"), DIR=i) for i in [0, 1, 2]]
         self.NX1, self.NX2, self.NX3 = [g.Ncells for g in grid]
 
     def get_geometry(self):
         self.dimensions, self.geometry, self.coordinates = PGrid.resolve_geometry(
-            origin=self.data_dir)
+            self.cached("grid.out"))
 
     def assign_variables(self):
         #warning: the following lines only work with python3+
         #get number of columns of file
-        with open(self.data_dir + '/dbl.out', 'r') as dblout:
+        with open(self.cached('dbl.out', changing=True), 'r') as dblout:
             line = dblout.readline().strip().split()
         _, _, _, _, output_format, _, *varnames = line
 
@@ -443,7 +443,7 @@ class Loader(interface.Interface):
         #set scalar_filename at top of file!
         for fluid_name in self.fluids:
             fl = self.fluids[fluid_name]
-            datafile = os.path.join(self.data_dir, scalar_filename)
+            datafile = self.cached(scalar_filename, changing=True)
             if os.path.exists(datafile):
                 for varname, info in vars_scalar.items():
                     fl.register_variable(
@@ -451,10 +451,24 @@ class Loader(interface.Interface):
                         ScalarLoader(varname, datafile, info, self))
 
     def load_times(self):
-        self.output_times = loadCoarseOutputTimes(self.data_dir,
-                                                  self.units["time"])
-        self.fine_output_times = loadFineOutputTimes(self.data_dir,
-                                                     self.units["time"])
+        timestamps = np.genfromtxt(self.cached('dbl.out'),
+                                usecols=1,
+                                unpack=True,
+                                dtype=float)
+
+        self.output_times = timestamps * self.units["time"]
+
+        try:
+            timestamps = np.genfromtxt(self.cached(scalar_filename),
+                                    usecols=0,
+                                    unpack=True,
+                                    skip_header=1,
+                                    dtype=float)
+            self.fine_output_times = timestamps * self.units["time"]
+        except:
+            #print('%s/%s was not found.'%(dataDir, scalar_filename))
+            self.fine_output_times = np.array([], dtype=float)
+
 
     def get_output_time(self, n):
         return self.output_times[n]
@@ -465,7 +479,7 @@ class Loader(interface.Interface):
 
     def get_units(self):
         self.units = PUnits.loadUnits(self.data_dir,
-                                      dimensions=self.dimensions)
+                                      dimensions=self.dimensions, filecache=self.cached)
 
 
 class FieldLoader2d(interface.FieldLoader):
@@ -497,7 +511,7 @@ class FieldLoader2d(interface.FieldLoader):
 
     def load_grid(self, n=0):
         """Returns a simdata.grid structure in relevant coordinates."""
-        return PGrid.loadGrid(self.loader.data_dir,
+        return PGrid.loadGrid(self.loader.cached("grid.out"),
                               length_unit=self.loader.units["length"],
                               angle_unit=u.radian)
 
@@ -522,7 +536,7 @@ class FieldLoader2d(interface.FieldLoader):
 
         unit = qty_info["unit"]
 
-        filename = self.loader.data_dir + "/" + qty_info["pattern"].format(n)
+        filename = self.loader.cached(qty_info["pattern"].format(n))
         if self.loader.output_format == 'single_file':
             memmap = np.memmap(filename,
                                dtype=float,
@@ -581,38 +595,17 @@ class ScalarLoader:
     def load_data(self):
         col = self.info["datacol"]
         unit = self.info["unit"]
-        rv = np.genfromtxt(self.datafile, usecols=int(col),
+        rv = np.genfromtxt(self.loader.cached(self.datafile), usecols=int(col),
                            skip_header=1) * unit
         return rv
 
     def load_time(self):
         col = self.info["timecol"]
         unit = self.units["time"]
-        rv = np.genfromtxt(self.datafile, usecols=int(col),
+        rv = np.genfromtxt(self.loader.cached(self.datafile), usecols=int(col),
                            skip_header=1) * unit
         return rv
 
-
-def loadCoarseOutputTimes(dataDir, unit):
-    timestamps = np.genfromtxt(dataDir + '/dbl.out',
-                               usecols=1,
-                               unpack=True,
-                               dtype=float)
-
-    return timestamps * unit
-
-
-def loadFineOutputTimes(dataDir, unit):
-    try:
-        timestamps = np.genfromtxt(dataDir + '/' + scalar_filename,
-                                   usecols=0,
-                                   unpack=True,
-                                   skip_header=1,
-                                   dtype=float)
-        return timestamps * unit
-    except:
-        #print('%s/%s was not found.'%(dataDir, scalar_filename))
-        return np.array([], dtype=float)
 
 
 def loadGrid(dataDir):
