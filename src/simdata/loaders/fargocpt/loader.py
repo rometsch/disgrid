@@ -1,6 +1,5 @@
 import os
 import re
-import shutil
 
 import astropy.units as u
 import numpy as np
@@ -99,29 +98,6 @@ class Loader(interface.Interface):
             loader = loadscalar.ScalarLoader(
                 spec["varname"], spec["datafile"], self)
             return loader()
-
-    def filepath(self, filename, changing=False):
-        data_dir = self.data_dir
-        if changing and not self.uptodate:
-            return os.path.join(data_dir, filename)
-        try:
-            simid = self.owner.sim["uuid"]
-            if os.path.exists(self.owner.sim["path"]):
-                raise AttributeError() # its a local path so step out of try
-            cachedir_base = self.owner.config["cachedir"]
-            cachedir = os.path.join(cachedir_base, simid)
-            os.makedirs(cachedir, exist_ok=True)
-            filepath_in_src = os.path.join(self.data_dir, filename)
-            if ".." in filename:
-                filename = filename.replace("..", "__subdir__")
-            filepath_in_cache = os.path.join(cachedir, filename)
-            if not os.path.exists(filepath_in_cache):
-                os.makedirs(os.path.dirname(filepath_in_cache), exist_ok=True)
-                shutil.copy2(filepath_in_src, filepath_in_cache)
-            data_dir = cachedir
-        except (KeyError, AttributeError):
-            pass
-        return os.path.join(data_dir, filename)
 
     def scout(self):
         self.get_units()

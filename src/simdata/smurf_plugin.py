@@ -7,6 +7,9 @@
 import os
 import pickle
 import time
+import numpy as np
+
+from pathlib import Path
 
 from . import data
 from .config import Config
@@ -18,7 +21,7 @@ from smurf.search import remote_path, search
 
 class RemoteData(data.Data):
     """ Data interface for simulations on remote hosts.
-    Simdirs on remote hosts are mounted using sshfs. 
+    Simdirs on remote hosts are mounted using sshfs.
     Use user@host:path as the remote_path argument. The syntax of the remote path is equivalent to the arguments of scp."""
 
     def __init__(self, remote_path, cache_timeout=None, **kwargs):
@@ -109,8 +112,7 @@ class SmurfData(RemoteData):
             return
         if hasattr(self.loader, "spec"):
             specfile = os.path.join(specdir, f"{simid}.spec.pickle")
-            with open(specfile, "wb") as out_file:
-                pickle.dump(self.loader.spec, out_file)
+            save_pickle(specfile, self.loader.spec)
 
 
 def insert_local_sim_to_cache(path):
@@ -137,7 +139,47 @@ def is_local_path(path):
     return len(path.split(":")) < 2
 
 
-def load_pickle(fpath, Nretry=3, wait=0.1):
+def lock_file(filepath):
+    lock = filepath + ".lock"
+    Path(lock).touch(exist_ok=True)
+
+
+def unlock_file(filepath):
+    lock = filepath + ".lock"
+    if os.path.exists(lock):
+        os.remove(lock)
+
+
+def wait_until_unlocked_func(filepath, Nretry=10, wait=0.01):
+    lock = filepath + ".lock"
+    for n in range(1, Nretry+1):
+        if os.path.exists(lock):
+            time.sleep(wait+wait*np.random.rand())
+
+
+def wait_until_unlocked(func, Nretry=10, wait=0.01):
+
+    def inner(filepath, *args, **kwargs):
+        wait_until_unlocked_func(filepath, Nretry=Nretry, wait=wait)
+        return func(filepath, *args, **kwargs)
+
+    return inner
+
+
+def with_lock(func, Nretry=10, wait=0.01):
+
+    def inner(filepath, *args, **kwargs):
+        wait_until_unlocked_func(filepath, Nretry=Nretry, wait=wait)
+        lock_file(filepath)
+        rv = func(filepath, *args, **kwargs)
+        unlock_file(filepath)
+        return rv
+
+    return inner
+
+
+@wait_until_unlocked
+def load_pickle(fpath, Nretry=10, wait=0.01):
     """ Load a pickle file with retries. """
     for n in range(Nretry):
         try:
@@ -147,5 +189,11 @@ def load_pickle(fpath, Nretry=3, wait=0.1):
         except EOFError as e:
             if n == Nretry - 1:
                 raise e
-            else:
-                time.sleep(wait)
+        time.sleep(wait+wait*np.random.rand())
+
+
+@with_lock
+def save_pickle(fpath, obj):
+    """ Save an object to a pickle file. """
+    with open(fpath, "wb") as out_file:
+        pickle.dump(obj, out_file)
