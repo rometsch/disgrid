@@ -72,7 +72,7 @@ class SmurfData(RemoteData):
         if spec is not None:
             kwargs["spec"] = spec
         super().__init__(path, init_hooks=[
-            self.register_code, self.save_spec], owner=self, **kwargs)
+            self.register_code, self.save_spec], owner=self, file_caching=True, **kwargs)
 
     def register_code(self):
         self.sim["simdata_code"] = self.code
