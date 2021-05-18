@@ -7,10 +7,11 @@ import shutil
 import numpy as np
 
 from .. import field
+from ..filecache import FileCache
 
 
 class Interface:
-    def __init__(self, path, owner=None, file_caching=False, **kwargs):
+    def __init__(self, path, owner=None, file_caching=True, update=True, **kwargs):
         self.path = path
         self.fluids = {}
         self.scalar = {}
@@ -18,9 +19,12 @@ class Interface:
         self.particlegroups = {}
         self.planets = []
         self.parameters = {}
+        
+        # caching
         self.owner = owner
         self.file_caching = file_caching
-        self.cached_files = []
+        self.update = update
+        self.init_cache(owner, file_caching, update)
 
     def scout(self):
         # find all variables
@@ -44,38 +48,56 @@ class Interface:
 
         # don't reuse an old changing file
         if changing and not hasattr(self, "uptodate") and not filename in self.cached_files:
-            use_cache = False
+            invalidate_entry = True
         # be aware of the uptodate flag
         elif changing and not self.uptodate and not filename in self.cached_files:
-            use_cache = False
+            invalidate_entry = True
         else:
-            use_cache = True
+            invalidate_entry = False
+        
+        if not self.update:
+            invalidate_entry = False
 
-        data_dir = self.data_dir
+        filepath = self.filecache.cached_file(filename, self.data_dir, invalidate=invalidate_entry)
+        
+        self.cached_files.add(filename)
+        
+        return filepath
 
-        if use_cache:
+    def init_cache(self, owner, file_caching, update):
+        if not self.file_caching:
+            self.cached = self.datadir_path
+        else:
             try:
                 simid = self.owner.sim["uuid"]
                 if os.path.exists(self.owner.sim["path"]):
                     raise AttributeError()  # its a local path so step out of try
                 cachedir_base = self.owner.config["cachedir"]
-                cachedir = os.path.join(cachedir_base, simid)
-                os.makedirs(cachedir, exist_ok=True)
-                filepath_in_src = os.path.join(self.data_dir, filename)
-                old_filename = filename
-                if ".." in filename:
-                    filename = filename.replace("..", "__subdir__")
-                filepath_in_cache = os.path.join(cachedir, filename)
-                if not os.path.exists(filepath_in_cache):
-                    os.makedirs(os.path.dirname(
-                        filepath_in_cache), exist_ok=True)
-                    shutil.copy2(filepath_in_src, filepath_in_cache)
-                data_dir = cachedir
-                self.cached_files.append(old_filename)
+                self.cachedir = os.path.join(cachedir_base, simid)
+                self.filecache = FileCache(self.cachedir, simid)
             except (KeyError, AttributeError):
-                pass
+                self.cached = self.datadir_path
         
-        filepath = os.path.join(data_dir, filename)
+        self.owner = owner
+        self.file_caching = file_caching
+        self.cached_files = set()
+
+    def datadir_path(self, filename, **kwargs):
+        """ Return path of the file inside the data directory.
+        
+        Used for the case with caching disabled.
+        
+        Parameteters
+        ------------
+        str
+            Name of the datafile.        
+
+        Returns
+        -------
+        str
+            Filepath inside the datadir.
+        """
+        filepath = os.path.join(self.data_dir, filename)
         return filepath
 
 
