@@ -6,6 +6,7 @@
 
 import os
 import pickle
+import time
 
 from . import data
 from .config import Config
@@ -64,7 +65,8 @@ class SmurfData(RemoteData):
         spec = self.search_spec()
         if spec is not None:
             kwargs["spec"] = spec
-        super().__init__(path, init_hooks=[self.register_code, self.save_spec], **kwargs)
+        super().__init__(path, init_hooks=[
+            self.register_code, self.save_spec], **kwargs)
 
     def register_code(self):
         self.sim["simdata_code"] = self.code
@@ -83,10 +85,9 @@ class SmurfData(RemoteData):
         specfile = os.path.join(specdir, f"{simid}.spec.pickle")
         if os.path.exists(specfile):
             try:
-                with open(specfile, "rb") as in_file:
-                    spec = pickle.load(in_file)
-                    if "timestamp" in spec:
-                        self._old_spec_timestamp = spec["timestamp"]
+                spec = load_pickle(specfile)
+                if "timestamp" in spec:
+                    self._old_spec_timestamp = spec["timestamp"]
             except EOFError:
                 pass
         return spec
@@ -132,3 +133,17 @@ def insert_local_sim_to_cache(path):
 def is_local_path(path):
     """ Evaluate whether 'path' is not of the form host:path. """
     return len(path.split(":")) < 2
+
+
+def load_pickle(fpath, Nretry=3, wait=0.1):
+    """ Load a pickle file with retries. """
+    for n in range(Nretry):
+        try:
+            with open(fpath, "rb") as in_file:
+                data = pickle.load(in_file)
+            return data
+        except EOFError as e:
+            if n == Nretry - 1:
+                raise e
+            else:
+                time.sleep(wait)
