@@ -8,7 +8,7 @@ import numpy as np
 from ... import scalar
 
 
-@lru_cache
+@lru_cache(100)
 def load_text_data_variables(filepath):
     # load all variable definitions from a text file
     # which contains the variable names and colums in its header.
@@ -29,7 +29,7 @@ def load_text_data_variables(filepath):
     return found_variables
 
 
-@lru_cache
+@lru_cache(100)
 def load_data(filepath):
     return np.genfromtxt(filepath).T
 
