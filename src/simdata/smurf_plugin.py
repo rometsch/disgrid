@@ -84,10 +84,10 @@ class SmurfData(RemoteData):
         simid = self.sim["uuid"]
         if "specdir" in self.config.data:
             specdir = self.config.data["specdir"]
-        elif "cachedir" in self.config.data["cachedir"]:
+        elif "cachedir" in self.config.data:
             specdir = self.config.data["cachedir"]
         else:
-            spec = None
+            return None
         specfile = os.path.join(specdir, f"{simid}.spec.pickle")
         if os.path.exists(specfile):
             try:
@@ -106,7 +106,7 @@ class SmurfData(RemoteData):
         simid = self.sim["uuid"]
         if "specdir" in self.config.data:
             specdir = self.config.data["specdir"]
-        elif "cachedir" in self.config.data["cachedir"]:
+        elif "cachedir" in self.config.data:
             specdir = self.config.data["cachedir"]
         else:
             return
