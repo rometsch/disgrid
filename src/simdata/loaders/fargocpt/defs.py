@@ -10,7 +10,7 @@ vars2d = {
     },
     "energy": {
         "pattern": "gasenergy{}.dat",
-        "unit": "erg"
+        "unit": "erg cm-2"
     },
     "vrad": {
         "pattern": "gasvrad{}.dat",
