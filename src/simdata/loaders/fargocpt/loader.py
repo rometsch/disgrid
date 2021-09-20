@@ -3,6 +3,9 @@ import re
 
 import astropy.units as u
 import numpy as np
+
+from functools import lru_cache
+
 from ... import fluid, particles
 from .. import interface
 
@@ -11,7 +14,43 @@ from . import defs, load1d, load2d, loadparams, loadscalar, loadparticles
 code_info = ("fargocpt", "0.1", "legacy_output")
 
 
+try:
+    import tempfile
+    class TempFile7zz:
+        def __init__(self, archive, filename):
+            self.archive = archive
+            self.filename = filename
+            self.file = None
+            
+        def __enter__(self):
+            self.tmpd = tempfile.TemporaryDirectory()
+            res = subprocess.run(["7zz", "e", self.archive, self.filename, f"-o{self.tmpd.name}"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            self.file = open(os.path.join(self.tmpd.name, os.path.basename(self.filename)), "r")
+            return self.file
+        
+        def __exit__(self, exc_type, exc_value, exc_traceback):
+            self.file.close()
+            self.tmpd.cleanup()
+
+except ImportError:
+    pass
+
+@lru_cache(10)
+def get_filenames(path):
+    if path[-3:] == ".7z":
+        try:
+            import py7zr
+            with py7zr.SevenZipFile(path, mode="r") as a:
+                filenames = a.getnames()
+        except ImportError:
+            raise RuntimeError("7zip not supported. Please install py7zr and the 7zz binary.")
+    else:
+        filenames = [os.path.join(root, fname) for root, _, files in os.walk(path) for fname in files]
+    print(filenames)
+    return filenames
+
 def identify(path):
+    files = get_filenames(path)
     identifiers = ["misc.dat", "fargo", "Quantities.dat"]
     seen_ids = 0
     for _, _, files in os.walk(path):
@@ -41,6 +80,7 @@ def quantity_from_spec(spec):
 
 
 def get_data_dir(path):
+    get_filenames(path)
     rv = None
     # guess first
     for guess in ["outputs", "output", "out"]:
