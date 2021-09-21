@@ -3,6 +3,8 @@
 # it provides a framework for caching data and provides function which return field objects
 import os
 import shutil
+import subprocess
+import tempfile
 
 import numpy as np
 
@@ -19,12 +21,12 @@ class Interface:
         self.particlegroups = {}
         self.planets = []
         self.parameters = {}
-        
+
         # caching
         self.owner = owner
         self.file_caching = file_caching
         self.update = update
-        self.init_cache(owner, file_caching, update)
+        self.init_cache(owner, file_caching)
 
     def scout(self):
         # find all variables
@@ -42,6 +44,7 @@ class Interface:
         if not self.file_caching:
             return os.path.join(self.data_dir, filename)
 
+        # remove leading data dir path
         if os.path.isabs(filename):
             if os.path.commonpath([os.path.abspath(self.data_dir), os.path.abspath(filename)]) == self.data_dir:
                 filename = os.path.relpath(filename, self.data_dir)
@@ -54,18 +57,23 @@ class Interface:
             invalidate_entry = True
         else:
             invalidate_entry = False
-        
+
         if not self.update:
             invalidate_entry = False
 
-        filepath = self.filecache.cached_file(filename, self.data_dir, invalidate=invalidate_entry)
-        
+        filepath = self.filecache.cached_file(
+            filename, self.data_dir, invalidate=invalidate_entry)
+
         self.cached_files.add(filename)
-        
+
         return filepath
 
-    def init_cache(self, owner, file_caching, update):
-        if not self.file_caching:
+    def init_cache(self, owner, file_caching):
+        if self.path[-3:] == ".7z":
+            self.cached = self.archive_file
+            self.tempdir_obj = tempfile.TemporaryDirectory()
+            self.tempdir = self.tempdir_obj.name
+        elif not self.file_caching:
             self.cached = self.datadir_path
         else:
             try:
@@ -77,16 +85,32 @@ class Interface:
                 self.filecache = FileCache(self.cachedir, simid)
             except (KeyError, AttributeError):
                 self.cached = self.datadir_path
-        
+
         self.owner = owner
         self.file_caching = file_caching
         self.cached_files = set()
 
+    def archive_file(self, filename, **kwargs):
+        """ Access a file from a 7zip archive.
+
+        Parameters
+        ----------
+        filename : str
+            Filename inside the archive to be retrieved.
+        """
+        filename = os.path.normpath(os.path.join(self.data_dir, filename))
+        file_in_cache = os.path.join(self.tempdir, filename)
+        if not os.path.exists(file_in_cache):
+            archive = self.path
+            res = subprocess.run(
+                ["7zz", "x", archive, filename, f"-o{self.tempdir}"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        return file_in_cache
+
     def datadir_path(self, filename, **kwargs):
         """ Return path of the file inside the data directory.
-        
+
         Used for the case with caching disabled.
-        
+
         Parameteters
         ------------
         str

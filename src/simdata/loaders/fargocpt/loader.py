@@ -14,27 +14,6 @@ from . import defs, load1d, load2d, loadparams, loadscalar, loadparticles
 code_info = ("fargocpt", "0.1", "legacy_output")
 
 
-try:
-    import tempfile
-    class TempFile7zz:
-        def __init__(self, archive, filename):
-            self.archive = archive
-            self.filename = filename
-            self.file = None
-            
-        def __enter__(self):
-            self.tmpd = tempfile.TemporaryDirectory()
-            res = subprocess.run(["7zz", "e", self.archive, self.filename, f"-o{self.tmpd.name}"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            self.file = open(os.path.join(self.tmpd.name, os.path.basename(self.filename)), "r")
-            return self.file
-        
-        def __exit__(self, exc_type, exc_value, exc_traceback):
-            self.file.close()
-            self.tmpd.cleanup()
-
-except ImportError:
-    pass
-
 @lru_cache(10)
 def get_filenames(path):
     if path[-3:] == ".7z":
@@ -43,21 +22,30 @@ def get_filenames(path):
             with py7zr.SevenZipFile(path, mode="r") as a:
                 filenames = a.getnames()
         except ImportError:
-            raise RuntimeError("7zip not supported. Please install py7zr and the 7zz binary.")
+            raise RuntimeError(
+                "7zip not supported. Please install py7zr and the 7zz binary.")
     else:
-        filenames = [os.path.join(root, fname) for root, _, files in os.walk(path) for fname in files]
-    print(filenames)
+        filenames = [os.path.join(root, fname)
+                     for root, _, files in os.walk(path) for fname in files]
     return filenames
+
+
+@lru_cache(10)
+def get_datafiles(path, data_dir):
+    filenames = get_filenames(path)
+    data_files = [os.path.relpath(
+        f, data_dir) for f in filenames if data_dir[:len(data_dir)] == data_dir]
+    return data_files
+
 
 def identify(path):
     files = get_filenames(path)
     identifiers = ["misc.dat", "fargo", "Quantities.dat"]
-    seen_ids = 0
-    for _, _, files in os.walk(path):
-        seen_ids += len([1 for s in identifiers if s in files])
-        if seen_ids >= 2:
-            return True
-    return False
+    seen_ids = len([1 for f in files if os.path.basename(f) in identifiers])
+    if seen_ids >= 2:
+        return True
+    else:
+        return False
 
 
 def var_in_files(varpattern, files):
@@ -80,19 +68,20 @@ def quantity_from_spec(spec):
 
 
 def get_data_dir(path):
-    get_filenames(path)
+    files = get_filenames(path)
     rv = None
     # guess first
     for guess in ["outputs", "output", "out"]:
-        guess_dir = os.path.join(path, guess)
-        if os.path.isfile(os.path.join(guess_dir, "misc.dat")):
-            rv = guess_dir
+        guess_file = os.path.join(path, guess, "misc.dat")
+        if os.path.isfile(guess_file):
+            rv = os.path.join(path, guess)
             break
     # now search whole dir tree
+
     if rv is None:
-        for root, _, files in os.walk(path):
-            if "misc.dat" in files:
-                rv = root
+        for f in files:
+            if f[-8:] == "misc.dat":
+                rv = os.path.dirname(f)
                 break
     if rv is None:
         raise FileNotFoundError(
@@ -122,8 +111,7 @@ class Loader(interface.Interface):
         self.output_times = []
         self.fine_output_times = []
         self.get_last_activity()
-        self.spec = {"data_dir": os.path.relpath(
-            self.data_dir, start=self.path),
+        self.spec = {"data_dir": self.data_dir,
             "maxdim": "2d",
             "timestamp": self.timestamp}
 
@@ -162,7 +150,10 @@ class Loader(interface.Interface):
         FileNotFoundError
             If the proxy file does not exist.
         """
-        file_path = os.path.join(self.data_dir, "Quantities.dat")
+        if self.path[-3:] == ".7z":
+            file_path = self.path
+        else:
+            file_path = os.path.join(self.data_dir, "Quantities.dat")
         self.timestamp = os.path.getmtime(file_path)
 
     def verify_spec(self):
@@ -199,10 +190,9 @@ class Loader(interface.Interface):
             self.Nr = self.spec["Nr"]
             self.Nphi = self.spec["Nphi"]
             return
-        self.Nr, self.Nphi = np.genfromtxt(os.path.join(
-            self.data_dir, "dimensions.dat"),
-            usecols=(4, 5),
-            dtype=int)
+        self.Nr, self.Nphi = np.genfromtxt(self.cached("dimensions.dat"),
+                                           usecols=(4, 5),
+                                           dtype=int)
         self.spec["Nr"] = self.Nr
         self.spec["Nphi"] = self.Nphi
 
@@ -229,8 +219,8 @@ class Loader(interface.Interface):
         except KeyError:
             pass
 
-        self.r_i = np.genfromtxt(self.data_dir +
-                                 "/used_rad.dat") * u.Unit(self.units["length"])
+        self.r_i = np.genfromtxt(self.cached(
+            "used_rad.dat")) * u.Unit(self.units["length"])
         self.phi_i = np.linspace(0, 2 * np.pi, self.Nphi + 1) * u.rad
         self.spec["grid"] = {
             "r_i": (self.r_i.value, self.r_i.unit.to_string()),
@@ -277,7 +267,8 @@ class Loader(interface.Interface):
             return
         p = re.compile(r"particles([\d]+).dat")
         timesteps = []
-        for s in os.listdir(self.data_dir):
+        files = get_datafiles(self.path, self.data_dir)
+        for s in files:
             m = re.match(p, s)
             if m:
                 timesteps.append(int(m.groups()[0]))
@@ -306,7 +297,8 @@ class Loader(interface.Interface):
         self.spec["planets"] = {}
         planet_ids = []
         p = re.compile(r"bigplanet(\d).dat")
-        for s in os.listdir(self.data_dir):
+        files = get_datafiles(self.path, self.data_dir)
+        for s in files:
             m = re.match(p, s)
             if m:
                 planet_ids.append(m.groups()[0])
@@ -351,7 +343,8 @@ class Loader(interface.Interface):
             return
         self.spec["fluids"]["gas"]["2d"] = {}
         gas = self.fluids["gas"]
-        files = os.listdir(self.data_dir)
+        files = get_datafiles(self.path, self.data_dir)
+        # files = os.listdir(self.data_dir)
         for varname, info in defs.vars2d.items():
             if var_in_files(info["pattern"], files):
                 loader = load2d.FieldLoader2d(varname, info, self)
@@ -369,7 +362,7 @@ class Loader(interface.Interface):
             return
         self.spec["fluids"]["gas"]["1d"] = {}
         gas = self.fluids["gas"]
-        files = os.listdir(self.data_dir)
+        files = get_datafiles(self.path, self.data_dir)
         for n in range(len(self.planets)):
             if "gas1D_torque_planet{}_0.dat".format(n) in files:
                 varname = "torque planet {}".format(n)
