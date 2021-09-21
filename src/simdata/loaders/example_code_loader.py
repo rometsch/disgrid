@@ -11,7 +11,7 @@ def identify(path):
                 if line.strip() == "very specific content!":
                     return True
             return False
-    except FileNotFoundError:
+    except (FileNotFoundError, NotADirectoryError):
         return False
 
 
