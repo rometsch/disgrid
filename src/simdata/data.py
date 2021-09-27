@@ -1,8 +1,4 @@
-from collections import OrderedDict
-import importlib
-import sys
 import os
-import copy
 
 # import all loaders
 from . import loaders
@@ -53,3 +49,10 @@ class Data:
             register(self)
         except ImportError:
             pass
+
+    def get(self, var=None, dim=None, N=None, planet=None, t=None, fluid="gas", **kwargs):
+        """ General getter function. """
+        if planet is not None:
+            return self.planets[planet].get(var, **kwargs)
+        else:
+            return self.fluids[fluid].get(dim, var, num_output=N, t=t, **kwargs)
