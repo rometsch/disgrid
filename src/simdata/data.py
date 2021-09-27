@@ -55,4 +55,7 @@ class Data:
         if planet is not None:
             return self.planets[planet].get(var, **kwargs)
         else:
+            # select highest dimension if none is given
+            if dim is None:
+                dim = [key for key, val in self.fluids[fluid].variable_loaders.items() if len(val) > 0][0]
             return self.fluids[fluid].get(dim, var, num_output=N, t=t, **kwargs)
