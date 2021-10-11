@@ -5,3 +5,8 @@ try:
     from .smurf_plugin import SmurfData as SData
 except ImportError:
     pass
+
+try:
+    from .server_plugin import NData
+except ImportError:
+    pass
