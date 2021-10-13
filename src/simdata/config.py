@@ -19,6 +19,11 @@ class Config:
         os.makedirs(home_path)
         self.load()
         self.save()
+        
+        
+    def __setitem__(self, key, val):
+        self.data[key] = val
+        self.save()
 
     def save(self):
         self.data["type"] = "simdata config"
