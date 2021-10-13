@@ -8,11 +8,19 @@ from simdata_net.client import simdata_request
 import diskcache
 from simdata.config import Config
 
+
 class NData:
     
     def __init__(self, simid, caching=True):
         self.simid = simid
         self.caching = caching
+        self.config = Config()
+        
+        try:
+            self.relay = self.config.data["relay-server"]
+        except KeyError:
+            self.relay = None
+        
         self._init_cache_()
     
     def _init_cache_(self):
@@ -46,7 +54,7 @@ class NData:
         try:
             rv = self.cache[url]
         except KeyError:
-            rv = simdata_request(url)
+            rv = simdata_request(url, hostname=self.relay)
             if self.caching:
                 self.cache.add(url, rv)
         return rv
