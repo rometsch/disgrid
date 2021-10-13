@@ -8,5 +8,5 @@ setup(  name="simdata"
         ,author="Thomas Rometsch, Peter Rodenkirch"
         ,package_dir={'': 'src'}
         ,packages=find_namespace_packages(where="src")
-        ,install_requires=["numpy>=1.17", "astropy"]
+        ,install_requires=["numpy>=1.17", "astropy", "diskcache"]
         )
