@@ -45,12 +45,14 @@ class NData:
                                      eviction_policy="least-recently-used",
                                      size_limit=size_limit)
     
-    def get(self, var=None, dim=None, N=None, planet=None, t=None, fluid="gas", **kwargs):
+    def get(self, var=None, dim=None, N=None, planet=None, t=None, fluid=None, **kwargs):
         """ General getter function. """
-        url = urllib.parse.urlencode(dict(
+        query = dict(
             simid=self.simid,
             var=var, dim=dim, N=N, planet=planet, t=t, fluid=fluid
-        ))
+        )
+        query = {k:v for k,v in query.items() if v is not None}
+        url = urllib.parse.urlencode(query)
         try:
             rv = self.cache[url]
         except KeyError:
