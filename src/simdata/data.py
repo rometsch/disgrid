@@ -59,3 +59,26 @@ class Data:
             if dim is None:
                 dim = [key for key, val in self.fluids[fluid].variable_loaders.items() if len(val) > 0][0]
             return self.fluids[fluid].get(dim, var, num_output=int(N), t=t, **kwargs)
+        
+    def avail(self):
+        """ Tell what data is available. """
+        
+        fluids = {}
+        for fluid in self.fluids:
+            fluids[fluid] = {}
+            for k,v in self.fluids[fluid].variable_loaders.items():
+                names = [k for k in v]
+                if len(names) > 0:
+                    fluids[fluid][k] = names
+
+        planets = {}
+        for n,planet in enumerate(self.planets):
+            names = [k for k in planet.variable_loaders]
+            planets[f"{n}"] = names
+        
+        rv = {
+            "fluids" : fluids,
+            "planets" : planets
+        }
+        
+        return rv

@@ -4,7 +4,7 @@
 
 import os
 import urllib
-from simdata_net.client import simdata_request
+from simdata_net.client import make_request
 import diskcache
 from simdata.config import Config
 
@@ -19,7 +19,7 @@ class NData:
         try:
             self.relay = self.config.data["relay-server"]
         except KeyError:
-            self.relay = None
+            self.relay = "localhost"
         
         self._init_cache_()
     
@@ -52,11 +52,12 @@ class NData:
             var=var, dim=dim, N=N, planet=planet, t=t, fluid=fluid
         )
         query = {k:v for k,v in query.items() if v is not None}
-        url = urllib.parse.urlencode(query)
+        uri = urllib.parse.urlencode(query)
         try:
-            rv = self.cache[url]
+            rv = self.cache[uri]
         except KeyError:
-            rv = simdata_request(url, hostname=self.relay)
+            url = f"simdata://{self.relay}/get?{uri}"
+            rv = make_request(url)
             if self.caching:
-                self.cache.add(url, rv)
+                self.cache.add(uri, rv)
         return rv
