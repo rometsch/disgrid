@@ -54,9 +54,22 @@ class NData:
         query = {k:v for k,v in query.items() if v is not None}
         uri = urllib.parse.urlencode(query)
         try:
-            rv = self.cache[uri]
+            rv = self.cache[f"get?{uri}"]
         except KeyError:
             url = f"simdata://{self.relay}/get?{uri}"
+            rv = make_request(url)
+            if self.caching:
+                self.cache.add(uri, rv)
+        return rv
+
+    def avail(self):
+        """ Get the available fields. """
+        query = dict(simid=self.simid)
+        uri = urllib.parse.urlencode(query)
+        try:
+            rv = self.cache[f"avail?{uri}"]
+        except KeyError:
+            url = f"simdata://{self.relay}/avail?{uri}"
             rv = make_request(url)
             if self.caching:
                 self.cache.add(uri, rv)
