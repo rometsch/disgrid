@@ -4,7 +4,7 @@
 
 import os
 import urllib
-from simdata_net.client import make_request
+from smurfnet.client import make_request
 import diskcache
 from simdata.config import Config
 
@@ -59,7 +59,7 @@ class NData:
             url = f"simdata://{self.relay}/get?{uri}"
             rv = make_request(url)
             if self.caching:
-                self.cache.add(uri, rv)
+                self.cache.add(f"get?{uri}", rv)
         return rv
 
     def avail(self):
