@@ -77,7 +77,8 @@ class SmurfData(RemoteData):
     def register_code(self):
         self.sim["simdata_code"] = self.code
         c = get_cache_by_id(self.sim["uuid"])
-        c.insert(self.sim["uuid"], self.sim)
+        if c is not None:
+            c.insert(self.sim["uuid"], self.sim)
 
     def search_spec(self):
         spec = None
