@@ -40,10 +40,18 @@ def identify(path):
         True if dir is a fargo3d dir, False if not.
     """
     try:
-        get_data_dir(path)
+        outputdir = get_data_dir(path)
+        # make sure there is no summary.dat file
+        # this would then be version 2.0
+        ptrn = re.compile(r"summary\d+.dat")
+        for f in os.listdir(outputdir):
+            m = re.search(ptrn, f)
+            if m:
+                return False
         return True
     except FileNotFoundError:
-        return False
+        pass
+    return False
 
 
 def var_in_files(varpattern, files):
@@ -68,13 +76,16 @@ def var_in_files(varpattern, files):
 
 def get_data_dir(path):
     rv = None
-    ptrn = re.compile(r"output_fargo3d_public_1_3")
+    ptrn = re.compile(r"dimensions.dat")
     for glob_pattern in ["*", "*/*", "*/*/*", "*/*/*/*", "**"]:
         for f in glob.iglob(os.path.join(path, glob_pattern)):
             m = re.search(ptrn, f)
             if m:
-                rv = os.path.dirname(f)
-                break
+                with open(f, "r") as infile:
+                    line = infile.readline()
+                if line.strip().startswith("#XMIN"):
+                    rv = os.path.dirname(f)
+                    break
         if rv is not None:
             break
     if rv is None:
