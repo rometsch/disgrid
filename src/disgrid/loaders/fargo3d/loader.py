@@ -6,8 +6,8 @@ import re
 import astropy.constants as const
 import astropy.units as u
 import numpy as np
-from simdata import field, fluid, grid, particles
-from simdata.loaders import interface
+from disgrid import field, fluid, grid, particles
+from disgrid.loaders import interface
 
 from . import defs
 from . import load1d
@@ -19,11 +19,7 @@ from . import loadunits
 from . import loadgrid
 from . import loadscalar
 
-code_info = ("fargo3d", "1.3", "public")
-
-# TODO: New identify strategy:
-# Look for dimensions.dat and inspect it.
-# Look for the number of entries in the second row and queues in the header.
+code_info = ("fargo3d", "2.0", "public")
 
 
 def identify(path):
@@ -68,7 +64,7 @@ def var_in_files(varpattern, files):
 
 def get_data_dir(path):
     rv = None
-    ptrn = re.compile(r"output_fargo3d_public_1_3")
+    ptrn = re.compile(r"summary\d+.dat")
     for glob_pattern in ["*", "*/*", "*/*/*", "*/*/*/*", "**"]:
         for f in glob.iglob(os.path.join(path, glob_pattern)):
             m = re.search(ptrn, f)
@@ -132,7 +128,8 @@ class Loader(interface.Interface):
         self.register_alias()
 
     def get_parameters(self):
-        self.parameters = {}
+        self.parameters = loadparams.getParamsFromNthSummary(
+            self.data_dir, loadparams.find_first_summary_number(self.data_dir))
 
     def apply_units(self):
         for vardict in [defs.planet_vars_scalar, defs.vars_maxdim, defs.vars_1d, defs.vars_scalar]:
@@ -177,16 +174,25 @@ class Loader(interface.Interface):
                 planet.register_variable(varname, loader)
 
     def get_fluids(self):
-        self.fluids["gas"] = fluid.Fluid("gas")
+        ptrn = re.compile(r"output(.*)\.dat")
+        fluid_names = [
+            m.groups()[0]
+            for m in (re.search(ptrn, f) for f in os.listdir(self.data_dir))
+            if m is not None
+        ]
+        for name in fluid_names:
+            self.fluids[name] = fluid.Fluid(name)
 
     def get_fields(self):
+        with open(os.path.join(self.data_dir, "outputgas.dat"), "r") as in_file:
+            self.mpiio_vars = [line.strip().split()[1][3:] for line in in_file]
         if self.dim == 3:
             self.get_fields_multidim("3d", load3d.FieldLoader3d)
         elif self.dim == 2:
             self.get_fields_multidim("2d", load3d.FieldLoader2d)
         self.get_fields_1d()
 
-    def get_fields_multidim(self, dim, loader_class): 
+    def get_fields_multidim(self, dim, loader_class):
         files = os.listdir(self.data_dir)
         for fluidname in self.fluids.keys():
             for varname, info in defs.vars_maxdim.items():
@@ -198,7 +204,17 @@ class Loader(interface.Interface):
                     fieldLoader = loader_class(varname, info_formatted, self)
                     self.fluids[fluidname].register_variable(
                         varname, dim, fieldLoader)
-            
+            for varname in self.mpiio_vars:
+                pretty_name = defs.mpiio_vars[varname]
+                info_formatted = copy.deepcopy(
+                    defs.vars_maxdim[pretty_name])
+                info_formatted["pattern"] = "{}_{}.mpiio".format(
+                    fluidname, "{}")
+                info_formatted["varname"] = varname
+                fieldLoader = loader_class(pretty_name, info_formatted, self)
+                self.fluids[fluidname].register_variable(
+                    pretty_name, dim, fieldLoader)
+
     def get_fields_1d(self):
         for fluid_name in self.fluids:
             fl = self.fluids[fluid_name]

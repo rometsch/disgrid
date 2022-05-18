@@ -1,5 +1,5 @@
 import unittest
-from simdata import data
+from disgrid import data
 
 
 class TestDataMethods(unittest.TestCase):

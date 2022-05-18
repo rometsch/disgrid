@@ -80,12 +80,12 @@ def get_loader(path, loader, **kwargs):
     ----------
     path : str
         Path to the data.
-    loader : str or :obj:`simdata.loaders.interface.Interface`
+    loader : str or :obj:`disgrid.loaders.interface.Interface`
         None or hint (str) or acutal loader for the data.
 
     Returns
     -------
-    simdata.loaders.interface.Interface
+    disgrid.loaders.interface.Interface
         Loader object to access data.
     """
     code = None

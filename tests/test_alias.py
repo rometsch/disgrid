@@ -1,5 +1,5 @@
 import unittest
-from simdata import alias
+from disgrid import alias
 
 
 class TestAliasMethods(unittest.TestCase):

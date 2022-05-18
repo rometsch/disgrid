@@ -1,7 +1,7 @@
 import unittest
 import astropy.units as u
 import numpy as np
-from simdata import scalar
+from disgrid import scalar
 
 
 class TestDataMethods(unittest.TestCase):

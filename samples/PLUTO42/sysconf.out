@@ -1,5 +1,5 @@
 USER           = alex
-WORKING_DIR    = /home/alex/Lib/simdata/samples/PLUTO42
+WORKING_DIR    = /home/alex/Lib/disgrid/samples/PLUTO42
 SYSTEM_NAME    = Linux
 NODE_NAME      = SquirtlePC
 RELEASE        = 4.15.0-64-generic

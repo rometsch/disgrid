@@ -1,6 +1,6 @@
 import unittest
-from simdata import data
-from simdata.loaders import PLUTO42
+from disgrid import data
+from disgrid.loaders import PLUTO42
 import astropy.units as u
 import astropy.constants as const
 import numpy as np

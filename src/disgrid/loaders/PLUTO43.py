@@ -408,7 +408,7 @@ class Loader(interface.Interface):
                 vars_2d[var]["pattern"] = "data.{:04d}.dbl"
 
     def assign_convertible_variables(self):
-        """This is aimed at a future module of simdata.
+        """This is aimed at a future module of disgrid.
         PLUTO only outputs a handful of fields, but the user might want to calculate some additional ones.
         This function checks if the conditions are met to do so.
         E.g. pressure and density are needed for temperature, but temperature is not always output."""
@@ -492,7 +492,7 @@ class FieldLoader2d(interface.FieldLoader):
 
     def load_data(self, n):
         """
-        simdata expects output in the form data[x1][x2][x3], but most operations (for disks!)
+        disgrid expects output in the form data[x1][x2][x3], but most operations (for disks!)
         are much easier if the x1 coordinate (r) is exposed first (i.e. data[x3][x2][x1]).
         This function returns data in the [x1..3] format, but internally it uses [x3..1]
         since I want to call this recursively sometimes.
@@ -510,7 +510,7 @@ class FieldLoader2d(interface.FieldLoader):
         return rv
 
     def load_grid(self, n=0):
-        """Returns a simdata.grid structure in relevant coordinates."""
+        """Returns a disgrid.grid structure in relevant coordinates."""
         return PGrid.loadGrid(self.loader.cached("grid.out"),
                               length_unit=self.loader.units["length"],
                               angle_unit=u.radian)

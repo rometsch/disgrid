@@ -28,7 +28,7 @@ An API for loading hydro code simulation data.
 + make init extendable to provide information that is not automatically findable
 
 #+begin_src ipython :session :exports both :results raw drawer
-  class simdata:
+  class disgrid:
 
       def __init__(self, path):
           self.path = path # path to one-folder
@@ -421,7 +421,7 @@ some resources on API documentation
 | nbody.py                 | nbody system structure                                         |
 | parameter.py             | simulation parameters                                          |
 | meta.py                  | meta data such as execution times, number of cores, ...        |
-| simdata.py               | main code providing the interface class Simdata                |
+| disgrid.py               | main code providing the interface class Simdata                |
 | loader/__init__.py       | handles automatic import of modules                            |
 | loader/example_loader.py | implements an actual loader which parses code specific data    |
 

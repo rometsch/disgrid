@@ -1,6 +1,6 @@
 import unittest
-from simdata import data
-from simdata.loaders import fargo3d
+from disgrid import data
+from disgrid.loaders import fargo3d
 import astropy.units as u
 import astropy.constants as const
 import numpy as np

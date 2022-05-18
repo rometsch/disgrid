@@ -2,7 +2,7 @@
 # Format src code using the pep8 style guide.
 SCRIPTS_DIR="$(dirname $(realpath $0))"
 REPO_DIR="$(dirname $SCRIPTS_DIR)"
-PACKAGE_NAME="simdata"
+PACKAGE_NAME="disgrid"
 SRC_DIR="$REPO_DIR/src/$PACKAGE_NAME"
 TEST_DIR="$REPO_DIR/tests"
 if [[ -d "$SRC_DIR" ]]; then

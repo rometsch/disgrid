@@ -1,7 +1,7 @@
 import os
 import json
 
-home_path = os.path.join(os.path.expanduser("~"), ".simdata")
+home_path = os.path.join(os.path.expanduser("~"), ".disgrid")
 
 
 class Config:
@@ -26,7 +26,7 @@ class Config:
         self.save()
 
     def save(self):
-        self.data["type"] = "simdata config"
+        self.data["type"] = "disgrid config"
         self.data["version"] = "0.1"
         with open(self.config_file, "w") as out_file:
             out_file.write(json.dumps(self.data, indent=4))

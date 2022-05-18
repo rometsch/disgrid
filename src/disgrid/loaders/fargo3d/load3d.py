@@ -3,8 +3,8 @@
 import numpy as np
 import astropy.units as u
 
-from simdata import grid
-from simdata.loaders import interface
+from disgrid import grid
+from disgrid.loaders import interface
 
 from .loadbinary import load_data
 

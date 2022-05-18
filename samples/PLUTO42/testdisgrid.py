@@ -1,10 +1,10 @@
-from simdata import Data
+from disgrid import Data
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy import units as u
 
-d = Data('/home/alex/Lib/simdata/samples/PLUTO42/out/')
-#d = Data('/home/alex/Lib/simdata/samples/PLUTO43/out/')
+d = Data('/home/alex/Lib/disgrid/samples/PLUTO42/out/')
+#d = Data('/home/alex/Lib/disgrid/samples/PLUTO43/out/')
 print(d.code)
 gas = d.fluids['gas']
 

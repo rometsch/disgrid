@@ -1,4 +1,4 @@
-** About simdata
+** About disgrid
 
 Simdata is a python library which enables access to simulation data of hydrodynamics planet disk interaction simulations.
 Its main features are:
@@ -22,7 +22,7 @@ Clone this repository and run =python3 setup.py install --user= to install the p
 Navigate to an output directory of a simulation and enter a python shell and run:
 
 #+begin_src python
-from simdata import Data
+from disgrid import Data
 # load data from the current directory
 d = Data()
 # you can also specify a path
@@ -32,4 +32,4 @@ print(d.fluids)
 print(d.planets)
 #+end_src
 
-This will print the fluids (gas or dust species) and the planets which simdata was able to find in your output directory.
+This will print the fluids (gas or dust species) and the planets which disgrid was able to find in your output directory.

@@ -1,7 +1,7 @@
 import os
 import unittest
-from simdata import data
-from simdata.loaders import fargocpt
+from disgrid import data
+from disgrid.loaders import fargocpt
 import astropy.units as u
 import numpy as np
 

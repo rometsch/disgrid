@@ -1,5 +1,5 @@
 import unittest
-from simdata import fluid
+from disgrid import fluid
 
 
 class TestFluidMethods(unittest.TestCase):

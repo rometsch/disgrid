@@ -1,8 +1,8 @@
 import unittest
 import importlib
 import astropy.units as u
-from simdata import field
-from simdata import grid
+from disgrid import field
+from disgrid import grid
 
 
 class TestFluidMethods(unittest.TestCase):

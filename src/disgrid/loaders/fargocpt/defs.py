@@ -1,24 +1,24 @@
-""" Definitions for the simdata fargocpt loader.
+""" Definitions for the disgrid fargocpt loader.
 
 This file contains dicts defining the output variables of fargocpt, their naming patterns and units.
 """
 
 vars2d = {
     "dens": {
-        "pattern": "snapshots/{}/dens.dat",
+        "pattern": "gasdens{}.dat",
         "unit": "g cm-2"
     },
     "energy": {
-        "pattern": "snapshots/{}/energy.dat",
+        "pattern": "gasenergy{}.dat",
         "unit": "erg cm-2"
     },
     "vrad": {
-        "pattern": "snapshots/{}/vrad.dat",
+        "pattern": "gasvrad{}.dat",
         "unit": "cm s-1",
         "interfaces": ["r"]
     },
     "vtheta": {
-        "pattern": "snapshots/{}/vtheta.dat",
+        "pattern": "gasvtheta{}.dat",
         "unit": "cm s-1",
         "interfaces": ["phi"]
     }

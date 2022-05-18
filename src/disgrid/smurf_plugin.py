@@ -1,5 +1,5 @@
-# Integration of simdata into smurf.
-# simdata is a python package to handle simulation data.
+# Integration of disgrid into smurf.
+# disgrid is a python package to handle simulation data.
 # This module provides the functionality to use sim ids
 # to transparently get a data object without manually
 # looking up simulation dir paths.
@@ -59,8 +59,8 @@ class SmurfData(RemoteData):
                           unique=True,
                           **search_args)[0]
         path = remote_path(self.sim)
-        if "simdata_code" in self.sim:
-            kwargs["loader"] = self.sim["simdata_code"]
+        if "disgrid_code" in self.sim:
+            kwargs["loader"] = self.sim["disgrid_code"]
         elif "simcode" in self.sim:
             kwargs["loader"] = self.sim["simcode"]
         self.simid = simid
@@ -75,7 +75,7 @@ class SmurfData(RemoteData):
             self.register_code, self.save_spec], owner=self, file_caching=True, **kwargs)
 
     def register_code(self):
-        self.sim["simdata_code"] = self.code
+        self.sim["disgrid_code"] = self.code
         c = get_cache_by_id(self.sim["uuid"])
         if c is not None:
             c.insert(self.sim["uuid"], self.sim)

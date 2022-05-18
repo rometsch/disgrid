@@ -111,7 +111,7 @@ def resolve_geometry(gridfile):
 
 
 def loadGrid(gridfile, length_unit=None, angle_unit=None):
-    """returns a simdata.grid structure in relevant coordinates."""
+    """returns a disgrid.grid structure in relevant coordinates."""
 
     if not length_unit: length_unit = u.cm
     if not angle_unit: angle_unit = u.radian

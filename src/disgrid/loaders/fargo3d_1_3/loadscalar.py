@@ -1,7 +1,7 @@
 """ Functions to scalar time data from fargo3d output files.
 """
 import numpy as np
-from simdata import scalar 
+from disgrid import scalar 
 
 class ScalarLoader:
     def __init__(self, name, datafile, info, loader, *args, **kwargs):

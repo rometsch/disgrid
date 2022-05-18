@@ -1,10 +1,10 @@
-# Integration of the simdata-net package.
+# Integration of the disgrid-net package.
 # This plugin adds the NData class which uses the server-client model to get data.
 # Online the get method is supported.
 
 import urllib
 from smurfnet.client import make_request
-from simdata.config import Config
+from disgrid.config import Config
 
 
 class NData:
@@ -23,7 +23,7 @@ class NData:
         )
         query = {k: v for k, v in query.items() if v is not None}
         uri = urllib.parse.urlencode(query)
-        url = f"simdata://localhost/get?{uri}"
+        url = f"disgrid://localhost/get?{uri}"
         if update or self.update:
             url += "#update"
         rv = make_request(url)
@@ -33,7 +33,7 @@ class NData:
         """ Get the available fields. """
         query = dict(simid=self.simid)
         uri = urllib.parse.urlencode(query)
-        url = f"simdata://localhost/avail?{uri}"
+        url = f"disgrid://localhost/avail?{uri}"
         if update or self.update:
             url += "#update"
         rv = make_request(url)

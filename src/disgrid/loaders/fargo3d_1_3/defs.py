@@ -1,4 +1,4 @@
-""" Definitions for the simdata fargo3d loader.
+""" Definitions for the disgrid fargo3d loader.
 
 This file contains dicts defining the output variables of fargo3d, their naming patterns and units.
 """
