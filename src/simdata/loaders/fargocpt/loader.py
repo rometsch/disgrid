@@ -14,7 +14,9 @@ code_info = ("fargocpt", "0.1", "legacy_output")
 def identify(path):
     identifiers = ["misc.dat", "fargo", "Quantities.dat"]
     seen_ids = 0
-    for _, _, files in os.walk(path):
+    for _, dirs, files in os.walk(path):
+        if "snapshots" in dirs:
+            return False
         seen_ids += len([1 for s in identifiers if s in files])
         if seen_ids >= 2:
             return True
