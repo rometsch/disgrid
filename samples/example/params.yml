@@ -1,0 +1,10 @@
+version : 1.0
+
+tfinal : 100.0
+dt : 0.5
+
+L : 2
+Nx : 10
+Ny : 10
+
+mass : 2.0
