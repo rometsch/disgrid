@@ -21,7 +21,7 @@ def load_particle_data(datafile, units):
         Dictionary containing id, x, y and size (the particle radius).
     """
     res = np.fromfile(
-        datafile, dtype=[('Id', np.dtype(int)), ('Values', np.dtype(float), 10)])
+        datafile, dtype=[('Id', np.dtype(int)), ('Values', np.dtype(float), 11)])
     ids = res["Id"]
     vals = res["Values"]
 
@@ -36,7 +36,8 @@ def load_particle_data(datafile, units):
         "mass": vals[:, 6]*u.Unit(units["mass"]),
         "size": vals[:, 7]*u.Unit(units["length"]),
         "timestep": vals[:, 8],
-        "facold": vals[:, 9]
+        "facold": vals[:, 9],
+        "stokes": vals[:, 10]
     }
     return particles
 
