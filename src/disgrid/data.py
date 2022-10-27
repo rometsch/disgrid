@@ -33,7 +33,7 @@ class Data:
         except KeyError:
             if attr in ["path", "code", "loader", "fluids",
                         "particles", "particlegroups",
-                        "planets", "paramters"]:
+                        "planets", "parameters"]:
                 self.init()
                 return self.__dict__[attr]
             else:
