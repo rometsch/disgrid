@@ -28,6 +28,31 @@ def load_text_data_variables(filepath):
                 found_variables[name] = (col, unitstr)
     return found_variables
 
+def remove_duplicates(vecs):
+    """Remove duplicate entries from time series.
+    
+    The first array in the vecs list is assumed to be the time/index array.
+    All duplicate entries in this array are identified and removed in the time/index array
+    and all corresponding entries in the remaining arrays in vecs are also removed.
+    
+    This proocess is repeated recursively to remove lines which might be repeated multiple times.
+
+    Parameters
+    ----------
+    vecs: list of arrays
+        A list of the arrays to remove duplicates in.
+
+    Returns
+    -------
+    vecs: list of arrays
+    """
+    x = vecs[0]
+    identical = x[1:] == x[:-1]
+    if np.sum(identical) == 0:
+        return vecs
+    inds = np.append([True], np.logical_not(identical))
+    new_vecs = [v[inds] for v in vecs]
+    return remove_duplicates(new_vecs)
 
 @lru_cache(100)
 def load_data(filepath):
@@ -48,6 +73,7 @@ def load_text_data_file(filepath, varname, Nmax=np.inf):
     N = min(len(data), len(time))
     data = data[:N]
     time = time[:N]
+    time, data = remove_duplicates([time, data])
     if data.isscalar:
         data = u.quantity.Quantity([data])
     N = min(len(data), Nmax)
