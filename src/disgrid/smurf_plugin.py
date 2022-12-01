@@ -15,41 +15,9 @@ from . import data
 from .config import Config
 from smurf.cache import LocalSimCache, get_cache_by_id, CacheMiss
 from smurf.info import Info
-from smurf.mount import Mount
-from smurf.search import remote_path, search
+from smurf.search import search
 
-
-class RemoteData(data.Data):
-    """ Data interface for simulations on remote hosts.
-    Simdirs on remote hosts are mounted using sshfs.
-    Use user@host:path as the remote_path argument. The syntax of the remote path is equivalent to the arguments of scp."""
-
-    def __init__(self, remote_path, cache_timeout=None, **kwargs):
-        self.remote_path = remote_path
-        if is_local_path(self.remote_path):
-            self.path = self.remote_path
-            path = self.path
-        # else:
-        #     self.path = self.mount()
-        else:
-            path = None
-        super().__init__(path, **kwargs)
-
-    def init(self):
-        if self.path is None:
-            self.mount()
-        super().init()
-
-    def mount(self, cache_timeout=None):
-        remote_path_root = self.remote_path.split(":")[0] + ":/"
-        remote_path_child = self.remote_path.split(":")[1].lstrip("/")
-        self.mount_point = Mount(remote_path_root, cache_timeout=cache_timeout)
-        local_path = os.path.join(
-            self.mount_point.get_path(), remote_path_child)
-        self.path = local_path
-
-
-class SmurfData(RemoteData):
+class SmurfData(data.Data):
     # data loader with smurf support to locate remote simulations
     # and mount them via sshfs
     def __init__(self, simid, search_remote=True, search_args={}, **kwargs):
@@ -58,7 +26,7 @@ class SmurfData(RemoteData):
                           remote=search_remote,
                           unique=True,
                           **search_args)[0]
-        path = remote_path(self.sim)
+        path = self.sim["path"]
         if "disgrid_code" in self.sim:
             kwargs["loader"] = self.sim["disgrid_code"]
         elif "simcode" in self.sim:
@@ -133,11 +101,6 @@ def insert_local_sim_to_cache(path):
     else:
         rv = path
     return rv
-
-
-def is_local_path(path):
-    """ Evaluate whether 'path' is not of the form host:path. """
-    return len(path.split(":")) < 2
 
 
 def lock_file(filepath):
