@@ -6,20 +6,32 @@ This file contains dicts defining the output variables of fargocpt, their naming
 vars2d = {
     "dens": {
         "pattern": "snapshots/{}/Sigma.dat",
-        "unit": "g cm-2"
+        "unitpowers": {
+            "mass": 1,
+            "length" : -2
+        }
     },
     "energy": {
         "pattern": "snapshots/{}/energy.dat",
-        "unit": "erg cm-2"
+        "unitpowers": {
+            "mass": 1,
+            "time" : -2        
+        }
     },
     "vrad": {
         "pattern": "snapshots/{}/vrad.dat",
-        "unit": "cm s-1",
+        "unitpowers": {
+            "length": 1,
+            "time" : -1
+        },
         "interfaces": ["r"]
     },
     "vtheta": {
         "pattern": "snapshots/{}/vtheta.dat",
-        "unit": "cm s-1",
+        "unitpowers": {
+            "length": 1,
+            "time" : -1
+        },
         "interfaces": ["phi"]
     }
 }

@@ -19,7 +19,8 @@ class FieldLoader2d(interface.FieldLoader):
             unit = u.Unit(self.info["unit"])
         else:
             unit = 1
-            for baseunit, power in self.info["unitpowers"].items():
+            for baseunit_name, power in self.info["unitpowers"].items():
+                baseunit = self.loader.units[baseunit_name]
                 unit = unit * u.Unit(baseunit)**power
         Nr = self.loader.Nr + (1 if "interfaces" in self.info
                                and "r" in self.info["interfaces"] else 0)
