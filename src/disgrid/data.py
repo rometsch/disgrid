@@ -79,7 +79,8 @@ class Data:
         rv = {
             "fluids" : fluids,
             "planets" : planets,
-            "Nsnapshots" : len(self.loader.output_times)
+            "Nsnapshots" : len(self.loader.output_times),
+            "code" : self.loader.code_info
         }
         
         return rv
