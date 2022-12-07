@@ -19,5 +19,5 @@ def get_parameters(param_file):
         Dictionary contining parameters as key value pairs.
     """
     with open(param_file) as f:
-       rv = yaml.safe_load(param_file)
+       rv = yaml.safe_load(f)
     return rv

@@ -13,7 +13,9 @@ code_info = ("fargocpt", "1.1", "output v1.1")
 
 def identify(path):
     identifier = "fargocpt_output_v1_1"
-    for _, dirs, files in os.walk(path):
+    for _, dirs, files in os.walk(path, topdown=True):
+        if "snapshots" in dirs:
+            dirs.remove("snapshots")
         if identifier in files:
             return True
     return False
@@ -49,7 +51,9 @@ def get_data_dir(path):
             break
     # now search whole dir tree
     if rv is None:
-        for root, dirs, files in os.walk(path):
+        for root, dirs, files in os.walk(path, topdown=True):
+            if "snapshots" in dirs:
+                dirs.remove("snapshots")
             if identifier in files:
                 rv = root
                 break
