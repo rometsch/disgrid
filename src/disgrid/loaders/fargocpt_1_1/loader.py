@@ -147,7 +147,7 @@ class Loader(interface.Interface):
             self.parameters = self.spec["parameters"].copy()
             return
         try:
-            param_file = self.cached("../setup/in.par")
+            param_file = self.cached("snapshots/0/config.yml")
             self.parameters = loadparams.get_parameters(param_file)
             self.spec["parameters"] = self.parameters.copy()
         except FileNotFoundError:
