@@ -93,7 +93,7 @@ def get_loader(path, loader, **kwargs):
     # check for direct specification of code
     if isinstance(loader, (tuple, list)):
         for key, mod in available.items():
-            if key == tuple(loader):
+            if key[0] == loader[0] and key[1] == loader[1]:
                 code = key
                 try:
                     loader = mod.Loader(path, **kwargs)
