@@ -245,6 +245,8 @@ class Loader(interface.Interface):
             m = re.match(p, s)
             if m:
                 key = m.groups()[0]
+                if key == "autosave":
+                    continue
                 if os.path.exists(os.path.join(self.data_dir, datafile_pattern).format(key)):
                     timesteps.append(int(key))
         timesteps.sort()
