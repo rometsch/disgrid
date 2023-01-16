@@ -250,7 +250,8 @@ class Loader(interface.Interface):
                 if os.path.exists(os.path.join(self.data_dir, datafile_pattern).format(key)):
                     timesteps.append(int(key))
         timesteps.sort()
-        times = u.Quantity([self.output_times[i] for i in timesteps])
+        imin = timesteps[0]
+        times = u.Quantity([self.output_times[i-imin] for i in timesteps])
         self.particles = loadparticles.ParticleLoader(
             "dust", datafile_pattern, times, timesteps, self)
         self.spec["particles"] = {
