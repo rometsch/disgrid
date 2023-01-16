@@ -103,6 +103,7 @@ class Loader(interface.Interface):
             return loader()
 
     def scout(self):
+        self.get_first_snapshot_number()
         self.get_units()
         self.get_domain_size()
         self.get_parameters()
@@ -145,6 +146,21 @@ class Loader(interface.Interface):
                 return True
         except KeyError:
             return False
+
+    def get_first_snapshot_number(self):
+        """ Find the first available snapshot number.
+        """
+        if "first_snapshot" in self.spec:
+            self.first_snapshot = self.spec["first_snapshot"]
+        snapshot_file = os.path.join(self.data_dir, "snapshots", "list.txt")
+        with open(snapshot_file, "r") as infile:
+            n = infile.readline().strip()
+            try:
+                n = int(n)
+            except TypeError:
+                n = infile.readline().strip()
+                n = int(n)
+        self.first_snapshot = n
 
     def get_parameters(self):
         if "paramters" in self.spec:
@@ -217,7 +233,7 @@ class Loader(interface.Interface):
             self.fine_output_times.value, self.fine_output_times.unit.to_string())
 
     def get_output_time(self, n):
-        return self.output_times[n]
+        return self.output_times[n-self.first_snapshot]
 
     def get_fine_output_time(self, n):
         rv = self.fine_output_times[n]
@@ -320,7 +336,7 @@ class Loader(interface.Interface):
         self.spec["fluids"]["gas"]["2d"] = {}
         gas = self.fluids["gas"]
         for varname, info in defs.vars2d.items():
-            if os.path.exists(os.path.join(self.data_dir, info["pattern"]).format(0)):
+            if os.path.exists(os.path.join(self.data_dir, info["pattern"]).format(self.first_snapshot)):
                 loader = load2d.FieldLoader2d(varname, info, self)
                 gas.register_variable(varname, "2d", loader)
                 self.spec["fluids"]["gas"]["2d"][varname] = {
