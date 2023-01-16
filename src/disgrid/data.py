@@ -76,11 +76,17 @@ class Data:
             names = [k for k in planet.variable_loaders]
             planets[f"{n}"] = names
         
+        Nsnapshots = len(self.loader.output_times)
         rv = {
             "fluids" : fluids,
             "planets" : planets,
-            "Nsnapshots" : len(self.loader.output_times),
+            "Nsnapshots" : Nsnapshots,
             "code" : self.loader.code_info
         }
+        try:
+            rv["Nfirst"] = self.loader.first_snapshot
+            rv["Nlast"] = rv["Nfirst"] + Nsnapshots -1
+        except AttributeError:
+            pass
         
         return rv
