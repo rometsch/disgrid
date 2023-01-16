@@ -319,7 +319,6 @@ class Loader(interface.Interface):
             return
         self.spec["fluids"]["gas"]["2d"] = {}
         gas = self.fluids["gas"]
-        files = os.listdir(self.data_dir)
         for varname, info in defs.vars2d.items():
             if os.path.exists(os.path.join(self.data_dir, info["pattern"]).format(0)):
                 loader = load2d.FieldLoader2d(varname, info, self)
