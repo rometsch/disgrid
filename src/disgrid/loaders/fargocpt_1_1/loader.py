@@ -265,6 +265,8 @@ class Loader(interface.Interface):
                     continue
                 if os.path.exists(os.path.join(self.data_dir, datafile_pattern).format(key)):
                     timesteps.append(int(key))
+        if len(timesteps) == 0:
+            return
         timesteps.sort()
         imin = timesteps[0]
         times = u.Quantity([self.output_times[i-imin] for i in timesteps])
