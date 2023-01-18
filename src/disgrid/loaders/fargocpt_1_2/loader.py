@@ -8,11 +8,12 @@ from .. import interface
 
 from . import defs, load1d, load2d, loadparams, loadscalar, loadparticles
 
-code_info = ("fargocpt", "1.1", "output v1.1")
+identifier = "fargocpt_output_v1_2"
+code_info = ("fargocpt", "1.2", "output v1.2")
 
 
 def identify(path):
-    identifier = "fargocpt_output_v1_1"
+    
     for _, dirs, files in os.walk(path, topdown=True):
         if "snapshots" in dirs:
             dirs.remove("snapshots")
@@ -42,7 +43,6 @@ def quantity_from_spec(spec):
 
 def get_data_dir(path):
     rv = None
-    identifier = "fargocpt_output_v1_1"
     # guess first
     for guess in ["outputs", "output", "out"]:
         guess_dir = os.path.join(path, guess)
