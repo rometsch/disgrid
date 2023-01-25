@@ -7,11 +7,12 @@ name = "disgrid"
 version = "0.1"
 authors = [
   { name="Thomas Rometsch", email="thomas.rometsch@gmail.com" },
+  { name="Peter Rodenkirch" },
+  { name="Alex Ziampras" }
 ]
 dependencies = [
    "numpy>=1.17", 
-   "astropy", 
-   "diskcache"
+   "astropy"
 ]
 description = "scripts to load hydro simulation output"
 readme = "README.md"
