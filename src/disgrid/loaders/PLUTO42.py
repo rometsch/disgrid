@@ -341,16 +341,16 @@ class Loader(interface.Interface):
         self.get_fields_1d()
 
     def get_domain_size(self):
-        grid = [PGrid.Grid(self.cached("grid.out"), DIR=i) for i in [0, 1, 2]]
+        grid = [PGrid.Grid(self.datadir_path("grid.out"), DIR=i) for i in [0, 1, 2]]
         self.NX1, self.NX2, self.NX3 = [g.Ncells for g in grid]
 
     def get_geometry(self):
-        self.dimensions, self.geometry, self.coordinates = PGrid.resolve_geometry(self.cached("grid.out"),)
+        self.dimensions, self.geometry, self.coordinates = PGrid.resolve_geometry(self.datadir_path("grid.out"),)
 
     def assign_variables(self):
         #warning: the following lines only work with python3+
         #get number of columns of file
-        with open(self.cached('dbl.out', changing=True), 'r') as dblout:
+        with open(self.datadir_path('dbl.out', changing=True), 'r') as dblout:
             line = dblout.readline().strip().split()
         _, _, _, _, output_format, _, *varnames = line
 
@@ -442,7 +442,7 @@ class Loader(interface.Interface):
         #set scalar_filename at top of file!
         for fluid_name in self.fluids:
             fl = self.fluids[fluid_name]
-            datafile = self.cached(scalar_filename)
+            datafile = self.datadir_path(scalar_filename)
             if os.path.exists(datafile):
                 for varname, info in vars_scalar.items():
                     fl.register_variable(
@@ -451,12 +451,12 @@ class Loader(interface.Interface):
 
     def load_grid(self, n=0):
         """Returns a disgrid.grid structure in relevant coordinates."""
-        return PGrid.loadGrid(self.cached("grid.out"),
+        return PGrid.loadGrid(self.datadir_path("grid.out"),
                               length_unit=self.units["length"],
                               angle_unit=u.radian)
 
     def load_times(self):
-        timestamps = np.genfromtxt(self.cached('dbl.out'),
+        timestamps = np.genfromtxt(self.datadir_path('dbl.out'),
                                 usecols=1,
                                 unpack=True,
                                 dtype=float)
@@ -464,7 +464,7 @@ class Loader(interface.Interface):
         self.output_times = timestamps * self.units["time"]
 
         try:
-            timestamps = np.genfromtxt(self.cached(scalar_filename),
+            timestamps = np.genfromtxt(self.datadir_path(scalar_filename),
                                     usecols=0,
                                     unpack=True,
                                     skip_header=1,
@@ -484,7 +484,7 @@ class Loader(interface.Interface):
 
     def get_units(self):
         self.units = PUnits.loadUnits(
-            self.data_dir, dimensions=self.dimensions, filecache=self.cached)
+            self.data_dir, dimensions=self.dimensions, filecache=self.datadir_path)
 
 
 class FieldLoader2d(interface.FieldLoader):
@@ -516,7 +516,7 @@ class FieldLoader2d(interface.FieldLoader):
 
     def load_grid(self, n=0):
         """Returns a disgrid.grid structure in relevant coordinates."""
-        return PGrid.loadGrid(self.loader.cached("grid.out"),
+        return PGrid.loadGrid(self.loader.datadir_path("grid.out"),
                               length_unit=self.loader.units["length"],
                               angle_unit=u.radian)
 
@@ -541,7 +541,7 @@ class FieldLoader2d(interface.FieldLoader):
 
         unit = qty_info["unit"]
 
-        filename = self.loader.cached(qty_info["pattern"].format(n))
+        filename = self.loader.datadir_path(qty_info["pattern"].format(n))
         if self.loader.output_format == 'single_file':
             memmap = np.memmap(filename,
                                dtype=float,

@@ -66,7 +66,7 @@ class FieldLoader1d(interface.FieldLoader):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fileinfo = parse_1d_info_file(
-            self.loader.cached(self.info["infofile"])
+            self.loader.datadir_path(self.info["infofile"])
         )
 
     def load_time(self, n):
@@ -78,7 +78,7 @@ class FieldLoader1d(interface.FieldLoader):
 
     def load_data(self, n):
         unit = u.Unit(self.fileinfo["unit"])
-        datafile = self.loader.cached(self.fileinfo["pattern"].format(n))
+        datafile = self.loader.datadir_path(self.fileinfo["pattern"].format(n))
         rv = load1dRadial(datafile, unit)
         return rv
 
@@ -101,7 +101,7 @@ class FieldLoader1dTorq(interface.FieldLoader):
         return rv
 
     def load_data(self, n):
-        datafile = self.loader.cached(self.info["pattern"].format(n))
+        datafile = self.loader.datadir_path(self.info["pattern"].format(n))
         data = np.fromfile(datafile, dtype=float)
         rv = data[1::2] * u.Unit("cm^2 g / s^2")
         return rv
