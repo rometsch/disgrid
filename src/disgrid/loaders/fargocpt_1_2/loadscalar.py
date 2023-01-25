@@ -70,15 +70,12 @@ class ScalarLoader:
         return f
 
     def load_data(self):
-        datafile = self.loader.datadir_path(self.datafile, changing=True)
+        datafile = self.loader.datadir_path(self.datafile)
         rv = load_text_data_file(datafile,
                                  self.name,
                                  Nmax=len(self.loader.fine_output_times))
         return rv
 
     def load_time(self):
-        datafile = self.loader.datadir_path(self.datafile, changing=True)
-        rv = load_text_data_file(datafile,
-                                 "physical time",
-                                 Nmax=len(self.loader.fine_output_times))
+        rv = self.loader.fine_output_times
         return rv

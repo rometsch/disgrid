@@ -224,9 +224,9 @@ class Loader(interface.Interface):
             return
 
         self.output_times = loadscalar.load_text_data_file(
-            self.datadir_path("snapshots/timeSnapshot.dat", changing=True), "physical time")
+            self.datadir_path("snapshots/timeSnapshot.dat"), "physical time")
         self.fine_output_times = loadscalar.load_text_data_file(
-            self.datadir_path("monitor/Quantities.dat", changing=True), "physical time")
+            self.datadir_path("monitor/Quantities.dat"), "physical time")
         self.spec["output_times"] = (
             self.output_times.value, self.output_times.unit.to_string())
         self.spec["fine_output_times"] = (
@@ -308,7 +308,7 @@ class Loader(interface.Interface):
         # add variables to planets
         for pid, planet in zip(planet_ids, self.planets):
             planet_variables = loadscalar.load_text_data_variables(
-                self.datadir_path("monitor/{}{}.dat".format(basename, pid), changing=True))
+                self.datadir_path("monitor/{}{}.dat".format(basename, pid)))
             for varname in planet_variables:
                 datafile = "monitor/{}{}.dat".format(basename, pid)
                 loader = loadscalar.ScalarLoader(varname, datafile, self)
@@ -402,7 +402,7 @@ class Loader(interface.Interface):
         gas = self.fluids["gas"]
         datafile = "monitor/Quantities.dat"
         variables = loadscalar.load_text_data_variables(
-            self.datadir_path(datafile, changing=True))
+            self.datadir_path(datafile))
         for varname, _ in variables.items():
             loader = loadscalar.ScalarLoader(varname, datafile, self)
             gas.register_variable(varname, "scalar", loader)

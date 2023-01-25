@@ -351,7 +351,7 @@ class Loader(interface.Interface):
     def assign_variables(self):
         #warning: the following lines only work with python3+
         #get number of columns of file
-        with open(self.datadir_path('dbl.out', changing=True), 'r') as dblout:
+        with open(self.datadir_path('dbl.out'), 'r') as dblout:
             line = dblout.readline().strip().split()
         _, _, _, _, output_format, _, *varnames = line
 
@@ -443,7 +443,7 @@ class Loader(interface.Interface):
         #set scalar_filename at top of file!
         for fluid_name in self.fluids:
             fl = self.fluids[fluid_name]
-            datafile = self.datadir_path(scalar_filename, changing=True)
+            datafile = self.datadir_path(scalar_filename)
             if os.path.exists(datafile):
                 for varname, info in vars_scalar.items():
                     fl.register_variable(
