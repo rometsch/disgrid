@@ -9,7 +9,7 @@ import numpy as np
 from .. import field
 
 class Interface:
-    def __init__(self, path, owner=None, file_caching=True, update=True, **kwargs):
+    def __init__(self, path, update=True, **kwargs):
         self.path = path
         self.fluids = {}
         self.scalar = {}
