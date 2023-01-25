@@ -8,6 +8,8 @@ class Data:
     """ Create a data interface for the data in 'path' """
 
     def __init__(self, path=os.getcwd(), loader=None, init_hooks=None, **kwargs):
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"The path {path} does not exist!")
         self.path = path
         self.loader = loader
         self.kwargs = kwargs
