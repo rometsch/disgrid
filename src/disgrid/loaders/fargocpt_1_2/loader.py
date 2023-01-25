@@ -59,8 +59,7 @@ def get_data_dir(path):
                 break
     if rv is None:
         raise FileNotFoundError(
-            "Could not find identifier file 'misc.dat' in any subfolder of '{}'"
-            .format(path))
+            f"Could not find identifier file '{identifier}' in any subfolder of '{path}'")
     return rv
 
 
@@ -167,7 +166,7 @@ class Loader(interface.Interface):
             self.parameters = self.spec["parameters"].copy()
             return
         try:
-            param_file = self.cached("snapshots/0/config.yml")
+            param_file = self.datadir_path("snapshots/0/config.yml")
             self.parameters = loadparams.get_parameters(param_file)
             self.spec["parameters"] = self.parameters.copy()
         except FileNotFoundError:
@@ -189,7 +188,7 @@ class Loader(interface.Interface):
         if "units" in self.spec:
             self.units = self.spec["units"].copy()
             return
-        with open(self.cached('units.dat'), 'r') as f:
+        with open(self.datadir_path('units.dat'), 'r') as f:
             self.units = {
                 l[0]: l[1] + " " + l[2]
                 for l in [
@@ -224,9 +223,9 @@ class Loader(interface.Interface):
             return
 
         self.output_times = loadscalar.load_text_data_file(
-            self.cached("snapshots/timeSnapshot.dat", changing=True), "physical time")
+            self.datadir_path("snapshots/timeSnapshot.dat"), "physical time")
         self.fine_output_times = loadscalar.load_text_data_file(
-            self.cached("monitor/Quantities.dat", changing=True), "physical time")
+            self.datadir_path("monitor/Quantities.dat"), "physical time")
         self.spec["output_times"] = (
             self.output_times.value, self.output_times.unit.to_string())
         self.spec["fine_output_times"] = (
@@ -308,7 +307,7 @@ class Loader(interface.Interface):
         # add variables to planets
         for pid, planet in zip(planet_ids, self.planets):
             planet_variables = loadscalar.load_text_data_variables(
-                self.cached("monitor/{}{}.dat".format(basename, pid), changing=True))
+                self.datadir_path("monitor/{}{}.dat".format(basename, pid)))
             for varname in planet_variables:
                 datafile = "monitor/{}{}.dat".format(basename, pid)
                 loader = loadscalar.ScalarLoader(varname, datafile, self)
@@ -400,11 +399,11 @@ class Loader(interface.Interface):
 
         self.spec["fluids"]["gas"]["scalar"] = {}
         gas = self.fluids["gas"]
-        datafile = "monitor/Quantities.dat"
-        variables = loadscalar.load_text_data_variables(
-            self.cached(datafile, changing=True))
-        for varname, _ in variables.items():
-            loader = loadscalar.ScalarLoader(varname, datafile, self)
-            gas.register_variable(varname, "scalar", loader)
-            self.spec["fluids"]["gas"]["scalar"][varname] = {
-                "varname": varname, "datafile": datafile}
+        for datafile in ["monitor/Quantities.dat", "monitor/timestepLogging.dat"]:
+            variables = loadscalar.load_text_data_variables(
+                self.datadir_path(datafile))
+            for varname, _ in variables.items():
+                loader = loadscalar.ScalarLoader(varname, datafile, self)
+                gas.register_variable(varname, "scalar", loader)
+                self.spec["fluids"]["gas"]["scalar"][varname] = {
+                    "varname": varname, "datafile": datafile}
