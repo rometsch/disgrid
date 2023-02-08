@@ -1,4 +1,0 @@
-TODO for fargocpt
-
-+ add header in timeCoarse file describing the columns, copy from Quantities
-+ add identifier file for the specific output format version
