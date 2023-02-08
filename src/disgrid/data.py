@@ -1,7 +1,7 @@
 import os
 
 # import all loaders
-import disgrid.loaders as loaders
+import loaders
 
 
 class Data:
