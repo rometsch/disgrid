@@ -1,9 +1,5 @@
 import os
 
-# import all loaders
-import loaders
-
-
 class Data:
     """ Create a data interface for the data in 'path' """
 
@@ -16,7 +12,9 @@ class Data:
         self.init_hooks = init_hooks
 
     def init(self):
-        self.code, self.loader = loaders.get_loader(
+        # import all loaders
+        from disgrid.loaders import get_loader
+        self.code, self.loader = get_loader(
             self.path, self.loader, **self.kwargs)
         self.loader.scout()
         self.fluids = self.loader.fluids
@@ -30,16 +28,15 @@ class Data:
                 func()
 
     def __getattr__(self, attr):
+        if attr in ["path", "code", "loader", "fluids",
+                        "particles", "particlegroups",
+                        "planets", "parameters"]:
+            if not attr in self.__dict__:
+                self.init()
         try:
             return self.__dict__[attr]
         except KeyError:
-            if attr in ["path", "code", "loader", "fluids",
-                        "particles", "particlegroups",
-                        "planets", "parameters"]:
-                self.init()
-                return self.__dict__[attr]
-            else:
-                raise AttributeError(f'{attr}')
+            raise AttributeError(f'{attr}')
 
     def get_fluid(self, name):
         return self.fluids[name]
