@@ -86,6 +86,7 @@ class Data:
             rv["Nfirst"] = self.loader.first_snapshot
             rv["Nlast"] = rv["Nfirst"] + Nsnapshots -1
         except AttributeError:
-            pass
+            rv["Nfirst"] = 0
+            rv["Nlast"] = Nsnapshots -1
         
         return rv
