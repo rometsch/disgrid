@@ -1,42 +1,58 @@
 import os
+from disgrid.loaders import get_loader
+from copy import deepcopy
 
 class Data:
     """ Create a data interface for the data in 'path' """
 
-    def __init__(self, path=os.getcwd(), loader=None, init_hooks=None, **kwargs):
+    def __init__(self, path=os.getcwd(), loader_hint=None, init_hooks=None, **kwargs):
         if not os.path.exists(path):
             raise FileNotFoundError(f"The path {path} does not exist!")
         self.path = path
-        self.loader = loader
+        self._loader_hint = loader_hint
+        self._loader = None
         self.kwargs = kwargs
         self.init_hooks = init_hooks
 
     def init(self):
         # import all loaders
-        from disgrid.loaders import get_loader
-        self.code, self.loader = get_loader(
-            self.path, self.loader, **self.kwargs)
+        _, self._loader = get_loader(
+            self.path, self._loader_hint, **self.kwargs)
         self.loader.scout()
-        self.fluids = self.loader.fluids
-        self.particles = self.loader.particles
-        self.particlegroups = {"particles": self.particles}
-        self.planets = self.loader.planets
-        self.parameters = self.loader.parameters
         self.register_postprocessor()
         if self.init_hooks is not None:
             for func in self.init_hooks:
                 func()
 
-    def __getattr__(self, attr):
-        if attr in ["path", "code", "loader", "fluids",
-                        "particles", "particlegroups",
-                        "planets", "parameters"]:
-            if not attr in self.__dict__:
-                self.init()
-        try:
-            return self.__dict__[attr]
-        except KeyError:
-            raise AttributeError(f'{attr}')
+    @property
+    def loader(self):
+        if self._loader is None:
+            self.init()
+        return self._loader
+
+    @property
+    def code(self):
+        return deepcopy(self.loader.code)
+    
+    @property
+    def fluids(self):
+        return self.loader.fluids
+    
+    @property
+    def particles(self):
+        return self.loader.particles
+    
+    @property
+    def particlegroups(self):
+        return {"particles": self.loader.particles}
+    
+    @property
+    def planets(self):
+        return self.loader.planets
+    
+    @property
+    def parameters(self):
+        return self.loader.parameters
 
     def get_fluid(self, name):
         return self.fluids[name]
@@ -61,18 +77,18 @@ class Data:
         
     def avail(self):
         """ Tell what data is available. """
-        
+
         fluids = {}
         for fluid in self.fluids:
             fluids[fluid] = {}
             for k,v in self.fluids[fluid].variable_loaders.items():
-                names = [k for k in v]
+                names = [k for k in v.keys()]
                 if len(names) > 0:
                     fluids[fluid][k] = names
 
         planets = {}
         for n,planet in enumerate(self.planets):
-            names = [k for k in planet.variable_loaders]
+            names = [k for k in planet.variable_loaders.keys()]
             planets[f"{n}"] = names
         
         Nsnapshots = len(self.loader.output_times)
@@ -80,7 +96,7 @@ class Data:
             "fluids" : fluids,
             "planets" : planets,
             "Nsnapshots" : Nsnapshots,
-            "code" : self.loader.code_info
+            "code" : deepcopy(self.loader.code_info)
         }
         try:
             rv["Nfirst"] = self.loader.first_snapshot
