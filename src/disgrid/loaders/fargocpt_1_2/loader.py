@@ -81,8 +81,8 @@ class Loader(interface.Interface):
                 pass
         self.uptodate = False
         self.data_dir = get_data_dir(self.path)
-        self.output_times = []
-        self.fine_output_times = []
+        self._output_times = None
+        self._fine_output_times = None
         self.get_last_activity()
         self.spec = {"data_dir": os.path.relpath(
             self.data_dir, start=self.path),
@@ -222,14 +222,26 @@ class Loader(interface.Interface):
                 self.spec["fine_output_times"])
             return
 
-        self.output_times = loadscalar.load_text_data_file(
+        self._output_times = loadscalar.load_text_data_file(
             self.datadir_path("snapshots/timeSnapshot.dat"), "physical time")
-        self.fine_output_times = loadscalar.load_text_data_file(
+        self._fine_output_times = loadscalar.load_text_data_file(
             self.datadir_path("monitor/Quantities.dat"), "physical time")
         self.spec["output_times"] = (
             self.output_times.value, self.output_times.unit.to_string())
         self.spec["fine_output_times"] = (
             self.fine_output_times.value, self.fine_output_times.unit.to_string())
+
+    @property
+    def output_times(self):
+        if self._output_times is None:
+            self.load_times()
+        return self._output_times
+
+    @property
+    def fine_output_times(self):
+        if self._fine_output_times is None:
+            self.load_times()
+        return self._fine_output_times
 
     def get_output_time(self, n):
         return self.output_times[n-self.first_snapshot]
