@@ -1,6 +1,8 @@
 import os
 import re
 
+from weakref import proxy
+
 import astropy.units as u
 import numpy as np
 from ... import fluid, particles
@@ -69,7 +71,9 @@ class Loader(interface.Interface):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if "spec" in kwargs and kwargs["spec"] is not None:
+        if self.update:
+            self.uptodate = False
+        elif "spec" in kwargs and kwargs["spec"] is not None:
             self.spec = kwargs["spec"].copy()
             self.data_dir = os.path.join(self.path, self.spec["data_dir"])
             try:
@@ -88,6 +92,7 @@ class Loader(interface.Interface):
             self.data_dir, start=self.path),
             "maxdim": "2d",
             "timestamp": self.timestamp}
+        self.weakref = proxy(self)
 
     def get(self, key=None, dim=None, planet=None, fluid=None):
         if dim is None:
@@ -98,7 +103,7 @@ class Loader(interface.Interface):
         if dim == "scalar":
             spec = self.spec["fluids"][fluid][dim][key]
             loader = loadscalar.ScalarLoader(
-                spec["varname"], spec["datafile"], self)
+                spec["varname"], spec["datafile"], self.weakref)
             return loader()
 
     def scout(self):
@@ -263,7 +268,7 @@ class Loader(interface.Interface):
                 pspec["name"],
                 pspec["datafile_pattern"],
                 quantity_from_spec(pspec["times"]),
-                pspec["timesteps"], self)
+                pspec["timesteps"], self.weakref)
             return
         p = re.compile(r"([\d]+)")
         timesteps = []
@@ -282,7 +287,7 @@ class Loader(interface.Interface):
         imin = timesteps[0]
         times = u.Quantity([self.output_times[i-imin] for i in timesteps])
         self.particles = loadparticles.ParticleLoader(
-            "dust", datafile_pattern, times, timesteps, self)
+            "dust", datafile_pattern, times, timesteps, self.weakref)
         self.spec["particles"] = {
             "name": "dust",
             "datafile_pattern": datafile_pattern,
@@ -296,7 +301,7 @@ class Loader(interface.Interface):
                 planet = particles.Planet(val["name"], val["pid"])
                 for varname in val["variables"]:
                     datafile = val["variables"][varname]["datafile"]
-                    loader = loadscalar.ScalarLoader(varname, datafile, self)
+                    loader = loadscalar.ScalarLoader(varname, datafile, self.weakref)
                     planet.register_variable(varname, loader)
                 self.planets.append(planet)
             return
@@ -322,7 +327,7 @@ class Loader(interface.Interface):
                 self.datadir_path("monitor/{}{}.dat".format(basename, pid)))
             for varname in planet_variables:
                 datafile = "monitor/{}{}.dat".format(basename, pid)
-                loader = loadscalar.ScalarLoader(varname, datafile, self)
+                loader = loadscalar.ScalarLoader(varname, datafile, self.weakref)
                 planet.register_variable(varname, loader)
                 self.spec["planets"][str(pid)]["variables"][varname] = {
                     "datafile": datafile}
@@ -345,14 +350,14 @@ class Loader(interface.Interface):
             for name, fspec in self.spec["fluids"].items():
                 fl = self.fluids[name]
                 for varname, vspec in fspec["2d"].items():
-                    loader = load2d.FieldLoader2d(varname, vspec["info"], self)
+                    loader = load2d.FieldLoader2d(varname, vspec["info"], self.weakref)
                     fl.register_variable(varname, "2d", loader)
             return
         self.spec["fluids"]["gas"]["2d"] = {}
         gas = self.fluids["gas"]
         for varname, info in defs.vars2d.items():
             if os.path.exists(os.path.join(self.data_dir, info["pattern"]).format(self.first_snapshot)):
-                loader = load2d.FieldLoader2d(varname, info, self)
+                loader = load2d.FieldLoader2d(varname, info, self.weakref)
                 gas.register_variable(varname, "2d", loader)
                 self.spec["fluids"]["gas"]["2d"][varname] = {
                     "name": varname, "info": info}
@@ -362,7 +367,7 @@ class Loader(interface.Interface):
             for name, fspec in self.spec["fluids"].items():
                 fl = self.fluids[name]
                 for varname, vspec in fspec["1d"].items():
-                    loader = load1d.FieldLoader1d(varname, vspec["info"], self)
+                    loader = load1d.FieldLoader1d(varname, vspec["info"], self.weakref)
                     fl.register_variable(varname, "1d", loader)
             return
         self.spec["fluids"]["gas"]["1d"] = {}
@@ -375,12 +380,12 @@ class Loader(interface.Interface):
                 info = {
                     "pattern": path_pattern
                 }
-                loader = load1d.FieldLoader1dTorq(varname, info, self)
+                loader = load1d.FieldLoader1dTorq(varname, info, self.weakref)
                 gas.register_variable(varname, "1d", loader)
         if "gasMassFlow1D.info" in files:
             varname = "mass flow"
             info = {}
-            loader = load1d.FieldLoader1dMassFlow(varname, info, self)
+            loader = load1d.FieldLoader1dMassFlow(varname, info, self.weakref)
             gas.register_variable(varname, "1d", loader)
         for fname in files:
             m = re.search(r"(.*)1D\.info", fname)
@@ -392,7 +397,7 @@ class Loader(interface.Interface):
                     continue
                 info = {"infofile": infofile}
                 loader = load1d.FieldLoader1d(
-                    varname, info, self)
+                    varname, info, self.weakref)
                 gas.register_variable(varname, "1d", loader)
                 self.spec["fluids"]["gas"]["1d"][varname] = {
                     "varname": varname, "info": info}
@@ -405,7 +410,7 @@ class Loader(interface.Interface):
                     sspec = fspec["scalar"]
                     for varname, vspec in sspec.items():
                         loader = loadscalar.ScalarLoader(
-                            varname, vspec["datafile"], self)
+                            varname, vspec["datafile"], self.weakref)
                         fl.register_variable(varname, "scalar", loader)
             return
 
@@ -415,7 +420,7 @@ class Loader(interface.Interface):
             variables = loadscalar.load_text_data_variables(
                 self.datadir_path(datafile))
             for varname, _ in variables.items():
-                loader = loadscalar.ScalarLoader(varname, datafile, self)
+                loader = loadscalar.ScalarLoader(varname, datafile, self.weakref)
                 gas.register_variable(varname, "scalar", loader)
                 self.spec["fluids"]["gas"]["scalar"][varname] = {
                     "varname": varname, "datafile": datafile}
