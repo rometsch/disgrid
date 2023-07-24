@@ -8,9 +8,8 @@ import astropy.units as u
 import numpy as np
 from ... import scalar
 
-
-@lru_cache(100)
-def load_text_data_variables(filepath):
+@lru_cache(20)
+def _load_text_data_variables(filepath, timestamp):
     # load all variable definitions from a text file
     # which contains the variable names and colums in its header.
     # each variable is indicated by
@@ -30,10 +29,16 @@ def load_text_data_variables(filepath):
     logging.debug(found_variables)
     return found_variables
 
+def load_text_data_variables(filepath):
+    return _load_text_data_variables(filepath, os.path.getmtime(filepath))
 
-@lru_cache(100)
-def load_data(filepath):
+
+@lru_cache(20)
+def _load_data(filepath, timestamp):
     return np.genfromtxt(filepath).T
+
+def load_data(filepath):
+    return _load_data(filepath, os.path.getmtime(filepath))
 
 
 def load_text_data_file(filepath, varname, Nmax=np.inf):
