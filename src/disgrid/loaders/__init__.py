@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 class UnknownCodeError(Exception):
     pass
 
@@ -38,10 +40,10 @@ def identify_code(path, choices=available):
         raise MultipleCodeError(
             "Multiple codes identified the data in '{}' which where '{}'".
             format(path, code_list))
-    return code_list[0]
+    return deepcopy(code_list[0])
 
 
-def get_loader(path, loader, **kwargs):
+def get_loader(path, loader_hint, **kwargs):
     """
     Get a loader for the simulation data inside path.
 
@@ -49,7 +51,7 @@ def get_loader(path, loader, **kwargs):
     ----------
     path : str
         Path to the data.
-    loader : str or :obj:`disgrid.loaders.interface.Interface`
+    loader_hint : str or :obj:`disgrid.loaders.interface.Interface`
         None or hint (str) or acutal loader for the data.
 
     Returns
@@ -60,9 +62,9 @@ def get_loader(path, loader, **kwargs):
     code = None
     choices = available
     # check for direct specification of code
-    if isinstance(loader, (tuple, list)):
+    if isinstance(loader_hint, (tuple, list)):
         for key, mod in available.items():
-            if key[0] == loader[0] and key[1] == loader[1]:
+            if key[0] == loader_hint[0] and key[1] == loader_hint[1]:
                 code = key
                 try:
                     loader = mod.Loader(path, **kwargs)
@@ -70,23 +72,23 @@ def get_loader(path, loader, **kwargs):
                     code = None
                 break
     # check for simulation code names hints
-    elif isinstance(loader, str):
+    elif isinstance(loader_hint, str):
         choices = {
             key: available[key]
-            for key in available if loader in key[0]
+            for key in available if loader_hint in key[0]
         }
         if len(choices) == 0:
             choices = available
     # handle loader objects/classes
-    elif loader is not None:
-        if "Loader" in dir(loader):
+    elif loader_hint is not None:
+        if "Loader" in dir(loader_hint):
             # assume its a module
-            code = loader.code_info
-            loader = loader.Loader(path, **kwargs)
+            code = loader_hint.code_info
+            loader = loader_hint.Loader(path, **kwargs)
         else:
             # assume its a loader object
-            loader = loader
-            code = type(loader).code_info
+            loader = loader_hint
+            code = type(loader_hint).code_info
     # if no hints or loader was given, test all available
     if code is None:
         code = identify_code(path, choices)
