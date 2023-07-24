@@ -2,15 +2,14 @@
 # it
 # it provides a framework for caching data and provides function which return field objects
 import os
-import shutil
-
-import numpy as np
+import datetime
 
 from .. import field
 
 class Interface:
     def __init__(self, path, update=True, **kwargs):
-        self.path = path
+        self.inittime = f"{datetime.datetime.now()}"
+        self.path = f"{path}"
         self.fluids = {}
         self.scalar = {}
         self.particles = {}
