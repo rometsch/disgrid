@@ -85,14 +85,17 @@ class Loader(interface.Interface):
                 pass
         self.uptodate = False
         self.data_dir = get_data_dir(self.path)
-        self._output_times = None
-        self._fine_output_times = None
         self.get_last_activity()
         self.spec = {"data_dir": os.path.relpath(
             self.data_dir, start=self.path),
             "maxdim": "2d",
             "timestamp": self.timestamp}
         self.weakref = proxy(self)
+
+        self._output_times = None
+        self._snapshot_numbers = None
+        self._output_times_dict = None
+        self._fine_output_times = None
 
     def get(self, key=None, dim=None, planet=None, fluid=None):
         if dim is None:
@@ -151,20 +154,27 @@ class Loader(interface.Interface):
         except KeyError:
             return False
 
+    @property
+    def first_snapshot_number(self):
+        if self._first_snapshot is None:
+            self.get_first_snapshot_number()
+        return self._first_snapshot
+
     def get_first_snapshot_number(self):
         """ Find the first available snapshot number.
         """
         if "first_snapshot" in self.spec:
-            self.first_snapshot = self.spec["first_snapshot"]
-        snapshot_file = os.path.join(self.data_dir, "snapshots", "list.txt")
-        with open(snapshot_file, "r") as infile:
-            n = infile.readline().strip()
-            try:
-                n = int(n)
-            except TypeError:
+            self._first_snapshot = self.spec["first_snapshot"]
+        else:
+            snapshot_file = os.path.join(self.data_dir, "snapshots", "list.txt")
+            with open(snapshot_file, "r") as infile:
                 n = infile.readline().strip()
-                n = int(n)
-        self.first_snapshot = n
+                try:
+                    n = int(n)
+                except TypeError:
+                    n = infile.readline().strip()
+                    n = int(n)
+            self._first_snapshot = n
 
     def get_parameters(self):
         if "paramters" in self.spec:
@@ -229,6 +239,10 @@ class Loader(interface.Interface):
 
         self._output_times = loadscalar.load_text_data_file(
             self.datadir_path("snapshots/timeSnapshot.dat"), "physical time")
+        self._snapshot_numbers = loadscalar.load_text_data_file(
+            self.datadir_path("snapshots/timeSnapshot.dat"), "time step")
+        self._output_times_dict = {
+            n: t for n, t in zip(self._snapshot_numbers, self._output_times)}
         self._fine_output_times = loadscalar.load_text_data_file(
             self.datadir_path("monitor/Quantities.dat"), "physical time")
         self.spec["output_times"] = (
@@ -241,6 +255,17 @@ class Loader(interface.Interface):
         if self._output_times is None:
             self.load_times()
         return self._output_times
+    
+    @property
+    def snapshot_times(self):
+        if self._output_times is None:
+            self.load_times()
+        return self._output_times
+    
+    def snapshot_time(self, N):
+        if self._output_times_dict is None:
+            self.load_times()
+        return self._output_times_dict[N]
 
     @property
     def fine_output_times(self):
@@ -249,11 +274,9 @@ class Loader(interface.Interface):
         return self._fine_output_times
 
     def get_output_time(self, n):
-        return self.output_times[n-self.first_snapshot]
-
-    def get_fine_output_time(self, n):
-        rv = self.fine_output_times[n]
-        return rv
+        if self._output_times is None:
+            self.load_times()
+        return self._output_times[n-self._first_snapshot]
 
     def register_alias(self):
         for planet in self.planets:
@@ -356,7 +379,7 @@ class Loader(interface.Interface):
         self.spec["fluids"]["gas"]["2d"] = {}
         gas = self.fluids["gas"]
         for varname, info in defs.vars2d.items():
-            if os.path.exists(os.path.join(self.data_dir, info["pattern"]).format(self.first_snapshot)):
+            if os.path.exists(os.path.join(self.data_dir, info["pattern"]).format(self._first_snapshot)):
                 loader = load2d.FieldLoader2d(varname, info, self.weakref)
                 gas.register_variable(varname, "2d", loader)
                 self.spec["fluids"]["gas"]["2d"][varname] = {
