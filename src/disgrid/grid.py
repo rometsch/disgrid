@@ -35,6 +35,16 @@ class Grid:
 
     def get_sizes(self, key):
         return self.get(key, "d")
+    
+    def get_meshgrid(self, type="i"):
+        if type == "i":
+            return np.meshgrid(*[self.get_interfaces(key) for key in self.names], indexing="ij")
+        elif type == "c":
+            return np.meshgrid(*[self.get_centers(key) for key in self.names], indexing="ij")
+        else:
+            raise ValueError("Unknown type '{}'".format(type))
+
+
 
 
 class RegularGrid(Grid):
