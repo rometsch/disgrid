@@ -52,13 +52,15 @@ def load_text_data_file(filepath, varname, Nmax=np.inf):
     data = file_data[col] * unit
     time_col = int(variables["physical time"][0])
     time = file_data[time_col]
-    N = min(len(data), len(time))
-    data = data[:N]
-    time = time[:N]
+    try:
+        N = min(len(data), len(time))
+        N = min(len(data), Nmax)
+        data = data[:N]
+        time = time[:N]
+    except TypeError:
+        N = 1
     if data.isscalar:
         data = u.quantity.Quantity([data])
-    N = min(len(data), Nmax)
-    data = data[:N]
     return data
 
 

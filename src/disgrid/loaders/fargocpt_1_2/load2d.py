@@ -11,7 +11,7 @@ class FieldLoader2d(interface.FieldLoader):
         if n is None:
             rv = self.loader.output_times
         else:
-            rv = self.loader.get_output_time(n)
+            rv = self.loader.snapshot_time(n)
         return rv
 
     def load_data(self, n):

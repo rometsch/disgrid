@@ -26,6 +26,9 @@ class Fluid:
         self.variable_loaders[geometry][name] = loader_function
 
     def get(self, geometry, name, num_output=None, t=None, *args, **kwargs):
+        if name == "snapshot time":
+            maxdim = [g for g in self.variable_loaders if len(self.variable_loaders[g]) > 0][0]
+            return self.get_time(maxdim, "mass density", num_output)
         try:
             loader = self._get_loader(geometry, name)
         except KeyError:

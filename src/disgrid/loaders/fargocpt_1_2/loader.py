@@ -92,6 +92,7 @@ class Loader(interface.Interface):
             "timestamp": self.timestamp}
         self.weakref = proxy(self)
 
+        self._snapshots = None
         self._output_times = None
         self._snapshot_numbers = None
         self._output_times_dict = None
@@ -110,7 +111,7 @@ class Loader(interface.Interface):
             return loader()
 
     def scout(self):
-        self.get_first_snapshot_number()
+        self.get_snapshots()
         self.get_units()
         self.get_domain_size()
         self.get_parameters()
@@ -156,25 +157,30 @@ class Loader(interface.Interface):
 
     @property
     def first_snapshot_number(self):
-        if self._first_snapshot is None:
-            self.get_first_snapshot_number()
-        return self._first_snapshot
+        if self._snapshots is None:
+            self.get_snapshots()
+        return self._snapshot_numbers[0]
+    
+    @property
+    def last_snapshot_number(self):
+        if self._snapshots is None:
+            self.get_snapshots()
+        return self._snapshot_numbers[-1]
 
-    def get_first_snapshot_number(self):
-        """ Find the first available snapshot number.
-        """
-        if "first_snapshot" in self.spec:
-            self._first_snapshot = self.spec["first_snapshot"]
-        else:
-            snapshot_file = os.path.join(self.data_dir, "snapshots", "list.txt")
-            with open(snapshot_file, "r") as infile:
-                n = infile.readline().strip()
-                try:
-                    n = int(n)
-                except TypeError:
-                    n = infile.readline().strip()
-                    n = int(n)
-            self._first_snapshot = n
+    @property
+    def snapshots(self):
+        if self._snapshot_numbers is None:
+            self.get_snapshots()
+        return self._snapshot_numbers
+    
+    def get_snapshots(self):
+        snapshot_time_file = self.datadir_path("snapshots/timeSnapshot.dat")
+        self._snapshots = np.genfromtxt(snapshot_time_file, usecols=0, dtype=int)
+        try:
+            len(self._snapshots)
+        except TypeError:
+            self._snapshots = np.array([self._snapshots])
+        self._snapshot_numbers = self._snapshots
 
     def get_parameters(self):
         if "paramters" in self.spec:
@@ -239,8 +245,8 @@ class Loader(interface.Interface):
 
         self._output_times = loadscalar.load_text_data_file(
             self.datadir_path("snapshots/timeSnapshot.dat"), "physical time")
-        self._snapshot_numbers = loadscalar.load_text_data_file(
-            self.datadir_path("snapshots/timeSnapshot.dat"), "time step")
+        # self._snapshot_numbers = loadscalar.load_text_data_file(
+        #     self.datadir_path("snapshots/timeSnapshot.dat"), "time step")
         self._output_times_dict = {
             n: t for n, t in zip(self._snapshot_numbers, self._output_times)}
         self._fine_output_times = loadscalar.load_text_data_file(
@@ -272,11 +278,6 @@ class Loader(interface.Interface):
         if self._fine_output_times is None:
             self.load_times()
         return self._fine_output_times
-
-    def get_output_time(self, n):
-        if self._output_times is None:
-            self.load_times()
-        return self._output_times[n-self._first_snapshot]
 
     def register_alias(self):
         for planet in self.planets:
@@ -379,7 +380,7 @@ class Loader(interface.Interface):
         self.spec["fluids"]["gas"]["2d"] = {}
         gas = self.fluids["gas"]
         for varname, info in defs.vars2d.items():
-            if os.path.exists(os.path.join(self.data_dir, info["pattern"]).format(self._first_snapshot)):
+            if os.path.exists(os.path.join(self.data_dir, info["pattern"]).format(self.first_snapshot_number)):
                 loader = load2d.FieldLoader2d(varname, info, self.weakref)
                 gas.register_variable(varname, "2d", loader)
                 self.spec["fluids"]["gas"]["2d"][varname] = {
