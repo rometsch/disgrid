@@ -13,6 +13,7 @@ from . import defs, load1d, load2d, loadparams, loadscalar, loadparticles
 identifier = "fargocpt_output_v1_2"
 code_info = ("fargocpt", "1.2", "output v1.2")
 
+smoking_gun = identifier
 
 def identify(path):
     
@@ -249,6 +250,7 @@ class Loader(interface.Interface):
         #     self.datadir_path("snapshots/timeSnapshot.dat"), "time step")
         self._output_times_dict = {
             n: t for n, t in zip(self._snapshot_numbers, self._output_times)}
+        self._output_times_dict["damping"] = self._output_times[0]
         self._fine_output_times = loadscalar.load_text_data_file(
             self.datadir_path("monitor/Quantities.dat"), "physical time")
         self.spec["output_times"] = (
@@ -297,6 +299,12 @@ class Loader(interface.Interface):
         p = re.compile(r"([\d]+)")
         timesteps = []
         datafile_pattern = "snapshots/{}/particles.dat"
+
+        # exit if there is no particles file in the last snapshot
+        last_particle_file = datafile_pattern.format(self._snapshot_numbers[-1])
+        if not os.path.exists(os.path.join(self.data_dir, last_particle_file)):
+            return
+
         for s in os.listdir(os.path.join(self.data_dir, "snapshots")):
             m = re.match(p, s)
             if m:

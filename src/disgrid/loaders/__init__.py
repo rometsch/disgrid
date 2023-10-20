@@ -1,4 +1,5 @@
 from copy import deepcopy
+import os
 
 class UnknownCodeError(Exception):
     pass
@@ -27,9 +28,20 @@ available[fargocpt_1_2.code_info] = fargocpt_1_2
 available[PLUTO42.code_info] = PLUTO42
 available[PLUTO43.code_info] = PLUTO43
 
+smoking_guns = dict()
+for key, mod in available.items():
+    try:
+        smoking_guns[key] = mod.smoking_gun
+    except AttributeError:
+        pass
+
 
 def identify_code(path, choices=available):
     code_list = []
+    # first check if a smoking gun file is present
+    for key, sg in smoking_guns.items():
+        if os.path.exists(os.path.join(path, sg)):
+            return deepcopy(key)
     for key, mod in choices.items():
         if mod.identify(path):
             code_list.append(key)
