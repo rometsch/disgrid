@@ -45,7 +45,7 @@ class Fluid:
                     "get() missing 1 required optional argument:",
                     " either 'num_output' or 't' for geometry={}".format(
                         ", ".join(supported_geometries[:-1])))
-            return loader(int(num_output), *args, **kwargs)
+            return loader(num_output, *args, **kwargs)
 
     def _get_loader(self, geometry, name):
         if geometry in supported_geometries:
