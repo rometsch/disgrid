@@ -424,7 +424,7 @@ class Loader(interface.Interface):
             if m:
                 stem = m.groups()[0]
                 infofile = fname
-                varname = stem[3:].lower()
+                varname = stem.lower()
                 if varname == "massflow":
                     continue
                 info = {"infofile": infofile}
