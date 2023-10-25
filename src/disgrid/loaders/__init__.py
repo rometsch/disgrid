@@ -14,6 +14,7 @@ from . import fargocpt
 from . import fargocpt_1_0
 from . import fargocpt_1_1
 from . import fargocpt_1_2
+from . import fargocpt_1_3
 from . import PLUTO42
 from . import PLUTO43
 
@@ -25,6 +26,7 @@ available[fargocpt.code_info] = fargocpt
 available[fargocpt_1_0.code_info] = fargocpt_1_0
 available[fargocpt_1_1.code_info] = fargocpt_1_1
 available[fargocpt_1_2.code_info] = fargocpt_1_2
+available[fargocpt_1_3.code_info] = fargocpt_1_3
 available[PLUTO42.code_info] = PLUTO42
 available[PLUTO43.code_info] = PLUTO43
 
