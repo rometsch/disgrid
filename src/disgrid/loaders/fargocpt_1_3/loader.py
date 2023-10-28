@@ -216,7 +216,7 @@ class Loader(interface.Interface):
 
         self.units = {}
         for key, val in unitsdefs.items():
-            self.units[key] = val["cgs value"] + " " + val["cgs symbol"]
+            self.units[key] = f"{val['cgs value']} {val['cgs symbol']}"
 
         self.spec["units"] = self.units.copy()
 
