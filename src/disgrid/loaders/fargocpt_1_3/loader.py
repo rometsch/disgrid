@@ -211,14 +211,13 @@ class Loader(interface.Interface):
         if "units" in self.spec:
             self.units = self.spec["units"].copy()
             return
-        with open(self.datadir_path('units.dat'), 'r') as f:
-            self.units = {
-                l[0]: l[1] + " " + l[2]
-                for l in [
-                    l.split() for l in f
-                    if l.split()[0] != '#' and len(l.split()) == 3
-                ]
-            }
+        with open(self.datadir_path('units.yml'), 'r') as f:
+            unitsdefs = yaml.safe_load(f)
+
+        self.units = {}
+        for key, val in unitsdefs.items():
+            self.units[key] = val["cgs value"] + " " + val["cgs symbol"]
+
         self.spec["units"] = self.units.copy()
 
     def load_grid(self):
