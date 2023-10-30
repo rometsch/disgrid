@@ -393,10 +393,11 @@ class Loader(interface.Interface):
         except FileNotFoundError:
             raise FileNotFoundError("Could not find 'info2D.yml' in simulatiuon output ('{}')".format(self.data_dir))
         
-        for varname, info in infodict.items():
-            loader = load2d.FieldLoader2d(varname, info, self.weakref)
-            gas.register_variable(varname, "2d", loader)
-            self.spec["fluids"]["gas"]["2d"][varname] = {"name": varname, "info": info}
+        if infodict is not None:
+            for varname, info in infodict.items():
+                loader = load2d.FieldLoader2d(varname, info, self.weakref)
+                gas.register_variable(varname, "2d", loader)
+                self.spec["fluids"]["gas"]["2d"][varname] = {"name": varname, "info": info}
 
     def get_fields_1d(self):
         if "fluids" in self.spec and all(("1d" in fspec for fspec in self.spec["fluids"].values())):
