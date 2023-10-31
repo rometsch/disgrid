@@ -216,10 +216,7 @@ class Loader(interface.Interface):
 
         self.units = {}
         for key, val in unitsdefs.items():
-            unit_str = f"{val['cgs value']} {val['cgs symbol']}"
-            if unit_str == "1 1":
-                unit_str = "1"
-            self.units[key] = unit_str
+            self.units[key] = val["unit"]
 
         self.spec["units"] = self.units.copy()
 

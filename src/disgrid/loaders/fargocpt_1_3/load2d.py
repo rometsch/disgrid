@@ -15,7 +15,7 @@ class FieldLoader2d(interface.FieldLoader):
         return rv
 
     def load_data(self, n):
-        unit = u.Unit(self.info["unit_str"])
+        unit = u.Unit(self.info["unit"])
         Nr = self.info["Nrad"]
         Naz = self.info["Nazi"]
         filepath = f"snapshots/{n}/" + self.info["filename"]
