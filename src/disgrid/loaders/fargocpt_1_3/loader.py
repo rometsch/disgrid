@@ -250,7 +250,7 @@ class Loader(interface.Interface):
         #     self.datadir_path("snapshots/timeSnapshot.dat"), "time step")
         self._output_times_dict = {
             n: t for n, t in zip(self._snapshot_numbers, self._output_times)}
-        self._output_times_dict["damping"] = self._output_times[0]
+        self._output_times_dict["reference"] = self._output_times[0]
         self._fine_output_times = loadscalar.load_text_data_file(
             self.datadir_path("monitor/Quantities.dat"), "physical time")
         self.spec["output_times"] = (
