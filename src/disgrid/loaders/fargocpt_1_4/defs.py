@@ -26,7 +26,7 @@ vars2d = {
         },
         "interfaces": ["r"]
     },
-    "vtheta": {
+    "vazi": {
         "pattern": "snapshots/{}/vazi.dat",
         "unitpowers": {
             "length": 1,
@@ -39,7 +39,7 @@ vars2d = {
 alias_fields = {
     "mass density": "Sigma",
     "velocity radial": "vrad",
-    "velocity azimuthal": "vtheta",
+    "velocity azimuthal": "vazi",
     "energy density": "energy"
 }
 

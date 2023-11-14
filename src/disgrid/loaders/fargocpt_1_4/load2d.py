@@ -25,9 +25,9 @@ class FieldLoader2d(interface.FieldLoader):
 
     def load_grid(self, n):
         active_interfaces = []
-        if self.info["vector"] == 1:
+        if self.info["on_radial_interface"]:
             active_interfaces.append("r")
-        if self.name == "vtheta":
+        if self.name == "vazi":
             active_interfaces.append("phi")
         g = grid.PolarGrid(r_i=self.loader.r_i,
                            phi_i=self.loader.phi_i,
