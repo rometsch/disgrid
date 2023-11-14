@@ -339,7 +339,7 @@ class Loader(interface.Interface):
             return
         self.spec["planets"] = {}
         planet_ids = []
-        p = re.compile(r"(bigplanet|planet)(\d).dat")
+        p = re.compile(r"(bigplanet|planet|nbody)(\d).dat")
         basename = ""
         for s in os.listdir(os.path.join(self.data_dir, "monitor")):
             m = re.match(p, s)
