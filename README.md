@@ -11,9 +11,9 @@ Its main features are:
 
 ## Supported Hydrodynamics Codes
 
-+ FargoCPT : custom version of the [[http://fargo.in2p3.fr/-Legacy-archive-][FARGO code]] which is used and maintained at the University of Tübingen.
-+ [[http://fargo.in2p3.fr/][FARGO3D]] : GPU enabled version of the FARGO code supporting 3D calculations
-+ [[http://plutocode.ph.unito.it/][PLUTO 4.2, 4.3]] : magneto-hydrodynamics code based on a Riemann solver
++ [FargoCPT](https://github.com/rometsch/fargocpt) : custom version of the [FARGO code](http://fargo.in2p3.fr/-Legacy-archive-) which is used and maintained at the University of Tübingen.
++ [FARGO3D](http://fargo.in2p3.fr/) : GPU enabled version of the FARGO code supporting 3D calculations
++ [PLUTO 4.2, 4.3](http://plutocode.ph.unito.it/) : magneto-hydrodynamics code based on a Riemann solver
 
 ## Getting started
 
